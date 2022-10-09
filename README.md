@@ -2,6 +2,26 @@
 
 
 
+**可视化界面index.html打开方法：**
+
+在命令行里键入：
+
+```python
+// python 2.x
+python -m SimpleHTTPServer
+
+// python 3.x
+python -m http.server
+```
+
+这将会为当前目录在8000端口创建一个服务器，可以在浏览器地址栏里输入以下格式的地址来访问已经创建好的服务器：
+
+```
+http://localhost:8000/file path
+```
+
+
+
 ### 0918 update
 
 
