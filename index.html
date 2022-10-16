@@ -56,27 +56,9 @@
       <div class="boxall" style="height: 3.2rem">
         <div class="alltitle">Datasets</div>
 
-        <ul class="Datasets">
-          <li class="datasets">NYC</li>
-          <li class="button">
-            <el-button circle icon="el-icon-circle-check" size="mini" @click.native="test" id="NYC"></el-button>
-          </li>
-          <li class="datasets">DC</li>
-          <li class="button">
-            <el-button circle icon="el-icon-circle-check" size="mini" @click.native="test" id="DC"></el-button>
-          </li>
-          <li class="datasets">Chicago</li>
-          <li class="button">
-            <el-button circle icon="el-icon-circle-check" size="mini" @click.native="test" id="Chicago"></el-button>
-          </li>
-          <li class="datasets">Xiamen</li>
-          <li class="button">
-            <el-button circle icon="el-icon-circle-check" size="mini" @click.native="test" id="Xiamen"></el-button>
-          </li>
-          <li class="datasets">New</li>
-          <li class="button">
-            <el-button circle icon="el-icon-circle-check" size="mini" @click.native="test" id="New"></el-button>
-          </li>
+        <ul class="Datasets" id='SelectDataset'>
+          <template v-for="item in ds_obj_list"><ib :title='item.name' :key='item.id' :datasetid='item.id' @select="transferdata"></ib></template>
+            
         </ul>
 
         <!--Xian, Chongqing-->
@@ -288,11 +270,12 @@
 <script src="js/map.js"></script>
 <script src="js/line_final.js"></script>
 <script src="js/global.js"></script>
-<script language="JavaScript" src="js/js.js"></script>
+<script language="JavaScript" src="js/js.js" async></script>
 <script src="js/SelectDataseets.js"></script>
 <script src="js/SelectModel.js"></script>
 <script src="js/polygon.js"></script>
 
+=
 
 <script>
   $(window).load(function(){

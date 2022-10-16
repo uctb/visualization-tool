@@ -1,11 +1,14 @@
 // datasets name
 var data = "";                               //选定数据集后把数据转到这里，方便统一处理
-var Metro_Chongqing = "";
-var DiDi_Xian = "";
-var Violation_XM = "";
-var Bike_NYC = "";
-var Bike_DC = "";
-var Bike_Chicago = "";
+// var Metro_Chongqing = "";
+// var DiDi_Xian = "";
+// var Violation_XM = "";
+// var Bike_NYC = "";
+// var Bike_DC = "";
+// var Bike_Chicago = "";
+var data_obj_list = new Array()
+var dataset_name_list = new Array()
+var dataset_list_len
 
 // datasets basic info
 var TimeArrayLength = 0;                     // 标记当前选择的数据集中，每个数据点，其对应的时间节点有多少个
