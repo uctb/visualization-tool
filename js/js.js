@@ -48,6 +48,14 @@ window.onload = function () {
                 }
             }
         }
+        console.log("data_obj_list:", data_obj_list)
+        // now_data = data_obj_list[0].data
+        // console.log("data:", now_data)
+        // MAPInd = 0;
+        // for (x in data.Pred) {
+        //     DatasetList.push(x)
+        // }
+        // StartDataSet();
     }
 
 

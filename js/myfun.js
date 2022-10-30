@@ -220,6 +220,8 @@
         let start_time = '';
         let end_time = '';
 
+        console.log("find mark area!")
+
         //对每个方法
         for (let index = 0; index < MethodNameArray.length; index++) {
 
