@@ -36,6 +36,33 @@ const app = new Vue(SelectDataset)
 
 Vue.component('ib', ItemplusButton)
 
+let Load = {
+    data() {
+        return {
+        };
+    },
+    methods: {
+        beforeUpload(file) {
+            console.log("here")
+            let SelectedFile = file
+            let reader = new FileReader()
+            reader.readAsText(SelectedFile)
+            reader.onload = function () {
+                let json = JSON.parse(this.result);
+                data = json;
+                MAPInd = 0;
+                ClearDataSet();
+                for (x in data.Pred) {
+                    DatasetList.push(x)
+                }
+                StartDataSet();
+            }
+            return false
+        }
+    }
+};
+let Ctor_Load = Vue.extend(Load)
+new Ctor_Load().$mount('#load')
 
 
 // function update_buttons() {

@@ -58,8 +58,27 @@
 
         <ul class="Datasets" id='SelectDataset'>
           <template v-for="item in ds_obj_list"><ib :title='item.name' :key='item.id' :datasetid='item.id' @select="transferdata"></ib></template>
-            
+          <li style="float: left; color: rgba(255,255,255,0.8); font-size: .15rem; width: 70%; height: .8rem; text-align: left; margin-left: .2rem;">Load Your Dataset</li>
         </ul>
+        <el-upload
+                id="load"
+                class="upload-demo"
+                action=""
+                accept=".json"
+                :before-upload="beforeUpload"
+                :limit="3"
+                :on-exceed="handleExceed"
+                :file-list="fileList"
+                :show-file-list="false">
+          <!--                    <el-button slot="trigger" size="small" type="primary">点击上传</el-button>-->
+          <div style="width: 120%; float: left; text-align: right;">
+            <el-button circle icon="el-icon-circle-check" size="mini"></el-button>
+          </div>
+
+
+        </el-upload>
+
+
 
         <!--Xian, Chongqing-->
  <!--

@@ -1,7 +1,7 @@
 ﻿
 /*读取本地数据集（json文件）存入全局变量*/
 
-window.onload = function () {
+function read_json() {
     url_record = './data/record.json'
     prefix = './data/';
     suffix = '_pred.json';
@@ -45,14 +45,26 @@ window.onload = function () {
                             }
                         }
                     }
+                    load_dataset()
                 }
             }
         }
     }
+}
 
+function load_dataset() {
+    console.log("data_obj_list:", data_obj_list)
+    data = data_obj_list[0].data
+    console.log("data:", data)
+    MAPInd = 0;
+    for (x in data.Pred) {
+        DatasetList.push(x)
+    }
+    StartDataSet();
+}
+window.onload = function () {
 
-
-
+    read_json();
 
     /*  var request1 = new XMLHttpRequest();
       request1.open("get", url_chongqing);/!*设置请求方法与路径*!/

@@ -506,19 +506,27 @@ function createTimeBadCaseoption(obj,SelectedNodeID,startIndex = -1,endIndex = -
             }
         },
         series: {
-            name: "Bad Case Region Num",
+            // name: "Bad Case Region Num",
+            // data: ydata,
+            // type: 'bar',
+            // symbol:'triangle',
+            // symbolSize: 8,
+            // itemStyle: {
+            //     borderColor: "#111AAA",
+            //     color: '#FFE4C4',
+            //     shadowColor: 'rgba(0, 0, 0, 0.5)',
+            //     shadowBlur: 10
+            // },
+            // lineStyle: {
+            //     width : 3
+            // },
             data: ydata,
-            type: 'line',
-            symbol:'triangle',
-            symbolSize: 8,
+            type: 'bar',
+            name: 'Bad Case Region Num',
             itemStyle: {
-                borderColor: "#111AAA",
-                color: '#FFE4C4',
-                shadowColor: 'rgba(0, 0, 0, 0.5)',
-                shadowBlur: 10
-            },
-            lineStyle: {
-                width : 3
+                normal: {
+                    color: '#d48265'
+                }
             },
         },
         dataZoom: [
