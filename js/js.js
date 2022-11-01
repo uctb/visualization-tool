@@ -45,6 +45,7 @@ function read_json() {
                             }
                         }
                     }
+                    load_dataset()
                 }
             }
         }
@@ -64,7 +65,6 @@ function load_dataset() {
 window.onload = function () {
 
     read_json();
-    load_dataset();
 
     /*  var request1 = new XMLHttpRequest();
       request1.open("get", url_chongqing);/!*设置请求方法与路径*!/
