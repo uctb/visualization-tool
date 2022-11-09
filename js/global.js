@@ -6,7 +6,6 @@ var data = "";                               //选定数据集后把数据转到
 // var Bike_NYC = "";
 // var Bike_DC = "";
 // var Bike_Chicago = "";
-var data_obj_list = new Array()
 var dataset_name_list = new Array()
 var dataset_list_len
 

@@ -4,27 +4,38 @@ const SelectDataset = {
     el: '#SelectDataset',
     data() {
         return {
-            ds_obj_list: [],
-            value: true,
-
+            ds_obj_list : []
         };
     },
     methods: {
         transferdata(selectedid) {
             if (selectedid >= 0) {
-                data = data_obj_list[selectedid].data
-                MAPInd = 0;
+                console.log('I\'m In')
+                let request = new XMLHttpRequest();
+                request.open("get", prefix + dataset_name_list[selectedid] + suffix); /!*设置请求方法与路径*!/
+                request.send(null); /!*不发送数据到服务器*!/
+                request.onload = function () {
+                    /!*XHR对象获取到返回信息后执行*!/
+                    if (request.status == 200) {
 
-                ClearDataSet();
-                for (x in data.Pred) {
-                    DatasetList.push(x)
+                        /!*返回状态为200，即为数据获取成功*!/
+                        json = JSON.parse(request.responseText);
+                        console.log('Parse Success!')
+                        MAPInd = 0;
+                        data = json
+                        ClearDataSet();
+                        for (x in data.Pred) {
+                            DatasetList.push(x)
+                        }
+                        StartDataSet();
+                    }
                 }
-                StartDataSet();
+            }
+                
             }
         }
     }
 
-}
 
 const ItemplusButton = {
     emits: ['selectData'],
