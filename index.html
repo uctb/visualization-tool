@@ -256,7 +256,15 @@
       <div class="boxall" style="height:4rem">
         <div class="alltitle" id="line_graph">Groundtruth and Prediction (point 0)</div>
         <div class="chart_change_button" id="bad_case_button">
-          <el-button size="mini" round @click.native="BadCase" id="BadCaseButton" style="width: .8rem; height: .25rem">more</el-button>
+<!--          <el-button size="mini" round @click.native="BadCase" id="BadCaseButton" style="width: .8rem; height: .25rem">more</el-button>-->
+<!--          <el-select v-model="value" size="mini" id="badcasebutton" placeholder="value" @change="BadCase">-->
+<!--            <el-option-->
+<!--                    v-for="item in options"-->
+<!--                    :key="item.value"-->
+<!--                    :label="item.label"-->
+<!--                    :value="item.value">-->
+<!--            </el-option>-->
+<!--          </el-select>-->
         </div>
         <div class="allnav" id="container_line"></div>
         <div class="boxfoot"></div>
@@ -264,9 +272,17 @@
 
       <!--rmse-->
       <div class="boxall" style="height: 3.5rem">
-        <div class="alltitle" id="rmse2">Metrics Rank List</div>
+        <div class="alltitle" id="rmse2">Global Error Analysis</div>
         <div class="chart_change_button" id="metrics_button">
-          <el-button size="mini" round @click.native="MetricsDistribution" id="MetricsDistributionButton" style="width: .8rem; height: .25rem">more</el-button>
+<!--          <el-button size="mini" round @click.native="MetricsDistribution" id="MetricsDistributionButton" style="width: .8rem; height: .25rem">more</el-button>-->
+          <el-select v-model="value" size="mini" id="MetricsDistributionButton" placeholder="Metrics Rank List" @change="MetricsDistribution">
+            <el-option
+                    v-for="item in options"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value">
+            </el-option>
+          </el-select>
         </div>
         <div class="allnav2" id="rmseline2"></div>
         <div class="boxfoot"></div>

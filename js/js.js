@@ -1,7 +1,19 @@
 ﻿
 /*读取本地数据集（json文件）存入全局变量*/
 
-function read_json() {
+
+function load_dataset() {
+    console.log("data_obj_list:", data_obj_list)
+    data = data_obj_list[0].data
+    console.log("data:", data)
+    MAPInd = 0;
+    for (x in data.Pred) {
+        DatasetList.push(x)
+    }
+    StartDataSet();
+}
+window.onload = function () {
+
     url_record = './data/record.json'
     prefix = './data/';
     suffix = '_pred.json';
@@ -44,27 +56,12 @@ function read_json() {
                                 app.ds_obj_list.push({'id':i,'name':dataset_name_list[i]})
                             }
                         }
+                        load_dataset();
                     }
                 }
             }
         }
     }
-}
-
-function load_dataset() {
-    console.log("data_obj_list:", data_obj_list)
-    data = data_obj_list[0].data
-    console.log("data:", data)
-    MAPInd = 0;
-    for (x in data.Pred) {
-        DatasetList.push(x)
-    }
-    StartDataSet();
-}
-window.onload = function () {
-
-    read_json();
-    load_dataset();
 
     /*  var request1 = new XMLHttpRequest();
       request1.open("get", url_chongqing);/!*设置请求方法与路径*!/
@@ -82,42 +79,6 @@ window.onload = function () {
               DiDi_Xian = JSON.parse(request2.responseText);
           }
       }*/
-    // var request3 = new XMLHttpRequest();
-    // request3.open("get", url_xiamen);/*设置请求方法与路径*/
-    // request3.send(null);/*不发送数据到服务器*/
-    // request3.onload = function () {/*XHR对象获取到返回信息后执行*/
-    //     if (request3.status == 200) {/*返回状态为200，即为数据获取成功*/
-    //         Violation_XM = JSON.parse(request3.responseText);
-    //         console.log("XM:", Violation_XM)
-    //     }
-    // }
-    // var request4 = new XMLHttpRequest();
-    // request4.open("get", url_NYC);/*设置请求方法与路径*/
-    // request4.send(null);/*不发送数据到服务器*/
-    // request4.onload = function () {/*XHR对象获取到返回信息后执行*/
-    //     if (request4.status == 200) {/*返回状态为200，即为数据获取成功*/
-    //         Bike_NYC = JSON.parse(request4.responseText);
-    //         console.log("NYC:", Bike_NYC);
-    //     }
-    // }
-    // var request5 = new XMLHttpRequest();
-    // request5.open("get", url_DC);/*设置请求方法与路径*/
-    // request5.send(null);/*不发送数据到服务器*/
-    // request5.onload = function () {/*XHR对象获取到返回信息后执行*/
-    //     if (request5.status == 200) {/*返回状态为200，即为数据获取成功*/
-    //         Bike_DC = JSON.parse(request5.responseText);
-    //         console.log("DC:", Bike_DC);
-    //     }
-    // }
-    // var request6 = new XMLHttpRequest();
-    // request6.open("get", url_Chicago);/*设置请求方法与路径*/
-    // request6.send(null);/*不发送数据到服务器*/
-    // request6.onload = function () {/*XHR对象获取到返回信息后执行*/
-    //     if (request6.status == 200) {/*返回状态为200，即为数据获取成功*/
-    //         Bike_Chicago = JSON.parse(request6.responseText);
-    //         console.log("Chicago:", Bike_Chicago);
-    //     }
-    // }
 
 }
 
@@ -142,13 +103,27 @@ let HighlightButton = {
 let Ctor_highlight = Vue.extend(HighlightButton)
 new Ctor_highlight().$mount('#highlightbutton')
 
-
 /*bad case button*/
-let BadCaseButton = {
+/*let badcasebutton = {
+    data() {
+        return {
+            options: [{
+                value: '0',
+                label: 'spatial view'
+            }, {
+                value: '1',
+                label: 'temporal view'
+            }, {
+                value: '2',
+                label: 'value'
+            }],
+            value: ''
+        }
+    },
     methods: {
         BadCase() {
-            if (bad_case_flag === 0) {
-                bad_case_flag = 1;
+            console.log(typeof(this.value))
+            if (this.value === '0') {
                 // 修改容器名称
                 document.getElementById('line_graph').innerText = 'All Regions Bad Case Amount Rank List';
 
@@ -156,8 +131,7 @@ let BadCaseButton = {
                 let BadCase_option = createBadCaseoption(MethodID, pointID);
                 drawhistogram(BadCase_option, 'container_line');
             }
-            else if (bad_case_flag === 1) {
-                bad_case_flag = 2;
+            else if (this.value === '1') {
                 // 修改容器名称
                 document.getElementById('line_graph').innerText = 'Terrible Time';
 
@@ -165,8 +139,7 @@ let BadCaseButton = {
                 let option = createTimeBadCaseoption(data, pointID, StartInd, EndInd, MethodID);
                 drawline(option);
             }
-            else if (bad_case_flag === 2) {
-                bad_case_flag = 0;
+            else if (this.value === '2') {
                 // 修改容器名称
                 document.getElementById('line_graph').innerText = 'Groundtruth and Prediction (point 0)';
 
@@ -178,16 +151,39 @@ let BadCaseButton = {
         }
     }
 }
-let Ctor_badcase = Vue.extend(BadCaseButton)
-new Ctor_badcase().$mount('#BadCaseButton')
+let Ctor_badcasebutton = Vue.extend(badcasebutton)
+new Ctor_badcasebutton().$mount('#badcasebutton')*/
 
 
 /*Metrics Distribution button*/
 let MetricsDistributionButton = {
+    data() {
+        return {
+            options: [{
+                value: '0',
+                label: 'RMSE Distribution'
+            }, {
+                value: '1',
+                label: 'MAE Distribution'
+            }, {
+                value: '2',
+                label: 'MAPE Distribution'
+            }, {
+                value: '3',
+                label: 'Metrics Rank List'
+            }, {
+                value: '4',
+                label: 'spatial view'
+            }, {
+                value: '5',
+                label: 'temporal view'
+            }],
+            value: ''
+        }
+    },
     methods: {
         MetricsDistribution() {
-            if (metricflag === 0) {
-                metricflag = 1;
+            if (this.value === '0') {
                 // 修改容器名称
                 document.getElementById('rmse2').innerText = 'RMSE Distribution';
 
@@ -195,7 +191,7 @@ let MetricsDistributionButton = {
                 let option = createRMSEDistributionoption(MethodID, PointRMSERange);
                 drawhistogram(option, 'rmseline2')
             }
-            else if (metricflag === 1) {
+            else if (this.value === '1') {
                 metricflag = 2;
                 // 修改容器名称
                 document.getElementById('rmse2').innerText = 'MAE Distribution';
@@ -204,8 +200,7 @@ let MetricsDistributionButton = {
                 let option = createRMSEDistributionoption(MethodID, PointMAERange);
                 drawhistogram(option, 'rmseline2')
             }
-            else if (metricflag === 2) {
-                metricflag = 3;
+            else if (this.value === '2') {
                 // 修改容器名称
                 document.getElementById('rmse2').innerText = 'MAPE Distribution';
 
@@ -213,14 +208,29 @@ let MetricsDistributionButton = {
                 let option = createRMSEDistributionoption(MethodID, PointMAPERange);
                 drawhistogram(option, 'rmseline2')
             }
-            else if (metricflag === 3) {
-                metricflag = 0;
+            else if (this.value === '3') {
                 // 修改容器名称
                 document.getElementById('rmse2').innerText = 'Metrics Rank List';
 
                 // Metrics Rank List
                 let metric_option = createMetricsoption(MethodID, pointID);
                 drawhistogram(metric_option, 'rmseline2');
+            }
+            else if (this.value === '4') {
+                // 修改容器名称
+                document.getElementById('rmse2').innerText = 'All Regions Bad Case Amount Rank List';
+
+                // bad case rank histogram
+                let BadCase_option = createBadCaseoption(MethodID, pointID);
+                drawhistogram(BadCase_option, 'rmseline2');
+            }
+            else if (this.value === '5') {
+                // 修改容器名称
+                document.getElementById('rmse2').innerText = 'Terrible Time';
+
+                // bad case timeslots amount line
+                let option = createTimeBadCaseoption(data, pointID, StartInd, EndInd, MethodID);
+                drawline(option, 'rmseline2');
             }
 
         }

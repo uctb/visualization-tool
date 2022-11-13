@@ -8,7 +8,6 @@ function createoption(obj,SelectedNodeID,startIndex = -1,endIndex = -1, methodid
     var TimeNum = tmp['GroundTruth'].length;
 
     // 默认datazoom位置
-
     if(startIndex > TimeNum | endIndex > TimeNum | startIndex < -1 | endIndex < -1)
     {
         window.alert("Error 02: out of range!");
@@ -874,9 +873,9 @@ function createRMSEDistributionoption(methodid, pointMetricRange){
 }
 
 /*draw*/
-function drawline(option){
+function drawline(option, id){
 
-    var myChart = echarts.init(document.getElementById("container_line"));
+    var myChart = echarts.init(document.getElementById(id));
     myChart.clear();
     myChart.setOption(option);
     myChart.on('datazoom', function (params) {
@@ -930,5 +929,23 @@ function drawhistogram(option, id){
     myChart.setOption(option);
     window.addEventListener("resize",function(){
         myChart.resize();
+    });
+    myChart.on('click', function (params) {
+        pointID = params.name;
+        console.log("====test=====")
+        console.log("test id:", params.name);
+
+        /*作图*/
+        pointName = data['Node']['StationInfo'][pointID][4]
+        document.getElementById('points').value = pointID;
+        document.getElementById('uv_name').innerText = pointName;
+        document.getElementById('line_graph').innerText = 'Groundtruth and Prediction (' + pointName + ')'
+
+        let Initoption = createoption(data,Number(pointID),StartInd,EndInd,MethodID);
+        drawline(Initoption, 'container_line');
+
+        /*在地图上标记出该点*/
+        InitMapoption = createMapOption(data,pointID);
+        drawmap(InitMapoption);
     });
 }

@@ -3,7 +3,7 @@
 
         /*右上折线图*/
         let Initoption = createoption(data,pointID,StartInd,EndInd,MethodID);
-        drawline(Initoption);
+        drawline(Initoption, 'container_line');
 
         /*metric折线图*/
         let metric_option = createMetricsoption(MethodID,pointID);
@@ -20,9 +20,6 @@
         else if(MAPInd == 1) {
             // XMBaidu
             map();
-        }
-        else if(MAPInd == 2) {
-            // NYC
         }
     }
 
@@ -54,6 +51,11 @@
     /* 该函数在选定数据集时执行（无论是刚读入文件，还是手动修改数据集，都会执行） */
     function FinishDataSet()
     {
+        console.log("==========new dataset!=============")
+        /*将StartIndex，EndIndex归零*/
+        StartInd = -1;
+        EndInd = -1;
+
         /* 确定数据集以后，先读出其中的方法数 */
         console.log("now_data:", data);
         console.log("now_DatasetList:", DatasetList);
@@ -94,6 +96,7 @@
         /* 读取小数据集的时间粒度和时间范围 */
         now_Timefitness = parseInt(dataset_information_list[6]);
 
+
         /*获得所有方法的数组*/
         var k = 0;
         var Mydata = data.Pred[dataset_name];
@@ -125,9 +128,11 @@
         var Origin_endDate = new Date(origin_endyear,origin_endmonth-1,origin_endday);
         var EndDate = new Date(origin_endyear,origin_endmonth-1,origin_endday+1);
 
+        TimeRange = [];
         TimeRange.push(Origin_beginDate)
         TimeRange.push(Origin_endDate)
         TimeRange.push(EndDate)
+        console.log("Time Range is", TimeRange);
 
         /*获得一些全局变量*/
         getTimeSlots();
@@ -137,6 +142,10 @@
         getSortedBadCaseNum();
         getPointTimeBadCase();
         getMetricsDistribution();
+
+        /*修改右上日期控件的起止时间*/
+        document.getElementById("starttime").value = TimeSlots[0];
+        document.getElementById("endtime").value = TimeSlots[TimeArrayLength-1];
 
         /* 处理完成，作图 */
         drawMap();
@@ -164,6 +173,7 @@
     /*获得折线图的时间片*/
     function getTimeSlots() {
 
+        TimeSlots = [];
         let DatasetName = DatasetList[DatasetID];
         let TimeNum = data['Pred'][DatasetName]['GroundTruth'].length;
 
@@ -172,7 +182,8 @@
 
         for (let i = TimeNum - 1; i >= 0; i--) {
             let now = new Date(EndDate - (TimeNum - i)*Gap);
-            TimeSlots[i] = [now.getFullYear(),now.getMonth()+1,now.getDate()].join('/') +' '+[now.getHours(),now.getMinutes()].join(':');
+            // TimeSlots[i] = [now.getFullYear(),now.getMonth()+1,now.getDate()].join('/') +' '+[now.getHours(),now.getMinutes()].join(':');
+            TimeSlots[i] = [now.getFullYear(),add0(now.getMonth()+1),add0(now.getDate())].join('-') +' '+[add0(now.getHours()),add0(now.getMinutes())].join(':');
         }
         console.log("TimeSlots is:", TimeSlots);
     }
@@ -374,13 +385,13 @@
                     let num = 0;
                     for (let j = 0; j < TimeArrayLength; j++) {
                         // k - 方法， i - 地图点， j - 时间点
-                        let ground_truth = Mydata['GroundTruth'][j][i];
-                        total_rmse_variance += Math.pow(Math.abs(Mydata[method]['TrafficNode'][j][i] - ground_truth), 2);
-                        total_absolute_error += Math.abs(Mydata[method]['TrafficNode'][j][i] - ground_truth);
+                        let ground_truth = Mydata['GroundTruth'][j][real_node_id];
+                        total_rmse_variance += Math.pow(Math.abs(Mydata[method]['TrafficNode'][j][real_node_id] - ground_truth), 2);
+                        total_absolute_error += Math.abs(Mydata[method]['TrafficNode'][j][real_node_id] - ground_truth);
                         // 如果真实值为0，则MAPE为infinity，因此把真实值为0的去掉
                         if (ground_truth !== 0) {
                             num ++;
-                            total_mape_variance += Math.abs((Mydata[method]['TrafficNode'][j][i] - ground_truth) / ground_truth)
+                            total_mape_variance += Math.abs((Mydata[method]['TrafficNode'][j][real_node_id] - ground_truth) / ground_truth)
                         }
                     }
 
@@ -531,7 +542,7 @@
         MAXError = parseFloat(document.getElementById('re_standard').value)*0.01;
 
         Initoption = createoption(data,pointID,StartInd,EndInd);
-        drawline(Initoption);
+        drawline(Initoption, 'container_line');
     }
 
     /* 修改pointID/点击地图上的point时 */
@@ -601,7 +612,7 @@
         else
         {
             ChangeDatazoomOption = createoption(data,pointID,StartInd,EndInd);
-            drawline(ChangeDatazoomOption);
+            drawline(ChangeDatazoomOption, 'container_line');
         }
     }
 
@@ -620,3 +631,4 @@
         e.options.length = 1;
     }
 
+    function add0(m){return m<10?'0'+m:m}

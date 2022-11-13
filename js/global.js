@@ -1,11 +1,6 @@
 // datasets name
 var data = "";                               //选定数据集后把数据转到这里，方便统一处理
-// var Metro_Chongqing = "";
-// var DiDi_Xian = "";
-// var Violation_XM = "";
-// var Bike_NYC = "";
-// var Bike_DC = "";
-// var Bike_Chicago = "";
+let new_data = "";
 var data_obj_list = new Array()
 var dataset_name_list = new Array()
 var dataset_list_len

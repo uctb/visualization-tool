@@ -8,15 +8,18 @@ function drawmap(option){
     }
 
     myChart.on('click',function(params){
+        console.log("test params:", params);
         pointID = params.dataIndex;
         pointName = params.value[3]
         document.getElementById('points').value = pointID;
         document.getElementById('uv_name').innerText = pointName;
         document.getElementById('line_graph').innerText = 'Groundtruth and Prediction (' + pointName + ')'
 
+        drawmap(option);
+
         /*右上折线图*/
         Newoption = createoption(data,pointID,StartInd,EndInd,MethodID);
-        drawline(Newoption);
+        drawline(Newoption, 'container_line');
 
         /*error折线图*/
         RMSE_option = createMetricsoption(MethodID,pointID);
@@ -183,16 +186,25 @@ function createMapOption(obj, centerID = -1,mapsize = myMapSize)
                 type: 'scatter',
                 coordinateSystem: 'bmap',
                 data: resData,
-                symbolSize:10,
+                // symbolSize:10,
+                symbolSize: function(number, params) {
+                    let id = params.data.value[2];
+                    let real_id = FindRealNodeID(id);
+
+                    if(real_id == pointID){return 20;}
+                    else {return 10;}
+                },
                 itemStyle: {
                     color: function(params) {
 
-                        var id = params.data.value[2];
-                        var real_id = FindRealNodeID(id);
+                        let id = params.data.value[2];
+                        let real_id = FindRealNodeID(id);
 
                         if(real_id == -1){return 'black';}
-                        else if(PointMinRMSE[real_id] >= MINACCURACY){return 'red';}
+                        else if(real_id == pointID){return 'yellow';}
+                        else if(PointMinRMSE[real_id] >= MINACCURACY && real_id != pointID){return 'red';}
                         else {return 'green';}
+
                     }
                 },
                 label: {
