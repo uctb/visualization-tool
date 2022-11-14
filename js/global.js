@@ -11,6 +11,7 @@ var VaildPointNum = 0;                       // 标记当前选择的数据集�
 var TotalPointNum = 0;                       // 标记StationInfo里头有标记的所有节点的数量
 var TimeRange = [];                          // 标记当前选择的数据集的TimeRange，第三个元素为结束日期的后一天
 var now_Timefitness = 0;                     // 存储当前选中数据集的timefitness
+let StationIndArr = [];                      // 存储当前选中数据集各站点的编号，便于在map绘图中保持站点编号的一致性
 
 // children datasets param
 var portion_index = 1;                       // 数据集第二位会有一个参数，表明使用了该数据集的多少。如果为all的话，就是全部使用
@@ -24,7 +25,6 @@ var MethodID = 0;                            // 用来记录使用的是哪种�
 var FunctionNum = 0;                         // 标记数据集中含有的方法数(包含了GroundTruth)
 
 // evaluation metrics
-
 let metricflag = 0;
 
 let PointMetrics = new Array();               // 二维数组,(FunctionNum,ValidPointNum)数量级，表示对此数据集，每个方法对应每个地图点的RMSE,MAPE,MAE
@@ -69,3 +69,9 @@ let PointTimeBadCase = new Array();                     // 二维数组，(Funct
 var MAXError = 0.1;       // 单点认为判断准确的最大相对误差
 var MAXABSError = 1       // 单点认为判断准确的最大绝对误差
 var MINACCURACY = 1;     // 认为某方法能准确预测地图点的流量的最低准确率 RMSE
+
+// Filter
+let InvalidNodeStd = 1;                    // x%时间片的真实值为零即视为无效点，x默认为0.8
+let InvalidNodeIndArr = new Array();         // 过滤无效点后的站点索引列表
+let FilterInvalidNodeInfo = new Array();     // 过滤无效点后的站点信息
+let FilterInvalidNodeFlag = 0;               // 是否打开过滤无效点的开关，默认为0，即为关

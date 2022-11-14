@@ -937,7 +937,7 @@ function drawhistogram(option, id){
 
         /*作图*/
         pointName = data['Node']['StationInfo'][pointID][4]
-        document.getElementById('points').value = pointID;
+        // document.getElementById('points').value = pointID;
         document.getElementById('uv_name').innerText = pointName;
         document.getElementById('line_graph').innerText = 'Groundtruth and Prediction (' + pointName + ')'
 
@@ -945,7 +945,15 @@ function drawhistogram(option, id){
         drawline(Initoption, 'container_line');
 
         /*在地图上标记出该点*/
-        InitMapoption = createMapOption(data,pointID);
-        drawmap(InitMapoption);
+        if(FilterInvalidNodeFlag == 0){
+            // 过滤无效点开关关闭
+            InitMapoption = createMapOption(data,data['Node']['StationInfo'],StationIndArr,pointID);
+            drawmap(InitMapoption);
+        }
+        else if(FilterInvalidNodeFlag == 1){
+            // 过滤无效点开关打开
+            InitMapoption = createMapOption(data,FilterInvalidNodeInfo,InvalidNodeIndArr,pointID);
+            drawmap(InitMapoption);
+        }
     });
 }

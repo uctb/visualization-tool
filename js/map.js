@@ -11,52 +11,62 @@ function drawmap(option){
         console.log("test params:", params);
         pointID = params.dataIndex;
         pointName = params.value[3]
-        document.getElementById('points').value = pointID;
+        // document.getElementById('points').value = pointID;
         document.getElementById('uv_name').innerText = pointName;
         document.getElementById('line_graph').innerText = 'Groundtruth and Prediction (' + pointName + ')'
 
-        drawmap(option);
+        // drawmap(option);
+        if(FilterInvalidNodeFlag == 0){
+            // 过滤无效点开关关闭
+            InitMapoption = createMapOption(data,data['Node']['StationInfo'],StationIndArr,pointID);
+            drawmap(InitMapoption);
+        }
+        else if(FilterInvalidNodeFlag == 1){
+            // 过滤无效点开关打开
+            InitMapoption = createMapOption(data,FilterInvalidNodeInfo,InvalidNodeIndArr,pointID);
+            drawmap(InitMapoption);
+        }
 
         /*右上折线图*/
         Newoption = createoption(data,pointID,StartInd,EndInd,MethodID);
         drawline(Newoption, 'container_line');
 
         /*error折线图*/
-        RMSE_option = createMetricsoption(MethodID,pointID);
-        drawhistogram(RMSE_option);
+        // RMSE_option = createMetricsoption(MethodID,pointID);
+        // drawhistogram(RMSE_option);
 
     });
 }
 
-function createMapOption(obj, centerID = -1,mapsize = myMapSize)
+function createMapOption(obj, StationInfo, StationIndArr, centerID = -1,mapsize = myMapSize)
 {
     option = null;
+    console.log("=======plot new map!!==========")
 
     // 站点的数量
-    var NodeNum = obj.Node.StationInfo.length;
-    TotalPointNum = NodeNum;
+    var NodeNum = StationInfo.length;
 
     // 生成站点名称：坐标数据对
-    var resData = [];
+    let resData = [];
     var totallongitude = 0;
     var totallatitude = 0;
     for (var i = 0; i < NodeNum; i++) {
-        if(typeof(obj.Node.StationInfo[i][3]) == "string")
+        if(typeof(StationInfo[i][3]) == "string")
         {
-            totallongitude += parseFloat(obj.Node.StationInfo[i][3]);
-            totallatitude += parseFloat(obj.Node.StationInfo[i][2]);
+            totallongitude += parseFloat(StationInfo[i][3]);
+            totallatitude += parseFloat(StationInfo[i][2]);
             resData.push({
-                name: obj.Node.StationInfo[i][0],
-                value: [parseFloat(obj.Node.StationInfo[i][3]),parseFloat(obj.Node.StationInfo[i][2]),i,obj.Node.StationInfo[i][4]]
+                name: StationInfo[i][0],
+                value: [parseFloat(StationInfo[i][3]),parseFloat(StationInfo[i][2]),StationIndArr[i],StationInfo[i][4]]
             });
         }
         else
         {
-            totallongitude += obj.Node.StationInfo[i][3];
-            totallatitude += obj.Node.StationInfo[i][2];
+            totallongitude += StationInfo[i][3];
+            totallatitude += StationInfo[i][2];
             resData.push({
-                name: obj.Node.StationInfo[i][0],                 // name属性是stationinfo的第一位（编号）
-                value: [obj.Node.StationInfo[i][3],obj.Node.StationInfo[i][2],i,obj.Node.StationInfo[i][4]]   // value 包含坐标，和地点名称
+                name: StationInfo[i][0],                 // name属性是stationinfo的第一位（编号）
+                value: [StationInfo[i][3],StationInfo[i][2],StationIndArr[i],StationInfo[i][4]]   // value 包含坐标，和地点名称
             });
         }
     }

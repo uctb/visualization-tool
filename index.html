@@ -239,9 +239,19 @@
             <button id="okbutton5" onclick="SetStandard()" style="height:20px; width:.4rem;">ok</button>
           </div>
           <div style="width: 40%; padding-top: .1rem">
-            <label style="color: white">point ID：&nbsp;</label>
-            <input type='text' id ='points' style="width:.5rem" value=0>
-            <button id="okbutton4" onclick="FinishPointSelect()" style="height:20px; width:.4rem;">ok</button>
+<!--            <label style="color: white">point ID：&nbsp;</label>-->
+<!--            <input type='text' id ='points' style="width:.5rem" value=0>-->
+<!--            <button id="okbutton4" onclick="FinishPointSelect()" style="height:20px; width:.4rem;">ok</button>-->
+            <label style="color: white">Invalid Point：&nbsp;</label>
+            <el-switch
+                    id="InvalidSwitch"
+                    v-model="value"
+                    active-color="#13ce66"
+                    inactive-color="#ff4949"
+                    :active-value="1"
+                    :inactive-value="0"
+                    @change="FilterInvalidPoint">
+            </el-switch>
           </div>
         </div>
 

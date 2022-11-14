@@ -13,9 +13,15 @@
     function drawMap() {
         console.log("now_MAPInd：", MAPInd)
         if(MAPInd == 0) {
-            // Xian&Chongqing
-            InitMapoption = createMapOption(data,pointID);
-            drawmap(InitMapoption);
+            if(FilterInvalidNodeFlag == 0){
+                InitMapoption = createMapOption(data,data['Node']['StationInfo'],StationIndArr,pointID);
+                drawmap(InitMapoption);
+            }
+            else if(FilterInvalidNodeFlag == 1){
+                InitMapoption = createMapOption(data,FilterInvalidNodeInfo,InvalidNodeIndArr,pointID);
+                drawmap(InitMapoption);
+            }
+
         }
         else if(MAPInd == 1) {
             // XMBaidu
@@ -52,9 +58,12 @@
     function FinishDataSet()
     {
         console.log("==========new dataset!=============")
-        /*将StartIndex，EndIndex归零*/
+        /* 将StartIndex，EndIndex归零 */
         StartInd = -1;
         EndInd = -1;
+
+        /* 将过滤开关都关闭 */
+        FilterInvalidNodeFlag = 0;
 
         /* 确定数据集以后，先读出其中的方法数 */
         console.log("now_data:", data);
@@ -65,7 +74,7 @@
         
         /* 修改数据集后，让地图点的选择先归0 */
         pointID = 0;
-        document.getElementById('points').value = pointID;
+        // document.getElementById('points').value = pointID;
 
         /* 读取Dataset的名称里的信息，把各项分开以后处理 */
         var dataset_name = DatasetList[DatasetID];
@@ -76,9 +85,15 @@
         var TimeNum = tmp.GroundTruth.length;  // 真实值包括了多少个时间点。
         VaildPointNum = tmp.GroundTruth[0].length;
         TimeArrayLength = TimeNum;  // 标记当前选择的数据集中，每个数据点，其对应的时间节点有多少个
+        TotalPointNum = data['Node']['StationInfo'].length;
+        StationIndArr = [];
+        for (let i=0; i<TotalPointNum; i++){
+            StationIndArr.push(i);
+        }
 
         console.log("now_ValidPointNum:", VaildPointNum);
         console.log("now_TimeArrayLength:", TimeArrayLength);
+        console.log("now_StationIndArr:", StationIndArr);
 
 
         /* 读取出数据集使用部分的参数，若不是all的话，进行截取 */
@@ -374,16 +389,19 @@
                 PointSortedMAPE[k] = [];
 
                 for (let i = 0; i < VaildPointNum; i++) {
+
                     let DictVar_rmse = {};
                     let DictVar_mae = {};
                     let DictVar_mape = {};
-                    let real_node_id = Mydata[method]['traffic_data_index'][i]; // 注意：这里的i不等同于编号，而是对应有效点。这样才能覆盖所有有效点。
+                    // let real_node_id = Mydata[method]['traffic_data_index'][i]; // 注意：这里的i不等同于编号，而是对应有效点。这样才能覆盖所有有效点。
+                    let real_node_id = i;
 
                     let total_rmse_variance = 0;
                     let total_absolute_error = 0;
                     let total_mape_variance = 0;
                     let num = 0;
                     for (let j = 0; j < TimeArrayLength; j++) {
+
                         // k - 方法， i - 地图点， j - 时间点
                         let ground_truth = Mydata['GroundTruth'][j][real_node_id];
                         total_rmse_variance += Math.pow(Math.abs(Mydata[method]['TrafficNode'][j][real_node_id] - ground_truth), 2);
@@ -399,6 +417,9 @@
                     let RMSE = Math.sqrt(total_rmse_variance / TimeArrayLength);
                     let MAE = total_absolute_error / TimeArrayLength;
                     let MAPE = (total_mape_variance / num) * 100;
+                    if(isNaN(MAPE)){
+                        MAPE = 0;
+                    }
 
                     // 把每个站点的index和rmse值存入字典
                     DictVar_rmse['index'] = real_node_id;
@@ -481,6 +502,8 @@
             let max_mape = PointSortedMAPE[i][0]['mape'];
             let min_mape = PointSortedMAPE[i][VaildPointNum - 1]['mape']
             let interval_mape = (max_mape - min_mape) / interval_num;
+            console.log("max_mape is", max_mape);
+            console.log("min_mape is", min_mape);
 
             PointRMSERange[i] = getMetricsRange(min_rmse, interval_num, interval_rmse);
             PointMAERange[i] = getMetricsRange(min_mae, interval_num, interval_mae);
@@ -515,6 +538,9 @@
 
         /*修改模型误差值*/
         ChangeModelError();
+
+        /*默认过滤开关都关闭*/
+        FilterInvalidNodeFlag = 0;
 
         /* 处理完成，作图 */
         drawMap();
@@ -567,7 +593,6 @@
                 break;
             }
         }
-
         return index_array.indexOf(point_id);
     }
 
@@ -632,3 +657,41 @@
     }
 
     function add0(m){return m<10?'0'+m:m}
+
+    /* 过滤无效点 */
+    function RemovePointOfStationInfo() {
+        console.log("=======Filter Test!!========")
+        FilterInvalidNodeInfo = [];
+        InvalidNodeIndArr = [];
+        for(let i=0; i<TotalPointNum; i++) {
+            // let isFilter = 0;
+            // 过滤UCTB中判定为无效点的点
+            let real_id = FindRealNodeID(i);
+            if(real_id != -1){
+                // isFilter = 1;
+                FilterInvalidNodeInfo.push(data['Node']['StationInfo'][i]);
+                InvalidNodeIndArr.push(i);
+            }
+            // 过滤x%时间片的真实值为零的点
+            // let count = 0;   // 统计groundtruth非零时间片个数
+            // for(let j=0; j<TimeArrayLength; j++){
+            //     let groundtruth = data['Pred'][[DatasetList[DatasetID]]]['GroundTruth'][j][i];
+            //     if(groundtruth != 0){
+            //         count ++;
+            //     }
+            // }
+            // if(count >= InvalidNodeStd*TimeArrayLength){
+            //     isFilter = 1;
+            //     // if(InvalidNodeIndArr.indexOf(i) == -1){
+            //     //     FilterInvalidNodeInfo.push(data['Node']['StationInfo'][i]);
+            //     //     InvalidNodeIndArr.push(i);
+            //     // }
+            // }
+            // if(isFilter == 1){
+            //     FilterInvalidNodeInfo.push(data['Node']['StationInfo'][i]);
+            //     InvalidNodeIndArr.push(i);
+            // }
+        }
+        console.log("filter node index", InvalidNodeIndArr);
+        console.log("filter node info", FilterInvalidNodeInfo);
+    }

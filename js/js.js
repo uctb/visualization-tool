@@ -239,6 +239,34 @@ let MetricsDistributionButton = {
 let Ctor_metric = Vue.extend(MetricsDistributionButton)
 new Ctor_metric().$mount('#MetricsDistributionButton')
 
-
-
+/*过滤无效点*/
+let InvalidSwitch = {
+    data() {
+        return {
+            value: false
+        }
+    },
+    methods: {
+        // 由于原本的metric就是去除了无效点后计算的，因此无需重新绘制各类分析图，仅需修改地图上绘制的点
+        FilterInvalidPoint($event) {
+            console.log($event);
+            if($event == 1) {
+                console.log("打开过滤无效点开关！")
+                FilterInvalidNodeFlag = 1;
+                // 重新绘制地图
+                RemovePointOfStationInfo();
+                InitMapoption = createMapOption(data, FilterInvalidNodeInfo,InvalidNodeIndArr,pointID);
+                drawmap(InitMapoption);
+            }
+            else if($event == 0){
+                console.log("关闭过滤无效点开关！")
+                FilterInvalidNodeFlag = 0;
+                InitMapoption = createMapOption(data,data['Node']['StationInfo'],StationIndArr,pointID);
+                drawmap(InitMapoption);
+            }
+        }
+    }
+}
+let Ctor_filter = Vue.extend(InvalidSwitch)
+new Ctor_filter().$mount('#InvalidSwitch')
 
