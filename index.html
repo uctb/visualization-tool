@@ -65,10 +65,7 @@
                 class="upload-demo"
                 action=""
                 accept=".json"
-                :on-preview="handlePreview"
-                :on-remove="handleRemove"
-                :before-remove="beforeRemove"
-                :on-success="handleLoad"
+                :before-upload="beforeUpload"
                 :limit="3"
                 :on-exceed="handleExceed"
                 :file-list="fileList"
@@ -109,8 +106,11 @@
       <!--Model-->
       <div class="boxall" style="height: 5.1rem">
         <div class="alltitle">Model</div>
-
-        <ul class="Datasets">
+        <ul class="Datasets" id='SelectModel'>
+          <template v-for="item in model_list"><ibm :title='item.name' :key='item.id' :modelid='item.id' @select="transferdata"></ib></template>
+          
+        </ul>
+        <!-- <ul class="Datasets">
           <li class="datasets">HM</li>
           <li class="button">
             <el-button circle icon="el-icon-circle-check" size="mini" @click.native="test" id="HM"></el-button>
@@ -142,8 +142,8 @@
           <li class="datasets">ST_MGCN</li>
           <li class="button">
             <el-button circle icon="el-icon-circle-check" size="mini" @click.native="test" id="ST_MGCN"></el-button>
-          </li>
-        </ul>
+          </li> 
+        </ul>-->
 
         <!--<ul class="Datasets">
           <li class="datasets">DeepST</li>
@@ -323,7 +323,6 @@
 <script src="js/SelectModel.js"></script>
 <script src="js/polygon.js"></script>
 
-=
 
 <script>
   $(window).load(function(){

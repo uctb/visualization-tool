@@ -35,6 +35,12 @@
         DatasetList.splice(0,DatasetList.length);
         document.getElementById('Dataset').options.length = 0;
         DatasetID = 0;
+        ClearModelList()
+        
+    }
+    function ClearModelList()
+    {
+        bpp.model_list.splice(0,bpp.model_list.length);
     }
     function StartDataSet()
     {
@@ -119,8 +125,14 @@
             if(method == "GroundTruth") continue;
             else {
                 MethodNameArray[k] = method;
+                bpp.model_list.push(new function(name,index)
+                {
+                    this.name = name;
+                    this.id = index;
+                }(method,k))
+                k++;
             }
-            k ++;
+           
         }
         console.log("methodNameArray:", MethodNameArray);
 
@@ -177,9 +189,24 @@
     function ChangeModelError() {
         datasetName = DatasetList[DatasetID];
         methodName = MethodNameArray[MethodID];
-        rmse = parseFloat(data['Pred'][datasetName][methodName]['rmse']).toFixed(2)
-        mape = parseFloat(data['Pred'][datasetName][methodName]['mape']).toFixed(2)
-        mae = parseFloat(data['Pred'][datasetName][methodName]['mae']).toFixed(2)
+        if ('rmse' in data['Pred'][datasetName][methodName]){
+            rmse = parseFloat(data['Pred'][datasetName][methodName]['rmse']).toFixed(2) 
+        }
+        else{
+            rmse = 'NaN'
+        }
+        if ('mape' in data['Pred'][datasetName][methodName]){
+            mape = parseFloat(data['Pred'][datasetName][methodName]['mape']).toFixed(2) 
+        }
+        else{
+            mape = 'NaN'
+        }
+        if ('mae' in data['Pred'][datasetName][methodName]){
+            mae = parseFloat(data['Pred'][datasetName][methodName]['mae']).toFixed(2) 
+        }
+        else{
+            mae = 'NaN'
+        }
         document.getElementById('rmse').innerText = rmse;
         document.getElementById('mape').innerText = mape;
         document.getElementById('mae').innerText = mae;

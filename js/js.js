@@ -1,20 +1,8 @@
 ﻿
 /*读取本地数据集（json文件）存入全局变量*/
 
-
-function load_dataset() {
-    console.log("data_obj_list:", data_obj_list)
-    data = data_obj_list[0].data
-    console.log("data:", data)
-    MAPInd = 0;
-    for (x in data.Pred) {
-        DatasetList.push(x)
-    }
-    StartDataSet();
-}
-window.onload = function () {
-
-    url_record = './data/record.json'
+function read_json() {
+    url_record = './data/record.json';
     prefix = './data/';
     suffix = '_pred.json';
 
@@ -27,41 +15,55 @@ window.onload = function () {
         if (request.status == 200) {
             /!*返回状态为200，即为数据获取成功*!/
             record = JSON.parse(request.responseText);
-            console.log(record)
-            dataset_name_list = record
-            dataset_list_len = dataset_name_list.length
-            for (var i = 0; i < dataset_name_list.length; i++) {
-                data_obj_list.push(new function(name){
-                    this.name = name
-                    this.data = {}
-                    this.item ={
-                        methodlist:null,
-                        button:null
-                    }
-                }(dataset_name_list[i]));
-                let request = new XMLHttpRequest();
-                request.open("get", prefix + dataset_name_list[i] + suffix); /!*设置请求方法与路径*!/
-                request.send(null); /!*不发送数据到服务器*!/
-                let dataset_index = i;
-                request.onload = function () {
-                    /!*XHR对象获取到返回信息后执行*!/
-                    if (request.status == 200) {
-                        console.log(dataset_index);
-                        /!*返回状态为200，即为数据获取成功*!/
-                        data_obj_list[dataset_index].data = JSON.parse(request.responseText);
-                        console.log('Parse Success!')
-                        if(dataset_index == dataset_list_len-1){
-                            for (var i =0;i<dataset_list_len;i++)
-                            {
-                                app.ds_obj_list.push({'id':i,'name':dataset_name_list[i]})
-                            }
-                        }
-                        load_dataset();
-                    }
-                }
+            console.log(record);
+            dataset_name_list = record;
+            dataset_list_len = dataset_name_list.length;
+            for(var i =0; i < dataset_list_len;i++)
+            {
+                app.ds_obj_list.push(new function(name,index)
+                {
+                    this.name = name;
+                    this.id = index;
+                }(dataset_name_list[i],i))
+            }
+            // for (var i = 0; i < dataset_name_list.length; i++) {
+            //     data_obj_list.push(new function(name){
+            //         this.name = name
+            //         this.data = {}
+            //         this.item ={
+            //             methodlist:null,
+            //             button:null
+            //         }
+            //     }(dataset_name_list[i]));
+            // 默认数据集导入
+            load_default_dataset(prefix,dataset_name_list[0],suffix)
             }
         }
     }
+function load_default_dataset(prefix,dataset_name,suffix)
+{
+    let request = new XMLHttpRequest();
+    request.open("get", prefix + dataset_name + suffix); /!*设置请求方法与路径*!/
+    request.send(null); /!*不发送数据到服务器*!/
+    request.onload = function () {
+        /!*XHR对象获取到返回信息后执行*!/
+        if (request.status == 200) {
+            /!*返回状态为200，即为数据获取成功*!/
+            json = JSON.parse(request.responseText);
+            console.log('Parse Success!')
+            data = json
+            console.log("data:", data)
+            MAPInd = 0;
+            for (x in data.Pred) {
+                DatasetList.push(x)
+            }
+            StartDataSet();
+        }
+    }
+}
+window.onload = function () {
+
+    read_json();
 
     /*  var request1 = new XMLHttpRequest();
       request1.open("get", url_chongqing);/!*设置请求方法与路径*!/

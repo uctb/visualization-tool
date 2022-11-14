@@ -3,27 +3,38 @@ const SelectDataset = {
     el: '#SelectDataset',
     data() {
         return {
-            ds_obj_list: [],
-            value: true,
-
+            ds_obj_list : []
         };
     },
     methods: {
         transferdata(selectedid) {
             if (selectedid >= 0) {
-                data = data_obj_list[selectedid].data
-                MAPInd = 0;
+                console.log('I\'m In')
+                let request = new XMLHttpRequest();
+                request.open("get", prefix + dataset_name_list[selectedid] + suffix); /!*设置请求方法与路径*!/
+                request.send(null); /!*不发送数据到服务器*!/
+                request.onload = function () {
+                    /!*XHR对象获取到返回信息后执行*!/
+                    if (request.status == 200) {
 
-                ClearDataSet();
-                for (x in data.Pred) {
-                    DatasetList.push(x)
+                        /!*返回状态为200，即为数据获取成功*!/
+                        json = JSON.parse(request.responseText);
+                        console.log('Parse Success!')
+                        MAPInd = 0;
+                        data = json
+                        ClearDataSet();
+                        for (x in data.Pred) {
+                            DatasetList.push(x)
+                        }
+                        StartDataSet();
+                    }
                 }
-                StartDataSet();
+            }
+                
             }
         }
     }
 
-}
 
 const ItemplusButton = {
     emits: ['selectData'],
@@ -38,49 +49,25 @@ Vue.component('ib', ItemplusButton)
 let Load = {
     data() {
         return {
-            fileList: []
         };
     },
     methods: {
-        handleRemove(file, fileList) {
-            console.log(file, fileList);
-        },
-        handlePreview(file) {
-            console.log(file);
-        },
-        handleExceed(files, fileList) {
-            this.$message.warning(`当前限制选择 3 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`);
-        },
-        beforeRemove(file, fileList) {
-            return this.$confirm(`确定移除 ${file.name}？`);
-        },
-        handleLoad(response, file, fileList) {
-            console.log("now load the new dataset!")
-            let SelectedFile = file.raw
-            let filename = SelectedFile.name.split('.')[0].split('_')
-            let dataset_name = filename[0] + '_' + filename[1]
-            console.log("new dataset name:", dataset_name)
-            data_obj_list.push({
-                    'name': dataset_name,
-                    'data': {},
-                    'item': {
-                        methodlist: null,
-                        button: null
-                    }
-                }
-            );
+        beforeUpload(file) {
+            console.log("here")
+            let SelectedFile = file
             let reader = new FileReader()
             reader.readAsText(SelectedFile)
             reader.onload = function () {
                 let json = JSON.parse(this.result);
-                data_obj_list[dataset_list_len].data = json;
                 data = json;
+                MAPInd = 0;
                 ClearDataSet();
                 for (x in data.Pred) {
-                    DatasetList.push(x);
+                    DatasetList.push(x)
                 }
                 StartDataSet();
             }
+            return false
         }
     }
 };
