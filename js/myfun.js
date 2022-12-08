@@ -1,6 +1,9 @@
     /*draw map, Groundtruth and Prediction, RMSE*/
     function drawLine() {
 
+        /*左下柱状图*/
+        let model_option = createModelAnanlysisOption();
+        drawModelAnalysis(model_option, 'model_analysis')
         /*右上折线图*/
         let Initoption = createoption(data,pointID,StartInd,EndInd,MethodID);
         drawline(Initoption, 'container_line');
@@ -137,6 +140,7 @@
         console.log("methodNameArray:", MethodNameArray);
 
         /* 修改模型误差值 */
+        GetModelError();
         ChangeModelError();
 
         /* 获取Date类型的TimeRange，第三个元素为TimeRange的后一天 这部分好像没用了？*/
@@ -185,28 +189,77 @@
         FinishDataSet();
     }
 
+    /* 计算模型整体误差 */
+    function GetModelError() {
+        console.log("======Calculate Model Error========")
+        // i-子数据集 j-模型 k-时间片 m-区域
+        for(let i=0; i<DatasetList.length; i++) {
+            let datasetName = DatasetList[i];
+            ModelMetrics[datasetName] = {};
+            let groundtruth = data['Pred'][datasetName]['GroundTruth'];
+            for(let methodName in data['Pred'][datasetName]) {
+                if(methodName == "GroundTruth"){
+                    continue;
+                }
+                else {
+                    let prediction = data['Pred'][datasetName][methodName]['TrafficNode'];
+                    let total_rmse_variance = 0;
+                    let total_absolute_error = 0;
+                    let total_mape_variance = 0;
+                    let num = 0;
+                    for(let k=0; k<TimeArrayLength; k++) {
+                        for(let m=0; m<VaildPointNum; m++) {
+                            // let real_node_id = data['Pred'][datasetName][methodName]['traffic_data_index'][m];
+                            total_rmse_variance += Math.pow(Math.abs(prediction[k][m] - groundtruth[k][m]), 2);
+                            total_absolute_error += Math.abs(prediction[k][m] - groundtruth[k][m]);
+                            // 如果真实值为0，则MAPE为infinity，因此把真实值为0的去掉
+                            if (groundtruth[k][m] !== 0) {
+                                num ++;
+                                total_mape_variance += Math.abs((prediction[k][m] - groundtruth[k][m]) / groundtruth[k][m])
+                            }
+                        }
+                    }
+                    let RMSE = Math.sqrt(total_rmse_variance / (TimeArrayLength * VaildPointNum));
+                    let MAE = total_absolute_error / (TimeArrayLength * VaildPointNum);
+                    let MAPE = (total_mape_variance / num) * 100;
+                    if(isNaN(MAPE)){
+                        MAPE = 'NAN';
+                    }
+                    console.log("rmse, mae, mape is:", RMSE, MAE, MAPE);
+                    ModelMetrics[datasetName][methodName] = {'rmse': RMSE.toFixed(2), 'mae': MAE.toFixed(2), 'mape': MAPE.toFixed(2)};
+                }
+            }
+        }
+        console.log("Model Metrics:", ModelMetrics);
+    }
+
     /* 修改并体现模型误差 */
     function ChangeModelError() {
-        datasetName = DatasetList[DatasetID];
-        methodName = MethodNameArray[MethodID];
-        if ('rmse' in data['Pred'][datasetName][methodName]){
-            rmse = parseFloat(data['Pred'][datasetName][methodName]['rmse']).toFixed(2) 
-        }
-        else{
-            rmse = 'NaN'
-        }
-        if ('mape' in data['Pred'][datasetName][methodName]){
-            mape = parseFloat(data['Pred'][datasetName][methodName]['mape']).toFixed(2) 
-        }
-        else{
-            mape = 'NaN'
-        }
-        if ('mae' in data['Pred'][datasetName][methodName]){
-            mae = parseFloat(data['Pred'][datasetName][methodName]['mae']).toFixed(2) 
-        }
-        else{
-            mae = 'NaN'
-        }
+        console.log("======Change Model Error========")
+        let rmse = ModelMetrics[DatasetList[DatasetID]][MethodNameArray[MethodID]]['rmse'];
+        let mae = ModelMetrics[DatasetList[DatasetID]][MethodNameArray[MethodID]]['mae'];
+        let mape = ModelMetrics[DatasetList[DatasetID]][MethodNameArray[MethodID]]['mape'];
+        // let datasetName = DatasetList[DatasetID];
+        // let methodName = MethodNameArray[MethodID];
+        //
+        // if ('rmse' in data['Pred'][datasetName][methodName]){
+        //     rmse = parseFloat(data['Pred'][datasetName][methodName]['rmse']).toFixed(2)
+        // }
+        // else{
+        //     rmse = 'NaN'
+        // }
+        // if ('mape' in data['Pred'][datasetName][methodName]){
+        //     mape = parseFloat(data['Pred'][datasetName][methodName]['mape']).toFixed(2)
+        // }
+        // else{
+        //     mape = 'NaN'
+        // }
+        // if ('mae' in data['Pred'][datasetName][methodName]){
+        //     mae = parseFloat(data['Pred'][datasetName][methodName]['mae']).toFixed(2)
+        // }
+        // else{
+        //     mae = 'NaN'
+        // }
         document.getElementById('rmse').innerText = rmse;
         document.getElementById('mape').innerText = mape;
         document.getElementById('mae').innerText = mae;
@@ -321,7 +374,7 @@
                             end_time = TimeSlots[j];
                             // console.log("end time is ", end_time);
                             count = 0;
-                            markArea[index][i].push([{'xAxis': start_time, 'itemStyle': {'color': 'yellow', 'opacity': 0.3}},
+                            markArea[index][i].push([{'xAxis': start_time, 'itemStyle': {'color': 'red', 'opacity': 0.3}},
                                 {'xAxis': end_time}]);
                             // markArea[i].push([{'xAxis': start_time}, {'xAxis': end_time}]);
                         }
@@ -529,8 +582,6 @@
             let max_mape = PointSortedMAPE[i][0]['mape'];
             let min_mape = PointSortedMAPE[i][VaildPointNum - 1]['mape']
             let interval_mape = (max_mape - min_mape) / interval_num;
-            console.log("max_mape is", max_mape);
-            console.log("min_mape is", min_mape);
 
             PointRMSERange[i] = getMetricsRange(min_rmse, interval_num, interval_rmse);
             PointMAERange[i] = getMetricsRange(min_mae, interval_num, interval_mae);

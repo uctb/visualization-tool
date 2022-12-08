@@ -150,6 +150,7 @@ a:hover{ color:#06c; text-decoration: none!important}
 
 .allnav{height: 3.2rem;background-size: contain;background-repeat: no-repeat;background-position: 50% 50%;  position: relative;}
 .allnav2{height: 2.8rem;background-size: contain;background-repeat: no-repeat;background-position: 50% 50%;  position: relative;}
+.allnav3{height: 4.2rem;background-size: contain;background-repeat: no-repeat;background-position: 50% 50%;  position: relative;}
 
 /* 城中村房屋类型 */
 .building_images{height: 80%; position: relative;}

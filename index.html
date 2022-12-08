@@ -51,13 +51,20 @@
 
   <ul class="clearfix">
 <!--左边部分-->
-    <li style="width: 15%">
+    <li style="width: 18%">
       <!--Datasets-->
-      <div class="boxall" style="height: 3.2rem">
+      <div class="boxall" style="height: 1.8rem">
         <div class="alltitle">Datasets</div>
-
         <ul class="Datasets" id='SelectDataset'>
-          <template v-for="item in ds_obj_list"><ib :title='item.name' :key='item.id' :datasetid='item.id' @select="transferdata"></ib></template>
+          <el-select v-model="value" size="mini" id="dataset" placeholder="Select Dataset" @change="transferdata">
+            <el-option
+                    v-for="item in ds_obj_list"
+                    :key="item.name"
+                    :label="item.name"
+                    :value="item.id">
+            </el-option>
+          </el-select>
+<!--          <template v-for="item in ds_obj_list"><ib :title='item.name' :key='item.id' :datasetid='item.id' @select="transferdata"></ib></template>-->
           <li style="float: left; color: rgba(255,255,255,0.8); font-size: .15rem; width: 70%; height: .8rem; text-align: left; margin-left: .2rem;">Load Your Dataset</li>
         </ul>
         <el-upload
@@ -74,25 +81,7 @@
           <div style="width: 120%; float: left; text-align: right;">
             <el-button circle icon="el-icon-circle-check" size="mini"></el-button>
           </div>
-
-
         </el-upload>
-
-
-
-        <!--Xian, Chongqing-->
- <!--
-          <li class="datasets">Chongqing</li>
-          <li class="button">
-            <el-button circle icon="el-icon-circle-check" size="mini" @click.native="test" id="Chongqing"></el-button>
-            &lt;!&ndash;            <button onclick="FinishDataSet(Metro_Chongqing)" style="height:24px; width:60px">ok</button>&ndash;&gt;
-          </li>
-
-          <li class="datasets">Xian</li>
-          <li class="button">
-            <el-button circle icon="el-icon-circle-check" size="mini" @click.native="test" id="Xian"></el-button>
-          </li>
-        -->
 
         <div class="boxfoot"></div>
       </div>
@@ -101,79 +90,36 @@
       <div class="boxall" style="height: 1rem">
         <div class="alltitle" style="font-size: .2rem">Datasets Options</div>
           <select id="Dataset" onchange="ChangeDataSet(this.value)" style="text-align:center;text-align-last:center; margin-left: 0px"> </select>
+        <div class="boxfoot"></div>
       </div>
 
       <!--Model-->
-      <div class="boxall" style="height: 5.1rem">
+      <div class="boxall" style="height: 1.3rem">
         <div class="alltitle">Model</div>
         <ul class="Datasets" id='SelectModel'>
-          <template v-for="item in model_list"><ibm :title='item.name' :key='item.id' :modelid='item.id' @select="transferdata"></ib></template>
-          
+          <el-select v-model="value" size="mini" id="model" placeholder="Select Dataset" @change="transferdata">
+            <el-option
+                    v-for="item in model_list"
+                    :key="item.id"
+                    :label="item.name"
+                    :value="item.id">
+            </el-option>
+          </el-select>
+<!--          <template v-for="item in model_list"><ibm :title='item.name' :key='item.id' :modelid='item.id' @select="transferdata"></ibm></template>-->
         </ul>
-        <!-- <ul class="Datasets">
-          <li class="datasets">HM</li>
-          <li class="button">
-            <el-button circle icon="el-icon-circle-check" size="mini" @click.native="test" id="HM"></el-button>
-          </li>
-          <li class="datasets">HMM</li>
-          <li class="button">
-            <el-button circle icon="el-icon-circle-check" size="mini" @click.native="test" id="HMM"></el-button>
-          </li>
-          <li class="datasets">ARIMA</li>
-          <li class="button">
-            <el-button circle icon="el-icon-circle-check" size="mini" @click.native="test" id="ARIMA"></el-button>
-          </li>
-          <li class="datasets">XGBoost</li>
-          <li class="button">
-            <el-button circle icon="el-icon-circle-check" size="mini" @click.native="test" id="XGBoost"></el-button>
-          </li>
-          <li class="datasets">GBRT</li>
-          <li class="button">
-            <el-button circle icon="el-icon-circle-check" size="mini" @click.native="test" id="GBRT"></el-button>
-          </li>
-          <li class="datasets">DCRNN</li>
-          <li class="button">
-            <el-button circle icon="el-icon-circle-check" size="mini" @click.native="test" id="DCRNN"></el-button>
-          </li>
-          <li class="datasets">GeoMAN</li>
-          <li class="button">
-            <el-button circle icon="el-icon-circle-check" size="mini" @click.native="test" id="GeoMAN"></el-button>
-          </li>
-          <li class="datasets">ST_MGCN</li>
-          <li class="button">
-            <el-button circle icon="el-icon-circle-check" size="mini" @click.native="test" id="ST_MGCN"></el-button>
-          </li> 
-        </ul>-->
+        <div class="boxfoot"></div>
+      </div>
 
-        <!--<ul class="Datasets">
-          <li class="datasets">DeepST</li>
-          <li class="button">
-            <el-button circle icon="el-icon-circle-check" size="mini" @click.native="test" id="DeepST"></el-button>
-          </li>
-        </ul>-->
-
-        <!--<ul class="Datasets">
-          <li class="datasets">ST_ResNet</li>
-          <li class="button">
-            <el-button circle icon="el-icon-circle-check" size="mini" @click.native="test" id="ST_ResNet"></el-button>
-          </li>
-        </ul>-->
-
-     <!--   <ul class="Datasets">
-          <li class="datasets">STMeta</li>
-          <li class="button">
-            <el-button circle icon="el-icon-circle-check" size="mini" @click.native="test" id="STMeta"></el-button>
-          </li>
-        </ul>
-
-
-
--->
+      <!--Model Analysis-->
+      <div class="boxall" style="height: 5rem">
+        <div class="alltitle">Model Analysis</div>
+        <div class="allnav3" id="model_analysis"></div>
+        <div class="boxfoot"></div>
       </div>
     </li>
 
 <!--中间部分-->
-    <li style="width: 55%">
+    <li style="width: 52%">
       <div class="bar">
         <div class="barbox2">
           <ul class="clearfix">
@@ -266,15 +212,6 @@
       <div class="boxall" style="height:4rem">
         <div class="alltitle" id="line_graph">Groundtruth and Prediction (point 0)</div>
         <div class="chart_change_button" id="bad_case_button">
-<!--          <el-button size="mini" round @click.native="BadCase" id="BadCaseButton" style="width: .8rem; height: .25rem">more</el-button>-->
-<!--          <el-select v-model="value" size="mini" id="badcasebutton" placeholder="value" @change="BadCase">-->
-<!--            <el-option-->
-<!--                    v-for="item in options"-->
-<!--                    :key="item.value"-->
-<!--                    :label="item.label"-->
-<!--                    :value="item.value">-->
-<!--            </el-option>-->
-<!--          </el-select>-->
         </div>
         <div class="allnav" id="container_line"></div>
         <div class="boxfoot"></div>
@@ -284,7 +221,6 @@
       <div class="boxall" style="height: 3.5rem">
         <div class="alltitle" id="rmse2">Global Error Analysis</div>
         <div class="chart_change_button" id="metrics_button">
-<!--          <el-button size="mini" round @click.native="MetricsDistribution" id="MetricsDistributionButton" style="width: .8rem; height: .25rem">more</el-button>-->
           <el-select v-model="value" size="mini" id="MetricsDistributionButton" placeholder="Metrics Rank List" @change="MetricsDistribution">
             <el-option
                     v-for="item in options"

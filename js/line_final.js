@@ -1,5 +1,99 @@
 /*create option*/
 
+/*左下：Model Analysis*/
+function createModelAnanlysisOption() {
+    console.log("=======model analysis==========")
+    let childdatasetid = [];
+    for(let i=0; i<DatasetList.length; i++){
+        childdatasetid.push("dataset"+i);
+    }
+    let model_metrics = new Array();  // 同一个模型i在不同子数据集j下的metrics
+    for(let i=0; i<MethodNameArray.length; i++){
+        // 同一个模型
+        model_metrics[MethodNameArray[i]] = [];
+        for(let j=0; j<DatasetList.length; j++) {
+            // 不同数据子集
+            if(MethodNameArray[i] in ModelMetrics[DatasetList[j]]) {
+                model_metrics[MethodNameArray[i]].push(Number(ModelMetrics[DatasetList[j]][MethodNameArray[i]]['rmse']));
+            }
+            else {
+                model_metrics[MethodNameArray[i]].push(0);
+            }
+        }
+    }
+    console.log("model metrics data:", model_metrics);
+
+    let option = {
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+                type: 'shadow'
+            }
+        },
+        legend: {
+            top: 20,
+            data: MethodNameArray,
+            textStyle: {
+                color: '#fff'
+            }
+        },
+        grid: {
+            top: 120,
+            left: 70
+        },
+        toolbox: {
+            show: true,
+            feature: {
+                saveAsImage: {}
+            }
+        },
+        xAxis: {
+            type: 'value',
+            name: 'Days',
+            axisLabel: {
+                show: false,
+            },
+            axisLine: {
+              show: false
+            },
+            splitLine: {
+                show: false
+            },
+            axisTick: {
+                show: false
+            }
+        },
+        yAxis: {
+            type: 'category',
+            data: childdatasetid,
+            axisLabel: {
+                color: '#fff'
+            }
+        },
+        series: function (){
+            let Myseries = new Array();
+
+            for(let i=0; i<MethodNameArray.length; i++){
+                let item = {
+                    name: MethodNameArray[i],
+                    type: 'bar',
+                    label: {
+                        show: true
+                    },
+                    data: model_metrics[MethodNameArray[i]],
+                    barWidthL: 10
+                }
+                console.log("item data:", model_metrics[MethodNameArray[i]])
+                Myseries.push(item);
+            }
+            console.log("Myseries:", Myseries);
+            return Myseries;
+        }()
+    };
+
+    return option;
+}
+
 /*右上*/
 function createoption(obj,SelectedNodeID,startIndex = -1,endIndex = -1, methodid){
 
@@ -282,6 +376,8 @@ function createoption(obj,SelectedNodeID,startIndex = -1,endIndex = -1, methodid
 
     return option;
 }
+
+/*右下*/
 
 function createBadCaseoption(methodid){
 
@@ -575,7 +671,6 @@ function createTimeBadCaseoption(obj,SelectedNodeID,startIndex = -1,endIndex = -
     return option;
 }
 
-/*右下*/
 function createMetricsoption(methodid, pointid){
 
     let xdata = new Array();
@@ -957,3 +1052,13 @@ function drawhistogram(option, id){
         }
     });
 }
+
+function drawModelAnalysis(option, id){
+    let myChart = echarts.init(document.getElementById(id));
+    myChart.clear();
+    myChart.setOption(option);
+    window.addEventListener("resize",function(){
+        myChart.resize();
+    });
+}
+

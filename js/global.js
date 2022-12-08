@@ -1,6 +1,6 @@
 // datasets name
 var data = "";                               //选定数据集后把数据转到这里，方便统一处理
-
+let record = [];
 let new_data = "";
 var data_obj_list = new Array()
 
@@ -27,6 +27,7 @@ var MethodID = 0;                            // 用来记录使用的是哪种�
 var FunctionNum = 0;                         // 标记数据集中含有的方法数(包含了GroundTruth)
 
 // evaluation metrics
+let ModelMetrics = new Array();                  // 二维数组，(ChildrenDatasetNum, FunctionNum-1)数量级，表示在不同子数据集中各模型的RMSE,MAPE,MAE
 let metricflag = 0;
 
 let PointMetrics = new Array();               // 二维数组,(FunctionNum,ValidPointNum)数量级，表示对此数据集，每个方法对应每个地图点的RMSE,MAPE,MAE

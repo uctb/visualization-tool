@@ -2,7 +2,7 @@
 
 /*HM*/
 const SelectModel = {
-    el: '#SelectModel',
+    el: '#model',
     data() {
         return {
             model_list : []
@@ -10,8 +10,8 @@ const SelectModel = {
     },
     methods: {
         transferdata(selectedid) {
-
-                ChangeMethod(selectedid);
+            this.$forceUpdate();
+            ChangeMethod(selectedid);
 
             }
         }

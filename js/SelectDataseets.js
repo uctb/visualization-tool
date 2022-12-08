@@ -1,6 +1,6 @@
-/*选择数据集*/
+/*下拉框选择数据集*/
 const SelectDataset = {
-    el: '#SelectDataset',
+    el: '#dataset',
     data() {
         return {
             ds_obj_list : []
@@ -10,6 +10,8 @@ const SelectDataset = {
         transferdata(selectedid) {
             if (selectedid >= 0) {
                 console.log('I\'m In')
+                this.$forceUpdate();
+                console.log(this.ds_obj_list.id, this.ds_obj_list.name);
                 let request = new XMLHttpRequest();
                 request.open("get", prefix + dataset_name_list[selectedid] + suffix); /!*设置请求方法与路径*!/
                 request.send(null); /!*不发送数据到服务器*!/
@@ -30,22 +32,24 @@ const SelectDataset = {
                     }
                 }
             }
-                
+
             }
         }
     }
+const app = new Vue(SelectDataset)
 
-
+/*按钮选择数据集*/
+/*
 const ItemplusButton = {
     emits: ['selectData'],
     props: ['title', 'datasetid'],
     template: `<div><li class="datasets">{{title}}</li><li class="button"><el-button circle icon="el-icon-circle-check" size="mini" id="item" @click="$emit('select',datasetid)"></el-button></li></div>`
 }
-
 const app = new Vue(SelectDataset)
-
 Vue.component('ib', ItemplusButton)
+*/
 
+/*Load*/
 let Load = {
     data() {
         return {
