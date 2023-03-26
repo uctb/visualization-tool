@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="742c7e0f-f8cc-40e5-9e5f-fc8d2233627f" name="10.24.82.37">
+        <fileTransfer rootFolder="/home/yayao" accessType="SFTP" sshConfigId="b9a1e4f2-dd1f-4003-9929-896a9eecd3d0" sshConfig="10.24.82.37">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
