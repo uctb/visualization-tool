@@ -16,15 +16,8 @@
     function drawMap() {
         console.log("now_MAPInd：", MAPInd)
         if(MAPInd == 0) {
-            if(FilterInvalidNodeFlag == 0){
-                InitMapoption = createMapOption(data,data['Node']['StationInfo'],StationIndArr,pointID);
+                InitMapoption = createMapOption(MethodID,data['Node']['StationInfo'],StationIndArr,pointID);
                 drawmap(InitMapoption);
-            }
-            else if(FilterInvalidNodeFlag == 1){
-                InitMapoption = createMapOption(data,FilterInvalidNodeInfo,InvalidNodeIndArr,pointID);
-                drawmap(InitMapoption);
-            }
-
         }
         else if(MAPInd == 1) {
             // XMBaidu
@@ -210,7 +203,7 @@
                     for(let k=0; k<TimeArrayLength; k++) {
                         for(let m=0; m<VaildPointNum; m++) {
                             // let real_node_id = data['Pred'][datasetName][methodName]['traffic_data_index'][m];
-                            total_rmse_variance += Math.pow(Math.abs(prediction[k][m] - groundtruth[k][m]), 2);
+                            total_rmse_variance += Math.pow(prediction[k][m] - groundtruth[k][m], 2);
                             total_absolute_error += Math.abs(prediction[k][m] - groundtruth[k][m]);
                             // 如果真实值为0，则MAPE为infinity，因此把真实值为0的去掉
                             if (groundtruth[k][m] !== 0) {

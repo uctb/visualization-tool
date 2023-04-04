@@ -16,16 +16,10 @@ function drawmap(option){
         document.getElementById('line_graph').innerText = 'Groundtruth and Prediction (' + pointName + ')'
 
         // drawmap(option);
-        if(FilterInvalidNodeFlag == 0){
-            // 过滤无效点开关关闭
-            InitMapoption = createMapOption(data,data['Node']['StationInfo'],StationIndArr,pointID);
-            drawmap(InitMapoption);
-        }
-        else if(FilterInvalidNodeFlag == 1){
-            // 过滤无效点开关打开
-            InitMapoption = createMapOption(data,FilterInvalidNodeInfo,InvalidNodeIndArr,pointID);
-            drawmap(InitMapoption);
-        }
+        // 过滤无效点开关关闭
+        InitMapoption = createMapOption(MethodID,data['Node']['StationInfo'],StationIndArr,pointID);
+        drawmap(InitMapoption);
+
 
         /*右上折线图*/
         Newoption = createoption(data,pointID,StartInd,EndInd,MethodID);
@@ -38,7 +32,7 @@ function drawmap(option){
     });
 }
 
-function createMapOption(obj, StationInfo, StationIndArr, centerID = -1,mapsize = myMapSize)
+function createMapOption(methodID, StationInfo, StationIndArr, centerID = -1,mapsize = myMapSize)
 {
     option = null;
     console.log("=======plot new map!!==========")
@@ -55,19 +49,18 @@ function createMapOption(obj, StationInfo, StationIndArr, centerID = -1,mapsize 
         {
             totallongitude += parseFloat(StationInfo[i][3]);
             totallatitude += parseFloat(StationInfo[i][2]);
-            resData.push({
-                name: StationInfo[i][0],
-                value: [parseFloat(StationInfo[i][3]),parseFloat(StationInfo[i][2]),StationIndArr[i],StationInfo[i][4]]
-            });
+            resData.push(
+                //name: StationInfo[i][0],
+                [parseFloat(StationInfo[i][3]),parseFloat(StationInfo[i][2]),StationInfo[i][0],StationIndArr[i],StationInfo[i][4],global_error_list[methodID][i]]
+            );
         }
         else
         {
             totallongitude += StationInfo[i][3];
             totallatitude += StationInfo[i][2];
-            resData.push({
-                name: StationInfo[i][0],                 // name属性是stationinfo的第一位（编号）
-                value: [StationInfo[i][3],StationInfo[i][2],StationIndArr[i],StationInfo[i][4]]   // value 包含坐标，和地点名称
-            });
+            resData.push(
+                [StationInfo[i][3],StationInfo[i][2],StationInfo[i][0],StationIndArr[i],StationInfo[i][4],global_error_list[methodID][i]]   // value 包含坐标，和地点名称
+            );
         }
     }
     console.log("resData:", resData)
@@ -78,10 +71,10 @@ function createMapOption(obj, StationInfo, StationIndArr, centerID = -1,mapsize 
         tooltip : {
             trigger: 'item',
             formatter: function(params) {
-                var res = "Point Node(first dimension of StationInfo): " + params.name+'<br/>';
-                res += "Coordinates: ["+ params.data.value[0]+', '+ params.data.value[1]+'] </br>';
-                res += "NodeName: "+ params.data.value[3]+'<br/>';
-                res += "NodeID in dataset: " + params.data.value[2]+'<br/>';
+                var res = "Point Node(first dimension of StationInfo): " + params.data[2]+'<br/>';
+                res += "Coordinates: ["+ params.data[0]+', '+ params.data[1]+'] </br>';
+                res += "NodeName: "+ params.data[4]+'<br/>';
+                res += "NodeID in dataset: " + params.data[3]+'<br/>';
 
                 return [res];
             }
@@ -190,6 +183,19 @@ function createMapOption(obj, StationInfo, StationIndArr, centerID = -1,mapsize 
                 }]
             }
         },
+        visualMap: [
+            {
+                type: 'continuous',
+                orient: 'vertical',
+                right: 0,
+                min: 0,
+                max: 2,
+                text: ['HIGH', 'LOW'],
+                inRange: {
+                    color: ['#00FF00', '#FF0000']
+                }
+            }
+        ],
         series : [
             {
                 name: 'Points',
@@ -198,27 +204,14 @@ function createMapOption(obj, StationInfo, StationIndArr, centerID = -1,mapsize 
                 data: resData,
                 // symbolSize:10,
                 symbolSize: function(number, params) {
-                    let id = params.data.value[2];
+                    let id = params.data[3];
                     let real_id = FindRealNodeID(id);
 
                     if(real_id == pointID){return 20;}
                     else {return 10;}
                 },
-                itemStyle: {
-                    color: function(params) {
-
-                        let id = params.data.value[2];
-                        let real_id = FindRealNodeID(id);
-
-                        if(real_id == -1){return 'black';}
-                        else if(real_id == pointID){return 'yellow';}
-                        else if(PointMinRMSE[real_id] >= MINACCURACY && real_id != pointID){return 'red';}
-                        else {return 'green';}
-
-                    }
-                },
                 label: {
-                    formatter: '{@[2]}',
+                    formatter: '{@[3]}',
                     position: 'right',
                     show: true
                 },
@@ -239,11 +232,11 @@ function createMapOption(obj, StationInfo, StationIndArr, centerID = -1,mapsize 
     else if(centerID != -1)
     {
         var Myseries = option.series;
-        var Value = Myseries[0].data[centerID].value;
+        var Value = Myseries[0].data[centerID];
 
         option.bmap.center = [Value[0],Value[1]];
     }
-
+    console.log('Work normal!')
     /* 人为修改地图点的颜色 */
 
     return option;
