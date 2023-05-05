@@ -78,3 +78,9 @@ let InvalidNodeStd = 1;                    // x%时间片的真实值为零即�
 let InvalidNodeIndArr = new Array();         // 过滤无效点后的站点索引列表
 let FilterInvalidNodeInfo = new Array();     // 过滤无效点后的站点信息
 let FilterInvalidNodeFlag = 0;               // 是否打开过滤无效点的开关，默认为0，即为关
+
+// 最小系统实现
+let pred_st_raster = new Array();
+let gt_st_raster = new Array();
+let station_info = new Array();
+let graph = new Array();

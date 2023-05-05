@@ -68,13 +68,10 @@
           <li style="float: left; color: rgba(255,255,255,0.8); font-size: .15rem; width: 70%; height: .8rem; text-align: left; margin-left: .2rem;">Load Your Dataset</li>
         </ul>
         <el-upload
-                id="load"
+                id="predload"
                 class="upload-demo"
-                action=""
-                accept=".json"
                 :before-upload="beforeUpload"
                 :limit="3"
-                :on-exceed="handleExceed"
                 :file-list="fileList"
                 :show-file-list="false">
           <!--                    <el-button slot="trigger" size="small" type="primary">点击上传</el-button>-->
@@ -82,7 +79,6 @@
             <el-button circle icon="el-icon-circle-check" size="mini"></el-button>
           </div>
         </el-upload>
-
         <div class="boxfoot"></div>
       </div>
 
@@ -239,7 +235,8 @@
 </div>
 
 <div class="back"></div>
-
+<!-- 引入d3
+<script type="text/javascript" src="js/d3.v4.js"></script> -->
 <!--引入Vue-->
 <script src="js/vue.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
@@ -255,6 +252,7 @@
 <script src="js/line_final.js"></script>
 <script src="js/global.js"></script>
 <script language="JavaScript" src="js/js.js" async></script>
+<script src="js/parser.js"></script>
 <script src="js/SelectDataseets.js"></script>
 <script src="js/SelectModel.js"></script>
 <script src="js/polygon.js"></script>

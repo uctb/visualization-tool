@@ -24,7 +24,7 @@ const ItemplusButton_model = {
 }
     
 const bpp = new Vue(SelectModel)
-    
+
 Vue.component('ibm', ItemplusButton_model)
 // var HM = {
 //     data () {
