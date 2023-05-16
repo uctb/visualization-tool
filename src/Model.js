@@ -1,8 +1,10 @@
 
 import InputProcessor from './InputProcessor.js'
+import ComputeTool from './function.js'
 export default class Model {
     constructor() {
         this.ip = new InputProcessor();
+        this.ct = new ComputeTool();
         this.station_lats = [];
         this.station_lngs = [];
         this.mae_for_each_station = [];
@@ -87,5 +89,17 @@ export default class Model {
     emitStationInfo()
     {
     }
+    
+    getTemporalBadCaseParam(spatial_ind) {
+        console.log("plot temporal bad case")
+        this.pd=this.st_raster_pred[spatial_ind];
+        this.gt=this.st_raster_gt[spatial_ind];
+        let ts_len=this.st_raster_gt[spatial_ind].length;
+        this.ts=this.ct.range(0, ts_len, 1);
+        this.startIndex=-1;
+        this.endIndex=-1;
+        this.temp_bad_case_param = [this.pd, this.gt, this.ts, this.startIndex, this.endIndex]
+    }
+    
 }
 

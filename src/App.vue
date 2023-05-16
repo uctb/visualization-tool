@@ -1,11 +1,13 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
+<!--    <img alt="Vue logo" src="./assets/logo.png">-->
     <HelloWorld @process-upload="inputprocess" type="gt"/>
     <HelloWorld @process-upload="inputprocess" type="pred"/>
     <HelloWorld @process-upload="inputprocess" type="stationinfo"/>
     <FuncButton @click-confirm="confirm" diff_type="confirm"/>
     <SpatialBadCase :CasesError="this.model.mae_for_each_station" :CasesLats="this.model.station_lats" :CasesLngs="this.model.station_lngs"/>
+    <TemporalBadCase :temp_bad_case_param="this.model.temp_bad_case_param"/>
+
   </div>
 </template>
 
@@ -14,17 +16,22 @@ import HelloWorld from './components/HelloWorld.vue'
 import FuncButton from './components/FunctionalButton.vue'
 import Model from './Model.js'
 import SpatialBadCase from './components/SpatialView.vue'
+import TemporalBadCase from './components/TemporalView.vue'
 export default {
   name: 'App',
   components: {
     HelloWorld,
     FuncButton,
-    SpatialBadCase
+    SpatialBadCase,
+    TemporalBadCase,
   },
   data(){
     return{
       model:new Model(),
     }
+  },
+  mounted () {
+    this.model.getTemporalBadCaseParam();
   },
   methods:{
     inputprocess(file,type){
@@ -33,6 +40,7 @@ export default {
     confirm(){
       console.log('here');
       this.model.testupdate();
+      this.model.getTemporalBadCaseParam(0);
     }
     
   }
