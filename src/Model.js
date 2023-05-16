@@ -90,16 +90,24 @@ export default class Model {
     {
     }
     
+    /*
+        绘图参数
+    */
     getTemporalBadCaseParam(spatial_ind) {
         console.log("plot temporal bad case")
-        this.pd=this.st_raster_pred[spatial_ind];
-        this.gt=this.st_raster_gt[spatial_ind];
+        let pd=this.st_raster_pred[spatial_ind];
+        let gt=this.st_raster_gt[spatial_ind];
+        // 没有time_fitness, time_range 数据时
         let ts_len=this.st_raster_gt[spatial_ind].length;
-        this.ts=this.ct.range(0, ts_len, 1);
-        this.startIndex=-1;
-        this.endIndex=-1;
-        this.temp_bad_case_param = [this.pd, this.gt, this.ts, this.startIndex, this.endIndex]
+        let ts=this.ct.range(0, ts_len, 1);
+
+        let startIndex=-1;
+        let endIndex=-1;
+        this.temp_bad_case_param = [pd, gt, ts, startIndex, endIndex]
     }
-    
+
+    getMapParam() {
+        
+    }
 }
 

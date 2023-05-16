@@ -8,7 +8,6 @@
 export default {
   name: 'TemporalBadCase',
   props:{
-
     temp_bad_case_param: Array,
   },
   mounted () {

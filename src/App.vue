@@ -7,6 +7,8 @@
     <FuncButton @click-confirm="confirm" diff_type="confirm"/>
     <SpatialBadCase :CasesError="this.model.mae_for_each_station" :CasesLats="this.model.station_lats" :CasesLngs="this.model.station_lngs"/>
     <TemporalBadCase :temp_bad_case_param="this.model.temp_bad_case_param"/>
+    <SortMetric/>
+    <MetricDistribution/>
 
   </div>
 </template>
@@ -17,6 +19,9 @@ import FuncButton from './components/FunctionalButton.vue'
 import Model from './Model.js'
 import SpatialBadCase from './components/SpatialView.vue'
 import TemporalBadCase from './components/TemporalView.vue'
+import SortMetric from './components/SortMetric'
+import MetricDistribution from './components/MetricDistribution'
+
 export default {
   name: 'App',
   components: {
@@ -24,6 +29,8 @@ export default {
     FuncButton,
     SpatialBadCase,
     TemporalBadCase,
+    SortMetric,
+    MetricDistribution,
   },
   data(){
     return{
