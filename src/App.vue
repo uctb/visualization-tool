@@ -7,8 +7,8 @@
     <FuncButton @click-confirm="confirm" diff_type="confirm"/>
     <SpatialBadCase :CasesError="this.model.mae_for_each_station" :CasesLats="this.model.station_lats" :CasesLngs="this.model.station_lngs"/>
     <TemporalBadCase :temp_bad_case_param="this.model.temp_bad_case_param"/>
-    <SortMetric/>
-    <MetricDistribution/>
+    <SortMetric :sort_metric_param="this.model.sort_rmse_param"/>
+    <MetricDistribution :metric_distribution_param="this.model.rmse_distribution_param"/>
 
   </div>
 </template>
@@ -48,6 +48,8 @@ export default {
       console.log('here');
       this.model.testupdate();
       this.model.getTemporalBadCaseParam(0);
+      this.model.getMetricRankListParam();
+      this.model.getMetricDistributionParam();
     }
     
   }
