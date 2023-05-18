@@ -41,5 +41,27 @@ export default class ComputeTool  {
             }
         }
     }
+
+    calculateQuartiles(sequence) {
+        const sortedSequence = sequence.sort((a, b) => a - b);
+        const n = sortedSequence.length;
+        const upperQuartileIndex = Math.floor(n * 0.75);
+        const lowerQuartileIndex = Math.floor(n * 0.25);
+
+        const upperQuartile = sortedSequence[upperQuartileIndex];
+        const lowerQuartile = sortedSequence[lowerQuartileIndex];
+
+        return { upperQuartile, lowerQuartile };
+    }
+    
+    calculate_local_rmse(pd, gt) {
+        let time_length = pd.length;
+        let total_rmse_variance = 0;
+        for (let i=0; i<time_length; i++) {
+            total_rmse_variance += Math.pow(Math.abs(pd[i]-gt[i]), 2);
+        }
+        let rmse = Math.sqrt(total_rmse_variance / time_length);
+        return rmse;
+    }
     
 }

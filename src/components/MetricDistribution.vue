@@ -12,7 +12,7 @@ export default {
     this.initChart()
   },
   watch: {
-    sort_metric_param: {
+    metric_distribution_param: {
       handler(newVal) {
         console.log(newVal)
         this.initChart()

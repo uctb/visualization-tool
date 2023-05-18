@@ -11,6 +11,7 @@ export default class Model {
     }
     /* 
     TODO: 1.实现SpatialBadCaseLocateModel、TemporalBadCaseLocateModel、InfoProcessModel；2.思考更新输入文件怎么办
+    UPDATE: (by hyy) 新增了计算diff序列和badcase
     */
     testupdate() {
         this.st_raster_gt = this.ip.gt_st_raster;
@@ -42,6 +43,8 @@ export default class Model {
         this.error_matrix = error_matrix;
         this.mae_for_each_station = mae_for_each_station;
         this.st_raster_diff = st_raster_diff;
+
+        this.emitBadCase();
     }
 
     update(jsonData) {
@@ -75,6 +78,8 @@ export default class Model {
         this.error_matrix = error_matrix;
         this.mae_for_each_station = mae_for_each_station;
         this.st_raster_diff = st_raster_diff;
+
+        this.emitBadCase();
     }
 
     emitTimeseries_gt(spatial_ind) {
@@ -104,6 +109,7 @@ export default class Model {
         let RMSE = [];
         let MAE = [];
         for (let i=0; i<this.station_num; i++) {
+            // 可以使用封装好的函数：calculate_local_rmse(pd, gt)
             let total_rmse_variance = 0;
             let total_absolute_error = 0;
             for (let j=0; j<this.time_length; j++) {
@@ -142,12 +148,103 @@ export default class Model {
     }
 
     // 获得local bad case
-    emitDiff() {
-        // 计算得到difference序列，取上下四分位数以外的点
+    emitBadCase() {
+        let bad_case_len = 1;  // 可修改参数，表示至少连续多长的异常可以被定义为bad_case
+        let markArea = new Array(this.station_num);
+        let start_time = '';
+        let end_time = '';
 
+        for (let i=0; i<this.station_num; i++) {
+            markArea[i] = [];
+            // 升序排列
+            let diff = this.st_raster_diff[i];
+            // 计算上下四分位数
+            const quartiles = this.ct.calculateQuartiles(diff);
+            // 初始化滑动窗口
+            let window = 0;
+            // 滑动窗口求markArea
+            for (let j=0; j<this.time_length; j++) {
+                if (diff[j] > quartiles.upperQuartile || diff[j] < quartiles.lowerQuartile) {
+                    if (window === 0) {
+                        window ++;
+                        start_time = j;
+                    }
+                    else {
+                        window ++;
+                    }
+                }
+                else {
+                    if (window >= bad_case_len) {
+                        end_time = j;
+                        window = 0;
+                        markArea[i].push([{'xAxis': start_time, 'itemStyle': {'color': 'red', 'opacity': 0.3}},
+                            {'xAxis': end_time}])
+                    }
+                    else if (window > 0 && window < bad_case_len) {
+                        window = 0;
+                    }
+                }
+            }
+            // 最后一个时间片若满足mark_area也应该加入
+            if (window > bad_case_len) {
+                end_time = this.time_length -1;
+                markArea[i].push([{'xAxis': start_time, 'itemStyle': {'color': 'yellow', 'opacity': 0.3}},
+                    {'xAxis': end_time}]);
+                window = 0;
+            }
+        }
+        this.bad_case = markArea;
+        console.log("mark Area is:", this.bad_case);
     }
 
-    
+    // 获得error hotspot
+    emitErrorHotspotIndex() {
+        // 定义worest_staion个数：取所有站点的前5%，向下取整
+        let worest_staion_num = Math.ceil(0.05 * this.station_num);
+        
+        let bad_case_len_list = [];
+        let bad_case_error_list = [];
+        for (let i=0; i<worest_staion_num; i++) {
+            // 获得站点对应的索引值
+            let index = this.PointSortedRMSE[i][0];
+            console.log("worest statation index:", index);
+            // 获得站点对应的bad case list
+            let bad_case_list = this.bad_case[index];
+            for (let j=0; j<bad_case_list.length; j++) {
+                // 对于每个bad case
+                let left = bad_case_list[j][0]['xAxis'];
+                let right = bad_case_list[j][1]['xAxis'];
+                // 计算bad case持续的长度
+                let bad_case_len = right - left;
+                bad_case_len_list.push({'index': [i, j], 'length': bad_case_len});
+                console.log("len:", bad_case_len);
+                // 计算局部local rmse
+                let rmse = this.ct.calculate_local_rmse(this.st_raster_pred[i].slice(left, right+1), this.st_raster_gt[i].slice(left, right+1))
+                console.log("rmse:", rmse);
+                bad_case_error_list.push({'index': [i, j], 'error': rmse});
+            }
+        }
+        console.log("bad_case_len_list:", bad_case_len_list);
+        console.log("bad_case_error_list:", bad_case_error_list);
+
+        // 取前5%的bad case作为top-k error hotspot
+        let semi_k = Math.ceil(0.05 * bad_case_len_list.length);
+        bad_case_len_list.sort((a, b) => a.length > b.length ? -1 : a.length < b.length ? 1 : 0);
+        bad_case_error_list.sort((a, b) => a.rmse > b.rmse ? -1 : a.rmse < b.rmse ? 1 : 0);
+        console.log("sorted_bad_case_len_list:", bad_case_len_list);
+        console.log("sorted_bad_case_error_list:", bad_case_error_list);
+        
+        this.error_hotspot_index = {
+            'length': [],
+            'error': [],
+        };
+        for (let i=0; i<semi_k; i++) {
+            this.error_hotspot_index['length'].push(bad_case_len_list[i]['index']);
+            this.error_hotspot_index['error'].push(bad_case_error_list[i]['index']);
+        }
+        console.log("error hotpost index:", this.error_hotspot_index);
+    }
+
     /*
         绘图参数
     */
@@ -160,10 +257,12 @@ export default class Model {
         // 没有time_fitness, time_range 数据时
         let ts_len=this.st_raster_gt[spatial_ind].length;
         let ts=this.ct.range(0, ts_len, 1);
+        let mark_area = this.bad_case[spatial_ind];
 
         let startIndex=-1;
         let endIndex=-1;
-        this.temp_bad_case_param = [pd, gt, ts, startIndex, endIndex]
+        this.temp_bad_case_param = [pd, gt, ts, mark_area, startIndex, endIndex]
+        console.log("temp_bad_case_param:", this.temp_bad_case_param);
     }
 
     // map

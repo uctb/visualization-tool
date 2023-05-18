@@ -28,8 +28,9 @@ export default {
       let pd = this.temp_bad_case_param[0]
       let gt = this.temp_bad_case_param[1]
       let ts = this.temp_bad_case_param[2]
-      let startIndex = this.temp_bad_case_param[3]
-      let endIndex = this.temp_bad_case_param[4]
+      let markArea = this.temp_bad_case_param[3]
+      let startIndex = this.temp_bad_case_param[4]
+      let endIndex = this.temp_bad_case_param[5]
       return {
         legend: {orient: 'horizontal', left: '2%', top: '5%', textStyle: {color: '#fff'}},
         tooltip: {
@@ -60,7 +61,7 @@ export default {
             color: '#fff'
           }
         },
-        series: function (gt, pd) {
+        series: function (gt, pd, markArea) {
           var Myseries = [];
           var item1 =
               {
@@ -78,14 +79,14 @@ export default {
                 lineStyle: {
                   width: 3
                 },
-                // markArea:{
-                //   slient: true,
-                //   itemStyle:{
-                //     color: '#f8aba6',
-                //     opacity: 0.3
-                //   },
-                //   data: markArea
-                // },
+                markArea:{
+                  slient: true,
+                  itemStyle:{
+                    color: '#f8aba6',
+                    opacity: 0.3
+                  },
+                  data: markArea
+                },
               }
           Myseries.push(item1);
 
@@ -100,7 +101,7 @@ export default {
           Myseries.push(item2);
 
           return Myseries;
-        }(gt, pd),
+        }(gt, pd, markArea),
 
         dataZoom: [
           {

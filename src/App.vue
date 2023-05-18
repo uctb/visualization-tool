@@ -50,6 +50,7 @@ export default {
       this.model.getTemporalBadCaseParam(0);
       this.model.getMetricRankListParam();
       this.model.getMetricDistributionParam();
+      this.model.emitErrorHotspotIndex();
     }
     
   }
