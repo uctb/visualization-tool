@@ -4,9 +4,6 @@ export default class InputProcessor {
         this.gt_st_raster = new Array();
         this.station_info = new Array();
     }
-    /* 
-    TODO: 1.实现SpatialBadCaseLocateModel、TemporalBadCaseLocateModel、InfoProcessModel；2.思考更新输入文件怎么办
-    */
     clear() {
         this.pred_st_raster = new Array();
         this.gt_st_raster = new Array();

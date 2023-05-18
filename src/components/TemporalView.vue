@@ -10,8 +10,13 @@ export default {
   props:{
     temp_bad_case_param: Array,
   },
+  data (){
+    return {
+      mychart:null
+    } 
+  },
   mounted () {
-    this.initChart()
+    this.mychart = this.$echarts.init(this.$refs.pd_gt)
   },
   watch: {
     temp_bad_case_param: {
@@ -25,12 +30,13 @@ export default {
   },
   computed: {
     options() {
-      let pd = this.temp_bad_case_param[0]
-      let gt = this.temp_bad_case_param[1]
-      let ts = this.temp_bad_case_param[2]
-      let markArea = this.temp_bad_case_param[3]
-      let startIndex = this.temp_bad_case_param[4]
-      let endIndex = this.temp_bad_case_param[5]
+      let pd = this.temp_bad_case_param['prediction']
+      let gt = this.temp_bad_case_param['groundtruth']
+      let ts = this.temp_bad_case_param['axisvalue']
+      let markArea = this.temp_bad_case_param['badcase']
+      let startIndex = this.temp_bad_case_param['startInd']
+      let endIndex = this.temp_bad_case_param['endInd']
+
       return {
         legend: {orient: 'horizontal', left: '2%', top: '5%', textStyle: {color: '#fff'}},
         tooltip: {
@@ -149,8 +155,7 @@ export default {
   },
   methods: {
     initChart() {
-      let chart = this.$echarts.init(this.$refs.pd_gt)
-      chart.setOption(this.options)
+      this.mychart.setOption(this.options)
     }
   }
 }

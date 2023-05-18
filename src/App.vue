@@ -5,7 +5,7 @@
     <HelloWorld @process-upload="inputprocess" type="pred"/>
     <HelloWorld @process-upload="inputprocess" type="stationinfo"/>
     <FuncButton @click-confirm="confirm" diff_type="confirm"/>
-    <SpatialBadCase :CasesError="this.model.mae_for_each_station" :CasesLats="this.model.station_lats" :CasesLngs="this.model.station_lngs"/>
+    <SpatialBadCase @station-change="changeTimeSeries" :CasesError="this.model.mae_for_each_station" :CasesLats="this.model.station_lats" :CasesLngs="this.model.station_lngs"/>
     <TemporalBadCase :temp_bad_case_param="this.model.temp_bad_case_param"/>
     <SortMetric :sort_metric_param="this.model.sort_rmse_param"/>
     <MetricDistribution :metric_distribution_param="this.model.rmse_distribution_param"/>
@@ -51,6 +51,11 @@ export default {
       this.model.getMetricRankListParam();
       this.model.getMetricDistributionParam();
       this.model.emitErrorHotspotIndex();
+    },
+    changeTimeSeries(id){
+      console.log(id)
+      this.model.getTemporalBadCaseParam(id);
+      console.log(this.model.temp_bad_case_param)
     }
     
   }
