@@ -68,7 +68,7 @@ a {
 	text-align: left;
 	margin-left: .2rem;
 }
-<<< .el-button{
+.el-button{
 	width: .1rem;
 }
 .flex{
