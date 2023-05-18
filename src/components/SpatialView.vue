@@ -1,6 +1,6 @@
  
 <template>
-  <el-table :data="publishedTableData">
+  <el-table :data="publishedTableData" @row-click="getRowData">
     <el-table-column prop="lat" label="Latitude"></el-table-column>
     <el-table-column prop="lng" label="Longitude"></el-table-column>
     <el-table-column prop="error" label="Error"></el-table-column>
@@ -21,13 +21,18 @@ export default {
     return {
     }
   },
+  methods:{
+    getRowData(row){
+      this.$emit('station-change',row.id)
+    }
+  },
   computed: {
       publishedTableData(){
           var tableData = new Array();
           var n = this.CasesError.length;
           for(var i=0;i<n;i++)
           {
-              tableData[i] = {'error':this.CasesError[i],'lat':this.CasesLats[i],'lng':this.CasesLngs[i]};
+              tableData[i] = {'error':this.CasesError[i],'lat':this.CasesLats[i],'lng':this.CasesLngs[i],'id':i};
           }
           return tableData;
       }

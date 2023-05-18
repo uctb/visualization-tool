@@ -8,6 +8,7 @@ export default class Model {
         this.station_lats = [];
         this.station_lngs = [];
         this.mae_for_each_station = [];
+        this.temp_bad_case_param = null
     }
     /* 
     TODO: 1.实现SpatialBadCaseLocateModel、TemporalBadCaseLocateModel、InfoProcessModel；2.思考更新输入文件怎么办
@@ -163,7 +164,13 @@ export default class Model {
 
         let startIndex=-1;
         let endIndex=-1;
-        this.temp_bad_case_param = [pd, gt, ts, startIndex, endIndex]
+        this.temp_bad_case_param ={
+            'groundtruth':gt,
+            'prediction':pd,
+            'axisvalue':ts,
+            'startInd':startIndex,
+            'endInd':endIndex,
+        }
     }
 
     // map
