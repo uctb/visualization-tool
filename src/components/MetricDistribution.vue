@@ -8,8 +8,13 @@ export default {
   props:{
     metric_distribution_param: Array,
   },
+  data (){
+    return {
+      mychart:null
+    }
+  },
   mounted () {
-    this.initChart()
+    this.mychart = this.$echarts.init(this.$refs.metric_distribution)
   },
   watch: {
     metric_distribution_param: {
@@ -80,8 +85,7 @@ export default {
   },
   methods: {
     initChart() {
-      let chart = this.$echarts.init(this.$refs.metric_distribution)
-      chart.setOption(this.options)
+      this.mychart.setOption(this.options)
     }
   }
 }

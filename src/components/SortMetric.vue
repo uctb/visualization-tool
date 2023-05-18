@@ -8,8 +8,13 @@ export default {
   props:{
     sort_metric_param: Array,
   },
+  data (){
+    return {
+      mychart:null
+    }
+  },
   mounted () {
-    this.initChart()
+    this.mychart = this.$echarts.init(this.$refs.sort_metric)
   },
   watch: {
     sort_metric_param: {
@@ -103,8 +108,7 @@ export default {
   },
   methods: {
     initChart() {
-      let chart = this.$echarts.init(this.$refs.sort_metric)
-      chart.setOption(this.options)
+      this.mychart.setOption(this.options)
     }
   }
 }

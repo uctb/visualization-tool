@@ -201,16 +201,16 @@ export default class Model {
     // 获得error hotspot
     emitErrorHotspotIndex() {
         // 定义worest_staion个数：取所有站点的前5%，向下取整
-        let worest_staion_num = Math.ceil(0.05 * this.station_num);
+        // let worest_staion_num = Math.ceil(0.05 * this.station_num);
         
         let bad_case_len_list = [];
         let bad_case_error_list = [];
-        for (let i=0; i<worest_staion_num; i++) {
+        for (let i=0; i<this.station_num; i++) {
             // 获得站点对应的索引值
-            let index = this.PointSortedRMSE[i][0];
-            console.log("worest statation index:", index);
+            // let index = this.PointSortedRMSE[i][0];
+            // console.log("worest statation index:", index);
             // 获得站点对应的bad case list
-            let bad_case_list = this.bad_case[index];
+            let bad_case_list = this.bad_case[i];
             for (let j=0; j<bad_case_list.length; j++) {
                 // 对于每个bad case
                 let left = bad_case_list[j][0]['xAxis'];
@@ -231,7 +231,7 @@ export default class Model {
         // 取前5%的bad case作为top-k error hotspot
         let semi_k = Math.ceil(0.05 * bad_case_len_list.length);
         bad_case_len_list.sort((a, b) => a.length > b.length ? -1 : a.length < b.length ? 1 : 0);
-        bad_case_error_list.sort((a, b) => a.rmse > b.rmse ? -1 : a.rmse < b.rmse ? 1 : 0);
+        bad_case_error_list.sort((a, b) => a.error > b.error ? -1 : a.error< b.error ? 1 : 0);
         console.log("sorted_bad_case_len_list:", bad_case_len_list);
         console.log("sorted_bad_case_error_list:", bad_case_error_list);
         
