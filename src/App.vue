@@ -12,17 +12,17 @@
         <li style="width: 18%">
           <div class="boxall">
             <div class="alltitle">gt</div>
-              <HelloWorld @process-upload="inputprocess" type="gt"/>
+              <HelloWorld @process-upload="inputprocess" type="gt" ref="gt"/>
              <div class="boxfoot"></div>
           </div>
           <div class="boxall">
             <div class="alltitle">pred</div>
-              <HelloWorld @process-upload="inputprocess" type="pred"/>
+              <HelloWorld @process-upload="inputprocess" type="pred" ref="pred"/>
              <div class="boxfoot"></div>
           </div>
           <div class="boxall">
             <div class="alltitle">StationInfo</div>
-              <HelloWorld @process-upload="inputprocess" type="stationinfo"/>
+              <HelloWorld @process-upload="inputprocess" type="stationinfo" ref="stationinfo"/>
              <div class="boxfoot"></div>
           </div>  
           <div class="boxall">
@@ -42,49 +42,34 @@
             <div class="boxfoot"></div>
           </div>
         </li>
+
         <!--中间部分-->
         <li style="width: 52%">
-          <div class="bar">
-            <div class="barbox2">
-              <ul class="clearfix">
-                <li class="pulll_left"> </li>
-                <li class="pulll_left">RMSE</li>
-                <li class="pulll_left">MAE </li>
-                <li class="pulll_left">MAPE</li>
-              </ul>
-            </div>
-            <div class="barbox">
-              <ul class="clearfix">
-                <li class="pulll_left counter" id="uv_name"
-                  style="font-family:微软雅黑; font-size: .3rem; color: rgba(255,255,255,0.8)">location</li>
-                <li class="pulll_left counter" id="rmse"> </li>
-                <li class="pulll_left counter" id="mae"> </li>
-                <li class="pulll_left counter" id="mape"> </li>
-              </ul>
-            </div>
-          </div>
           <div class="map" id="map_1" >
-            <div class="bmap" id="bmap" ref="bmap" style="width: 500px; height: 500px;"></div>
+            <div v-if="flag" class="bmap" id="bmap" ref="bmap" style="height: 31.3rem; width: 41.5rem;"></div>
+            <SortMetric :sort_metric_param="this.model.sort_rmse_param"/>
           </div>
         </li>
         <!--右边部分-->
-      <li style="width: 30%">
-        <!--Functional zone-->
-        <div class="boxall" style="height:1.8rem">
-          
-        </div>
+
+        <li style="width: 30%">
+          <!--Functional zone-->
+          <div class="boxall" style="height:30rem;width:29rem;margin-left:-13%">
+            <div class="alltitle">{{currentstation}}</div>
+            <TemporalBadCase :temp_bad_case_param="this.model.temp_bad_case_param"/>
+          </div>
 
         <!--prediction et truth-->
-        <div class="boxall" style="height:4rem">
+        <!-- <div class="boxall" style="height:4rem">
           <div class="alltitle" id="line_graph">Groundtruth and Prediction (point 0)</div>
           <div class="chart_change_button" id="bad_case_button">
           </div>
           <div class="allnav" id="container_line"></div>
           <div class="boxfoot"></div>
-        </div>
+        </div> -->
 
         <!--rmse-->
-        <div class="boxall" style="height: 3.5rem">
+        <!-- <div class="boxall" style="height: 3.5rem">
           <div class="alltitle" id="rmse2">Global Error Analysis</div>
           <div class="chart_change_button" id="metrics_button">
             <el-select v-model="value" size="mini" id="MetricsDistributionButton" placeholder="Metrics Rank List"
@@ -95,10 +80,8 @@
           </div>
           <div class="allnav2" id="rmseline2"></div>
           <div class="boxfoot"></div>
-        </div>
+        </div> -->
       </li>
-        <TemporalBadCase :temp_bad_case_param="this.model.temp_bad_case_param"/>
-        <SortMetric :sort_metric_param="this.model.sort_rmse_param"/>
         <MetricDistribution :metric_distribution_param="this.model.rmse_distribution_param"/>
       </ul>
     </div>
@@ -147,7 +130,8 @@ export default {
       maps:[],
       options:{},
       center:[],
-      flag:false
+      flag:false,
+      currentstation:'',
     }
   },
   mounted () {
@@ -170,7 +154,12 @@ export default {
         this.flag=false;
     },
     refresh(){
-
+      this.model.refresh();
+      this.$refs.gt.clear();
+      this.$refs.pred.clear();
+      this.$refs.stationinfo.clear();
+      this.$refs.time.clear();
+      console.log(this.model)
     },
     confirm(){
       console.log('here',this.flag);
@@ -184,34 +173,37 @@ export default {
         this.show();
       else
         this.model.getMetricRankListParam();
-      // this.model.getTemporalBadCaseParam(0);
+      this.model.getTemporalBadCaseParam(0);
+      this.$data.currentstation="station0"
       // this.model.getMetricDistributionParam();
-      // this.model.this.model.emitErrorHotspotIndex();
+      // this.model.emitErrorHotspotIndex();
     },
     changeTimeSeries(id){
       console.log(id)
       this.model.getTemporalBadCaseParam(id);
       console.log(this.model.temp_bad_case_param)
-
     },
     show(){
+      let maxNum = Math.max(...this.model.mae_for_each_station)
+      console.log("max",maxNum)
       this.$data.center.push(this.model.station_lngs[0])
       this.$data.center.push(this.model.station_lats[0])
       console.log("center",this.$data.center)
       for(let i=0;i<this.model.mae_for_each_station.length;i++){
         this.$data.maps.push({
-          name:"station"+(i+1),
+          name:"station"+i,
           value:[],
         })
         this.$data.maps[i].value.push(this.model.station_lngs[i])
         this.$data.maps[i].value.push(this.model.station_lats[i])
-        this.$data.maps[i].value.push(this.model.mae_for_each_station[i].toFixed(2))
+        this.$data.maps[i].value.push(this.model.mae_for_each_station[i]/maxNum)
       }
       console.log("111",this.$data.maps)
       this.initCharts();
     },
     //地图初始化
     initCharts() {
+      let _this=this;
       const myChart = this.$echarts.init(this.$refs.bmap)
       myChart.setOption({
         bmap: {
@@ -220,6 +212,19 @@ export default {
           roam: true,
           zoom: 10,
         },
+        visualMap: [
+          {
+            type: 'continuous',
+            orient: 'vertical',
+            right: 0,
+            min: 0,
+            max: 1,
+            text: ['HIGH', 'LOW'],
+            inRange: {
+              color: ['#00FF00', '#FF0000']
+            }
+          }
+        ],
         //标点
         series: [    
           {
@@ -232,40 +237,21 @@ export default {
               scale: 5,
               brushType: "fill",
             },
-            label: {
-              show:true,
-              formatter: function(val) {
-                            return `
-
-
-    ${val.name} - ${val.data.value[2]}`
-                        },
-              textStyle:{
-                color: "rgb(128,128,128)",
-                fontSize: 15, // 标签字体大小
-              },
-            },
             hoverAnimation: true,
-            itemStyle: {
-              normal: {
-                color:function (params) {
-                  console.log(params)
-                  // 我这里是用数值value判断，也可用params.name判断
-                  if (params.value[2]>0.1) {
-                      return "#d71345"
-                    } else {
-                      return "#45b97c"
-                  }
-                },
-                shadowBlur: 10,
-                shadowColor: "#333",
-              },
-            },
             zlevel: 1,
             data:this.$data.maps,
           },
       ],
       })
+      myChart.on('click', function (params) {
+        console.log(params.data.name);
+        let id ='';
+        let length=params.data.name.length;
+        id=params.data.name.slice(7,length)
+        console.log(id)
+        _this.model.getTemporalBadCaseParam(id);
+        _this.currentstation=params.data.name
+      });
     },
   },
 }

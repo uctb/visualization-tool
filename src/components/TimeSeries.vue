@@ -4,24 +4,23 @@
     v-model="timeRange"
     type="daterange"
     size="mini"
-    start-placeholder="开始日期"
-    end-placeholder="结束日期">
+    start-placeholder="startTime"
+    end-placeholder="endTime">
   </el-date-picker>
   <div class="flex center_spaceBetweeen">
     <ul class="Datasets">
          <el-input v-model="interval" size="mini" id="datasets" />
     </ul>
-    <el-select v-model="value" placeholder="请选择" size="mini">
+    <el-select v-model="value" placeholder="option" size="mini">
     <el-option
       v-for="item in options"
       :key="item.value"
       :label="item.label"
-      :value="item.value">
+      :value="item.label">
     </el-option>
   </el-select>
     <div>
-        <el-button  type="warning" size="mini" id="el-button" @click="updateTime">确认
-        </el-button>
+      <el-button  type="warning" size="mini" id="el-button" @click="updateTime">setting</el-button>
     </div>
   </div>
  </div>
@@ -34,24 +33,29 @@ export default {
       TimeInfoProcessor:Object
     },
   data() {
-      return {
-        timeRange:"",
-        interval:"",
-        value:"",
-        options: [{
-          value: '选项1',
-          label: '分钟'
-        }, {
-          value: '选项2',
-          label: '小时'
-        }]
-      };
-    },
+    return {
+      timeRange: "",
+      interval: "",
+      value: "",
+      options: [{
+        value: '选项1',
+        label: 'min'
+      }, {
+        value: '选项2',
+        label: '小时'
+      }]
+    }
+  },
   methods:{
     updateTime(){
         console.log('TimeInfoProcessor',this.TimeInfoProcessor)
         this.TimeInfoProcessor.updateParam(this.timeRange[0],this.timeRange[1],this.interval,this.value)
         console.log('TimeInfoProcessor',this.TimeInfoProcessor)
+    },
+    clear(){
+        this.timeRange = ""
+        this.interval = ""
+        this.value = ""
     }
   }
 }
@@ -87,7 +91,7 @@ a {
 	text-align: left;
 	margin-left: .2rem;
 }
-<<< .el-button{
+.el-button{
 	width: .1rem;
 }
 .flex{

@@ -206,13 +206,12 @@ export default class Model {
             // 计算平均值，方差
             // const quartiles = this.ct.calculateQuartiles(diff);
             const mean = this.ct.calculateMean(diff);
-            const standardDeviation = this.ct.calculateStandardDeviation(diff);
-            let upperThreshold = mean + standardDeviation;
-            let lowerThreshold = mean - standardDeviation;
+            // const standardDeviation = this.ct.calculateStandardDeviation(diff);
+            // let upperThreshold = mean + standardDeviation;
+            // let lowerThreshold = mean - standardDeviation;
             // 初始化滑动窗口
             let window = 0;
             // 滑动窗口求markArea
-            console.log("threshold:", upperThreshold, lowerThreshold);
             for (let j=0; j<this.time_length; j++) {
                 if (diff[j] > mean) {
                     if (window === 0) {
@@ -270,8 +269,6 @@ export default class Model {
                 bad_case_error_list.push({'index': [i, j], 'error': rmse});
             }
         }
-        console.log("bad_case_len_list:", bad_case_len_list);
-        console.log("bad_case_error_list:", bad_case_error_list);
 
         // 取前1%的bad case作为top-k error hotspot
         this.semi_k = Math.ceil(0.01 * bad_case_len_list.length);

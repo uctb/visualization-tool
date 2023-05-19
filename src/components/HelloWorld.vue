@@ -6,7 +6,7 @@
     </ul>
     <el-upload id="predload" class="upload-demo" :before-upload="beforeUpload" :limit="1" :show-file-list="false">
       <div>
-        <el-button  type="warning" size="mini" id="el-button">上传<i class="el-icon-upload el-icon--right"></i>
+        <el-button  type="warning" size="mini" id="el-button">upload<i class="el-icon-upload el-icon--right"></i>
         </el-button>
       </div>
     </el-upload>
@@ -32,6 +32,10 @@ export default {
         this.$data.url=file.name;
         this.$emit('process-upload',file,this.type);
         return false;
+      },
+      clear(){
+        this.url="";
+        this.information=null;
       }
     }
 }
@@ -68,7 +72,7 @@ a {
 	text-align: left;
 	margin-left: .2rem;
 }
-.el-button{
+<<<.el-button{
 	width: .1rem;
 }
 .flex{
