@@ -4,24 +4,23 @@
     v-model="timeRange"
     type="daterange"
     size="mini"
-    start-placeholder="开始日期"
-    end-placeholder="结束日期">
+    start-placeholder="startTime"
+    end-placeholder="endTime">
   </el-date-picker>
   <div class="flex center_spaceBetweeen">
     <ul class="Datasets">
          <el-input v-model="interval" size="mini" id="datasets" />
     </ul>
-    <el-select v-model="value" placeholder="请选择" size="mini">
+    <el-select v-model="value" placeholder="option" size="mini">
     <el-option
       v-for="item in options"
       :key="item.value"
       :label="item.label"
-      :value="item.value">
+      :value="item.label">
     </el-option>
   </el-select>
     <div>
-        <el-button  type="warning" size="mini" id="el-button" @click="updateTime">确认
-        </el-button>
+      <el-button  type="warning" size="mini" id="el-button" @click="updateTime">setting</el-button>
     </div>
   </div>
  </div>
@@ -40,19 +39,19 @@ export default {
         value:"",
         options: [{
           value: '选项1',
-          label: '分钟'
+          label: 'min'
         }, {
           value: '选项2',
-          label: '小时'
+          label: 'hour'
         }, {
           value: '选项3',
-          label: '天'
+          label: 'day'
         }, {
           value: '选项4',
-          label: '周'
+          label: 'week'
         }, {
           value: '选项5',
-          label: '月'
+          label: 'month'
         }]
       };
     },
@@ -61,6 +60,11 @@ export default {
         console.log('model',this.model)
         this.model.updateTime(this.timeRange[0],this.timeRange[1],this.interval,this.value)
         console.log('model',this.model)
+    },
+    clear(){
+        this.timeRange = ""
+        this.interval = ""
+        this.value = ""
     }
   }
 }
