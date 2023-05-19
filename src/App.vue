@@ -26,12 +26,18 @@
              <div class="boxfoot"></div>
           </div>  
           <div class="boxall">
-            <div class="alltitle">StationInfo</div>
-              <FuncButton @click-confirm="confirm" diff_type="confirm"/>
+            <div class="alltitle">TimeSeries</div>
+              <TimeSeries :model="this.model"/>
              <div class="boxfoot"></div>
           </div> 
           <div class="boxall">
             <div class="alltitle">StationInfo</div>
+              <RefreshButton @click-refresh="refresh" diff_type="refresh"/>
+              <FuncButton @click-confirm="confirm" diff_type="confirm"/>
+             <div class="boxfoot"></div>
+          </div> 
+          <div class="boxall">
+            <div class="alltitle">Info</div>
               <SpatialBadCase @station-change="changeTimeSeries" :CasesError="this.model.mae_for_each_station" :CasesLats="this.model.station_lats" :CasesLngs="this.model.station_lngs"/>
             <div class="boxfoot"></div>
           </div>
@@ -65,7 +71,7 @@
       <li style="width: 30%">
         <!--Functional zone-->
         <div class="boxall" style="height:1.8rem">
-
+          
         </div>
 
         <!--prediction et truth-->
@@ -102,7 +108,9 @@
 <script>
 import 'echarts/extension/bmap/bmap'
 import HelloWorld from './components/HelloWorld.vue'
+import TimeSeries from './components/TimeSeries.vue'
 import FuncButton from './components/FunctionalButton.vue'
+import RefreshButton from './components/RefreshButton.vue'
 import Model from './Model.js'
 import SpatialBadCase from './components/SpatialView.vue'
 import TemporalBadCase from './components/TemporalView.vue'
@@ -113,7 +121,9 @@ export default {
   name: 'App',
   components: {
     HelloWorld,
+    TimeSeries,
     FuncButton,
+    RefreshButton,
     SpatialBadCase,
     TemporalBadCase,
     SortMetric,
@@ -150,6 +160,9 @@ export default {
         this.flag=true;
       else
         this.flag=false;
+    },
+    refresh(){
+
     },
     confirm(){
       console.log('here',this.flag);
