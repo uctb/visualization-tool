@@ -43,17 +43,34 @@ export default class ComputeTool  {
     }
 
     calculateQuartiles(sequence) {
-        const sortedSequence = sequence.sort((a, b) => a - b);
+        const SortedSequence = sequence;
+        const sortedSequence = SortedSequence.sort((a, b) => a - b);
         const n = sortedSequence.length;
         const upperQuartileIndex = Math.floor(n * 0.75);
-        const lowerQuartileIndex = Math.floor(n * 0.25);
+        // const constlowerQuartileIndex = Math.floor(n * 0.25);
 
         const upperQuartile = sortedSequence[upperQuartileIndex];
-        const lowerQuartile = sortedSequence[lowerQuartileIndex];
+        // const lowerQuartile = sortedSequence[lowerQuartileIndex];
 
-        return { upperQuartile, lowerQuartile };
+        // return { upperQuartile, lowerQuartile };
+        return upperQuartile;
     }
-    
+
+    calculateMean(sequence) {
+        const sum = sequence.reduce((acc, value) => acc + value, 0);
+        const mean = sum / sequence.length;
+        return mean;
+    }
+
+    calculateStandardDeviation(sequence) {
+        const mean = this.calculateMean(sequence);
+        const squaredDifferences = sequence.map(value => Math.pow(value - mean, 2));
+        const sumSquaredDifferences = squaredDifferences.reduce((acc, value) => acc + value, 0);
+        const variance = sumSquaredDifferences / sequence.length;
+        const standardDeviation = Math.sqrt(variance);
+        return standardDeviation;
+    }
+
     calculate_local_rmse(pd, gt) {
         let time_length = pd.length;
         let total_rmse_variance = 0;

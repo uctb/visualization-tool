@@ -9,6 +9,8 @@
     <TemporalBadCase :temp_bad_case_param="this.model.temp_bad_case_param"/>
     <SortMetric :sort_metric_param="this.model.sort_rmse_param"/>
     <MetricDistribution :metric_distribution_param="this.model.rmse_distribution_param"/>
+    <ErrorHotspot :error_hotspot_param="this.model.error_hotspot_param"/>
+    <BadcaseTemporalDistribution :badcase_temp_distribution_param="this.model.badcase_temp_distribution_param"/>
 
   </div>
 </template>
@@ -21,6 +23,8 @@ import SpatialBadCase from './components/SpatialView.vue'
 import TemporalBadCase from './components/TemporalView.vue'
 import SortMetric from './components/SortMetric'
 import MetricDistribution from './components/MetricDistribution'
+import ErrorHotspot from './components/ErrorHotspot'
+import BadcaseTemporalDistribution from './components/BadcaseTemporalDistribution'
 
 export default {
   name: 'App',
@@ -31,6 +35,8 @@ export default {
     TemporalBadCase,
     SortMetric,
     MetricDistribution,
+    ErrorHotspot,
+    BadcaseTemporalDistribution,
   },
   data(){
     return{
@@ -50,7 +56,8 @@ export default {
       this.model.getTemporalBadCaseParam(0);
       this.model.getMetricRankListParam();
       this.model.getMetricDistributionParam();
-      this.model.emitErrorHotspotIndex();
+      this.model.getErrorHotspotParam('error', 0);
+      this.model.getBadcaseTemporalDistributionParam();
     },
     changeTimeSeries(id){
       console.log(id)
