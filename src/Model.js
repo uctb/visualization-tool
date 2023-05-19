@@ -11,10 +11,15 @@ export default class Model {
         this.st_raster_gt = null;
         this.st_raster_pred = null;
         this.station_info = null;
+        this.startTime = "";
+        this.endTime = "";
+        this.interval = 0;
+        this.timeType = "";
     }
     /* 
     TODO: 1.实现SpatialBadCaseLocateModel、TemporalBadCaseLocateModel、InfoProcessModel；2.思考更新输入文件怎么办
     UPDATE: (by hyy) 新增了计算diff序列和badcase
+    UPDATE: (by xhh) 新增了数据的时间维度属性以及修改方法
     */
     testupdate() {
         this.st_raster_gt = this.ip.gt_st_raster;
@@ -75,6 +80,10 @@ export default class Model {
         this.mae_distribution_param = {}
         this.sort_rmse_param = {}
         this.sort_mae_param = {}
+        this.startTime = "";
+        this.endTime = "";
+        this.interval = 0;
+        this.timeType = "";
     }
     // update(jsonData) {
 
@@ -339,6 +348,14 @@ export default class Model {
         this.rmse_distribution_param = [this.PointRMSERange['interval_name'], rmse_distribution_num];
         this.mae_distribution_param = [this.PointMAERange['interval_name'], mae_distribution_num];
         console.log("rmse_distribution_param:", this.rmse_distribution_param);
+    }
+    
+    //修改数据的时间信息
+    updateTime(startTime,endTime,interval,timeType){
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.interval = interval;
+        this.timeType = timeType
     }
 }
 
