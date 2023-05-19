@@ -1,5 +1,5 @@
 <template>
-<el-row><el-button round @click="$emit('click-confirm')">{{diff_type}}</el-button></el-row>
+<el-button type="primary" size="mini" @click="$emit('click-confirm')">{{diff_type}}</el-button>
 </template>
 
 <script>
