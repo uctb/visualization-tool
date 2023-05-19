@@ -272,11 +272,11 @@ export default class Model {
     
 
     // 获得按星期几聚类的error(需要提供TimeRange，TimeFitness)
-    emitTemporalAggregateError() {
-        let TimeRange = ['2017-09-01', '2017-10-20'];
-        let TimeFiteness = 60;
-
-    }
+    // emitTemporalAggregateError() {
+    //     let TimeRange = ['2017-09-01', '2017-10-20'];
+    //     let TimeFiteness = 60;
+    //
+    // }
 
 
     /*
