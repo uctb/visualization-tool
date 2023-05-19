@@ -9,4 +9,6 @@ export default class TimeInfoProcessor
         this.end_date = end_date
         this.time_fitness = time_fitness
     }
+
+
 }

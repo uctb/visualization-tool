@@ -419,12 +419,5 @@ export default class Model {
         console.log("badcase_temporal_distribution_param:", this.badcase_temp_distribution_param);
     }
 
-    //修改数据的时间信息
-    updateTime(startTime,endTime,interval,timeType){
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.interval = interval;
-        this.timeType = timeType
-    }
 }
 

@@ -31,7 +31,7 @@
 export default {
   name: 'TimeSeries',
   props:{
-      model:Object
+      TimeInfoProcessor:Object
     },
   data() {
       return {
@@ -44,23 +44,14 @@ export default {
         }, {
           value: '选项2',
           label: '小时'
-        }, {
-          value: '选项3',
-          label: '天'
-        }, {
-          value: '选项4',
-          label: '周'
-        }, {
-          value: '选项5',
-          label: '月'
         }]
       };
     },
   methods:{
     updateTime(){
-        console.log('model',this.model)
-        this.model.updateTime(this.timeRange[0],this.timeRange[1],this.interval,this.value)
-        console.log('model',this.model)
+        console.log('TimeInfoProcessor',this.TimeInfoProcessor)
+        this.TimeInfoProcessor.updateParam(this.timeRange[0],this.timeRange[1],this.interval,this.value)
+        console.log('TimeInfoProcessor',this.TimeInfoProcessor)
     }
   }
 }

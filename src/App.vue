@@ -3,7 +3,7 @@
     <div class="canvas" style="opacity: .2"></div>
     <div class="head">
       <div class="header_center">
-        <h1>UCTB Web Tools</h1>
+        <h1>ErrorDiagnosisToolbox</h1>
       </div>
     </div>
     <div class="mainbox">
@@ -27,7 +27,7 @@
           </div>  
           <div class="boxall">
             <div class="alltitle">TimeSeries</div>
-              <TimeSeries :model="this.model"/>
+              <TimeSeries :TimeInfoProcessor="this.TimeInfoProcessor"/>
              <div class="boxfoot"></div>
           </div> 
           <div class="boxall">
@@ -107,11 +107,14 @@
 
 <script>
 import 'echarts/extension/bmap/bmap'
+
+import Model from './Model.js'
+import TimeInfoProcessor from './TimeInfoProcessor'
+
 import HelloWorld from './components/HelloWorld.vue'
 import TimeSeries from './components/TimeSeries.vue'
 import FuncButton from './components/FunctionalButton.vue'
 import RefreshButton from './components/RefreshButton.vue'
-import Model from './Model.js'
 import SpatialBadCase from './components/SpatialView.vue'
 import TemporalBadCase from './components/TemporalView.vue'
 import SortMetric from './components/SortMetric'
@@ -136,6 +139,7 @@ export default {
   data(){
     return{
       model:new Model(),
+      TimeInfoProcessor: new TimeInfoProcessor(),
       starttime:'2000-01-01T00:00:00',
       endtime:'2001-01-01T00:00:00',
       StandardofRMSE:2,
@@ -171,11 +175,11 @@ export default {
     confirm(){
       console.log('here',this.flag);
       this.model.testupdate();
-      // this.model.getTemporalBadCaseParam(0);
-      // this.model.getMetricRankListParam();
-      // this.model.getMetricDistributionParam();
-      // this.model.getErrorHotspotParam('error', 0);
-      // this.model.getBadcaseTemporalDistributionParam();
+      this.model.getTemporalBadCaseParam(0);
+      this.model.getMetricRankListParam();
+      this.model.getMetricDistributionParam();
+      this.model.getErrorHotspotParam('error', 0);
+      this.model.getBadcaseTemporalDistributionParam();
       if(this.flag)
         this.show();
       else
