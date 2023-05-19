@@ -48,9 +48,9 @@ export default {
   },
   methods:{
     updateTime(){
-        console.log('TimeInfoProcessor',this.TimeInfoProcessor)
         this.TimeInfoProcessor.updateParam(this.timeRange[0],this.timeRange[1],this.interval,this.value)
-        console.log('TimeInfoProcessor',this.TimeInfoProcessor)
+        console.log('start date:',this.TimeInfoProcessor.start_date);
+        this.TimeInfoProcessor.emitTimeSeries()
     },
     clear(){
         this.timeRange = ""

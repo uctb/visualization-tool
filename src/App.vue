@@ -164,11 +164,11 @@ export default {
     confirm(){
       console.log('here',this.flag);
       this.model.testupdate();
-      this.model.getTemporalBadCaseParam(0);
-      this.model.getMetricRankListParam();
-      this.model.getMetricDistributionParam();
-      this.model.getErrorHotspotParam('error', 0);
-      this.model.getBadcaseTemporalDistributionParam();
+      // this.model.getTemporalBadCaseParam(0);
+      // this.model.getMetricRankListParam();
+      // this.model.getMetricDistributionParam();
+      // this.model.getErrorHotspotParam('error', 0);
+      // this.model.getBadcaseTemporalDistributionParam();
       if(this.flag)
         this.show();
       else

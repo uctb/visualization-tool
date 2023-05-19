@@ -9,7 +9,12 @@ export default class TimeInfoProcessor
         this.end_date = end_date
         this.time_fitness = time_fitness
     }
-
+    emitTimeSeries() {
+        console.log("here")
+        console.log(typeof this.start_date)
+        // let start_year = this.start_date.split(" ")[0]
+        // console.log(start_year)
+    }
 
 
 }
