@@ -1,4 +1,3 @@
-
 import InputProcessor from './InputProcessor.js'
 import ComputeTool from './function.js'
 export default class Model {
@@ -8,11 +7,20 @@ export default class Model {
         this.station_lats = [];
         this.station_lngs = [];
         this.mae_for_each_station = [];
-        this.temp_bad_case_param = null
+        this.temp_bad_case_param = null;
+        this.st_raster_gt = null;
+        this.st_raster_pred = null;
+        this.station_info = null;
+        this.startTime = "";
+        this.endTime = "";
+        this.interval = 0;
+        this.timeType = "";
     }
-    /* 
+
+    /*
     TODO: 1.实现SpatialBadCaseLocateModel、TemporalBadCaseLocateModel、InfoProcessModel；2.思考更新输入文件怎么办
     UPDATE: (by hyy) 新增了计算diff序列和badcase
+    UPDATE: (by xhh) 新增了数据的时间维度属性以及修改方法
     */
     testupdate() {
         this.st_raster_gt = this.ip.gt_st_raster;
@@ -35,7 +43,7 @@ export default class Model {
             for (var j = 0; j < this.time_length; j++) {
                 error_matrix[i][j] = this.st_raster_pred[i][j] - this.st_raster_gt[i][j];
                 tmp_mae += Math.abs(error_matrix[i][j]);
-                st_raster_diff[i].push(Math.abs(this.st_raster_pred[i][j]-this.st_raster_gt[i][j]));
+                st_raster_diff[i].push(Math.abs(this.st_raster_pred[i][j] - this.st_raster_gt[i][j]));
             }
             mae_for_each_station[i] = tmp_mae / this.station_num;
         }
@@ -50,42 +58,73 @@ export default class Model {
         this.emitBadcaseTemporalDistribution();
     }
 
-    update(jsonData) {
-
-        this.time_range = jsonData.time_range;
-        this.time_fitness = jsonData.time_fitness;
-        this.station_lats = jsonData.station_lats;
-        this.station_lngs = jsonData.station_lngs;
-
-
-        this.st_raster_gt = jsonData.st_raster_gt;
-        this.st_raster_pred = jsonData.st_raster_pred;
-        this.time_length = this.st_raster_gt[0].length;
-        this.station_num = this.st_raster_gt.length;
-        let error_matrix = new Array(this.time_length);
-        let mae_for_each_station = new Array(this.station_num);
-        let st_raster_diff = new Array(this.station_num);
-        //TODO: 下面内容可以封装成函数
-        for (var i = 0; i < this.station_num; i++) {
-
-            var tmp_mae = 0;
-            error_matrix[i] = new Array(this.time_length);
-            st_raster_diff[i] = [];
-            for (var j = 0; j < this.time_length; j++) {
-                error_matrix[i][j] = this.st_raster_pred[i][j] - this.st_raster_gt[i][j];
-                tmp_mae += Math.abs(error_matrix[i][j]);
-                st_raster_diff[i].push(Math.abs(this.st_raster_pred[i][j]-this.st_raster_gt[i][j]));
-            }
-            mae_for_each_station[i] = tmp_mae / this.station_num;
-        }
-        this.error_matrix = error_matrix;
-        this.mae_for_each_station = mae_for_each_station;
-        this.st_raster_diff = st_raster_diff;
-
-        this.emitBadCase();
-        this.emitErrorHotspotIndex();
-        this.emitBadcaseTemporalDistribution();
+    refresh() {
+        this.ip = new InputProcessor();
+        this.ct = new ComputeTool();
+        this.station_info = null;
+        this.station_lats = [];
+        this.station_lngs = [];
+        this.mae_for_each_station = [];
+        this.temp_bad_case_param = null;
+        this.error_matrix = null;
+        this.mae_for_each_station = null;
+        this.st_raster_diff = null;
+        this.PointSortedRMSE = null;
+        this.PointSortedMAE = null;
+        this.bad_case = null;
+        this.error_hotspot_index = null;
+        this.station_num = 0;
+        this.time_length = 0;
+        this.PointRMSERange = null;
+        this.PointMAERange = null;
+        this.bad_case = [];
+        this.error_hotspot_index = [];
+        this.temp_bad_case_param = {};
+        this.rmse_distribution_param = {};
+        this.mae_distribution_param = {};
+        this.sort_rmse_param = {};
+        this.sort_mae_param = {};
+        this.startTime = "";
+        this.endTime = "";
+        this.interval = 0;
+        this.timeType = "";
     }
+
+    // update(jsonData) {
+    //
+    //     this.time_range = jsonData.time_range;
+    //     this.time_fitness = jsonData.time_fitness;
+    //     this.station_lats = jsonData.station_lats;
+    //     this.station_lngs = jsonData.station_lngs;
+    //
+    //
+    //     this.st_raster_gt = jsonData.st_raster_gt;
+    //     this.st_raster_pred = jsonData.st_raster_pred;
+    //     this.time_length = this.st_raster_gt[0].length;
+    //     this.station_num = this.st_raster_gt.length;
+    //     let error_matrix = new Array(this.time_length);
+    //     let mae_for_each_station = new Array(this.station_num);
+    //     let st_raster_diff = new Array(this.station_num);
+    //     //TODO: 下面内容可以封装成函数
+    //     for (var i = 0; i < this.station_num; i++) {
+    //
+    //         var tmp_mae = 0;
+    //         error_matrix[i] = new Array(this.time_length);
+    //         st_raster_diff[i] = [];
+    //         for (var j = 0; j < this.time_length; j++) {
+    //             error_matrix[i][j] = this.st_raster_pred[i][j] - this.st_raster_gt[i][j];
+    //             tmp_mae += Math.abs(error_matrix[i][j]);
+    //             st_raster_diff[i].push(Math.abs(this.st_raster_pred[i][j]-this.st_raster_gt[i][j]));
+    //         }
+    //         mae_for_each_station[i] = tmp_mae / this.station_num;
+    //     }
+    //     this.error_matrix = error_matrix;
+    //     this.mae_for_each_station = mae_for_each_station;
+    //     this.st_raster_diff = st_raster_diff;
+    //
+    //     this.emitBadCase();
+    // }
+
 
     emitTimeseries_gt(spatial_ind) {
         return this.st_raster_gt[spatial_ind];
@@ -372,12 +411,20 @@ export default class Model {
     // bad case distribution - temporal view
     getBadcaseTemporalDistributionParam() {
         let ts = this.ct.range(0, this.time_length, 1);
-        
+
         this.badcase_temp_distribution_param = {
             'axisvalue': ts,
             'badcase_temp_num': this.badcase_temp_distribution,
         }
         console.log("badcase_temporal_distribution_param:", this.badcase_temp_distribution_param);
+    }
+
+    //修改数据的时间信息
+    updateTime(startTime,endTime,interval,timeType){
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.interval = interval;
+        this.timeType = timeType
     }
 }
 
