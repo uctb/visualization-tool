@@ -12,8 +12,11 @@ export default class TimeInfoProcessor
     emitTimeSeries() {
         console.log("here")
         console.log(typeof this.start_date)
-        // let start_year = this.start_date.split(" ")[0]
-        // console.log(start_year)
+        // 先自定义Start Date, End Date做测试
+        start_date = new Date(2017, 8, 1)
+        end_data = new Date(2017, 9, 20)
+        const Gap = 1000*60*now_Timefitness // 将timefitness转化为ms
+        
     }
 
 
