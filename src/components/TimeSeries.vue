@@ -2,23 +2,25 @@
  <div class="block">
   <el-date-picker
     v-model="timeRange"
-    type="daterange"
+    type="datetimerange"
     size="mini"
     start-placeholder="startTime"
-    end-placeholder="endTime">
+    end-placeholder="endTime"
+    format="yyyy/MM/dd HH:mm"
+    value-format="yyyy/MM/dd HH:mm">
   </el-date-picker>
   <div class="flex center_spaceBetweeen">
     <ul class="Datasets">
          <el-input v-model="interval" size="mini" id="datasets" />
     </ul>
     <el-select v-model="value" placeholder="option" size="mini">
-    <el-option
-      v-for="item in options"
-      :key="item.value"
-      :label="item.label"
-      :value="item.label">
-    </el-option>
-  </el-select>
+      <el-option
+        v-for="item in options"
+        :key="item.value"
+        :label="item.label"
+        :value="item.label">
+      </el-option>
+    </el-select>
     <div>
       <el-button  type="warning" size="mini" id="el-button" @click="updateTime">setting</el-button>
     </div>
@@ -42,14 +44,13 @@ export default {
         label: 'min'
       }, {
         value: '选项2',
-        label: '小时'
+        label: 'hour'
       }]
     }
   },
   methods:{
     updateTime(){
         this.TimeInfoProcessor.updateParam(this.timeRange[0],this.timeRange[1],this.interval,this.value)
-        console.log('start date:',this.TimeInfoProcessor.start_date);
         this.TimeInfoProcessor.emitTimeSeries()
     },
     clear(){
@@ -78,7 +79,7 @@ a {
   color: #42b983;
 }
 .el-date-editor.el-input__inner {
-  width: 15rem;
+  width: 18rem;
 }
 .Datasets>ul>li{ float: left; padding: 0 .1rem;width: 25%}
 .Datasets>ul>li:nth-child(2){ width: 50%;padding: 0}

@@ -80,5 +80,18 @@ export default class ComputeTool  {
         let rmse = Math.sqrt(total_rmse_variance / time_length);
         return rmse;
     }
+
+    MapWeekDay(param) {
+        const weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+        return weekdays.indexOf(param);
+    }
     
+    get24HourSeries() {
+        hour_series = [];
+        for (let i=0; i<24; i++) {
+            hour_series.push(i.toString().padStart(2, '0'))
+        }
+        return hour_series;
+    }
+
 }

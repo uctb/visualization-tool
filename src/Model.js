@@ -11,16 +11,12 @@ export default class Model {
         this.st_raster_gt = null;
         this.st_raster_pred = null;
         this.station_info = null;
-        this.startTime = "";
-        this.endTime = "";
-        this.interval = 0;
-        this.timeType = "";
+        this.ts_flag = false;
     }
 
     /*
     TODO: 1.实现SpatialBadCaseLocateModel、TemporalBadCaseLocateModel、InfoProcessModel；2.思考更新输入文件怎么办
     UPDATE: (by hyy) 新增了计算diff序列和badcase
-    UPDATE: (by xhh) 新增了数据的时间维度属性以及修改方法
     */
     testupdate() {
         this.st_raster_gt = this.ip.gt_st_raster;
@@ -33,6 +29,7 @@ export default class Model {
         let error_matrix = new Array(this.time_length);
         let mae_for_each_station = new Array(this.station_num);
         let st_raster_diff = new Array(this.station_num);
+        
         //TODO: 下面内容可以封装成函数
         for (var i = 0; i < this.station_num; i++) {
             station_lats[i] = this.station_info[i][0];
@@ -43,7 +40,7 @@ export default class Model {
             for (var j = 0; j < this.time_length; j++) {
                 error_matrix[i][j] = this.st_raster_pred[i][j] - this.st_raster_gt[i][j];
                 tmp_mae += Math.abs(error_matrix[i][j]);
-                st_raster_diff[i].push(Math.abs(this.st_raster_pred[i][j] - this.st_raster_gt[i][j]));
+                st_raster_diff[i].push(this.st_raster_pred[i][j] - this.st_raster_gt[i][j]);
             }
             mae_for_each_station[i] = tmp_mae / this.station_num;
         }
@@ -52,6 +49,19 @@ export default class Model {
         this.error_matrix = error_matrix;
         this.mae_for_each_station = mae_for_each_station;
         this.st_raster_diff = st_raster_diff;
+
+        // 判断时间设置得是否准确
+        if (this.ts_flag) {
+            if (this.time_length != this.ts.length) {
+                alert("Time Range or Time fitness is false! Please select again.");
+            } else {
+                this.emitBadcaseDistributionRules();
+            }
+        }
+        else {
+            this.ts = this.ct.range(0, this.time_length, 1);
+        }
+        
 
         this.emitBadCase();
         this.emitErrorHotspotIndex();
@@ -84,10 +94,6 @@ export default class Model {
         this.mae_distribution_param = {};
         this.sort_rmse_param = {};
         this.sort_mae_param = {};
-        this.startTime = "";
-        this.endTime = "";
-        this.interval = 0;
-        this.timeType = "";
     }
 
     // update(jsonData) {
@@ -145,6 +151,17 @@ export default class Model {
     setSTRaster(file,type){
        this.ip.setSTRaster(file,type) 
     }
+    
+    setTimeseries(ts, ws, ps, hs) {
+        console.log("set time series finish!")
+        this.ts = ts;  // TimeSeries
+        this.ws = ws;  // WeekSeries
+        this.ps = ps;  // PeakSeries
+        this.hs = hs;  // HourSeries
+        this.ts_flag = true;
+        return true
+    }
+    
     emitStationInfo()
     {
     }
@@ -307,14 +324,55 @@ export default class Model {
     }
     
 
-    // 获得按星期几聚类的error(需要提供TimeRange，TimeFitness)
-    // emitTemporalAggregateError() {
-    //     let TimeRange = ['2017-09-01', '2017-10-20'];
-    //     let TimeFiteness = 60;
-    //
-    // }
+    // 获得各站点bad case的分布规律
+    emitBadcaseDistributionRules() {
+        console.log("============get week & peak status=========")
+        let length = this.station_num;
+        const weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
+        let WeekSum = Array.from({length}, () => ( {'weekends': 0, 'workday': 0} ));
+        let PeakSum = Array.from({length}, () => ( {'mp': 0, 'ep': 0, 'others': 0} ));
+        let WeekDistribution = Array(length).fill(0).map(() => Array(7).fill(0));
+        let HourDistribution = Array(length).fill(0).map(() => Array(24).fill(0));
 
+        for (let station_id=0; station_id<this.station_num; station_id++) {
+            let diff = this.st_raster_diff[station_id];
+            const mean = this.ct.calculateMean(diff);
+
+            for (let i=0; i<this.ws.length; i++) {
+                if (diff[i] >mean) {
+                    // 统计bad case都是星期几
+                    for (let j=0; j<weekdays.length; j++) {
+                        if (this.ws[i] == weekdays[j]) { WeekDistribution[station_id][j]++; }
+                    }
+                    // 判断是工作日还是周末
+                    if (this.ws[i] == 'SUN' || this.ws[i] == 'SAT') {
+                        WeekSum[station_id]['weekends']++;
+                    } else { WeekSum[station_id]['workday']++; }
+                    // 判断是否为早晚高峰
+                    if (this.ps[i] == 'mp') {
+                        PeakSum[station_id]['mp']++;
+                    } else if (this.ps[i] == 'ep') {
+                        PeakSum[station_id]['ep']++;
+                    } else {
+                        PeakSum[station_id]['others']++;
+                    }
+                    // 统计bad case都是哪一个小时
+                    HourDistribution[this.hs[i]] ++;
+                }
+            }
+        }
+        this.WeekSum = WeekSum;
+        this.PeakSum = PeakSum;
+        this.WeekDistribution = WeekDistribution;
+        this.HourDistribution = HourDistribution;
+        console.log("WeekSum is:", this.WeekSum);
+        console.log("PeakSum is:", this.PeakSum);
+        console.log("Week Distribution is:", this.WeekDistribution);
+        console.log("Hour Distribution is:", this.HourDistribution);
+    }
+
+    emitBadcase
     /*
         绘图参数
     */
@@ -324,9 +382,7 @@ export default class Model {
         console.log("========plot temporal bad case=========")
         let pd=this.st_raster_pred[spatial_ind];
         let gt=this.st_raster_gt[spatial_ind];
-        // 没有time_fitness, time_range 数据时
-        let ts_len=this.st_raster_gt[spatial_ind].length;
-        let ts=this.ct.range(0, ts_len, 1);
+        let ts = this.ts;
         let mark_area = this.bad_case[spatial_ind];
 
         let startIndex=-1;
@@ -352,9 +408,8 @@ export default class Model {
         
         let pd = this.st_raster_pred[station_ind].slice(left, right+1);
         let gt = this.st_raster_gt[station_ind].slice(left, right+1);
-        // 没有time_fitness, time_range 数据时
-        let ts_len = gt.length;
-        let ts = this.ct.range(0, ts_len, 1);
+
+        let ts = this.ts;
         
         this.error_hotspot_param = {
             'groundtruth':gt,
@@ -405,16 +460,48 @@ export default class Model {
         console.log("rmse_distribution_param:", this.rmse_distribution_param);
     }
 
+    // bad case distribution rules
+    getBadcaseDistributionRulesParam(spatial_ind) {
+        console.log("=========plot bad case distribution rules=========")
+        let weekday_statistic = Object.values(this.WeekSum[spatial_ind]);
+        let peak_statistic = Object.values(this.PeakSum[spatial_ind]);
+        let week_distribution = this.WeekDistribution[spatial_ind];
+        let hour_distribution = this.HourDistribution[spatial_ind];
+
+        this.badcase_weekday_statistic_param = {
+            'axisvalue': ['weekends', 'workday'],
+            'distribution': weekday_statistic
+        }
+        this.badcase_peak_statistic_param = {
+            'axisvalue': ['moring peak', 'evening peak', 'others'],
+            'distribution': peak_statistic
+        }
+        this.badcase_week_distribution_rules_param = {
+            'axisvalue': ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'],
+            'distribution': week_distribution
+        }
+        this.badcase_hour_distribution_rules_param = {
+            'axisvalue:': this.ct.get24HourSeries(),
+            'distribution': hour_distribution
+        }
+        console.log("badcase_weekday_statistic_param:", this.badcase_weekday_statistic_param);
+        console.log("badcase_peak_statistic_param:", this.badcase_peak_statistic_param);
+        console.log("badcase_week_distribution_rules_param:", this.badcase_week_distribution_rules_param);
+        console.log("badcase_hour_distribution_rules_param:", this.badcase_hour_distribution_rules_param);
+    }
+
     // bad case distribution - temporal view
     getBadcaseTemporalDistributionParam() {
-        let ts = this.ct.range(0, this.time_length, 1);
-
+        console.log("=========plot bad case temporal distribution=========")
+        let ts = this.ts;
         this.badcase_temp_distribution_param = {
             'axisvalue': ts,
             'badcase_temp_num': this.badcase_temp_distribution,
         }
         console.log("badcase_temporal_distribution_param:", this.badcase_temp_distribution_param);
     }
+
+
 
 }
 
