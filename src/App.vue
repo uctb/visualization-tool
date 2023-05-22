@@ -65,9 +65,16 @@
           <!--bad case distribution rules-->
           <div class="boxall" style="height:18rem;width:28rem;margin-left:-12%">
             <div class="alltitle" id="line_graph">Bad case distribution rules</div>
-            <!--            <div class="chart_change_button" id="bad_case_button">-->
-            <!--            </div>-->
-            <BadcaseDistributionRules :badcase_distribution_param="this.model.badcase_week_distribution_rules_param"/>
+            <el-select v-model="value" placeholder="Metrics Rank List" size="mini">
+              <el-option
+                v-for="item in category"
+                :key="item.value"
+                :label="item.label"
+                :value="item.label">
+              </el-option>
+            </el-select>
+            <!-- 通过v-show当选择不同选项时进行不同组件的切换 -->
+            <BadcaseDistributionRules v-show="value=='Metrics Rank List'" :badcase_distribution_param="this.model.badcase_week_distribution_rules_param"/>
             <div class="boxfoot"></div>
           </div>
 
@@ -137,6 +144,20 @@ export default {
       center:[],
       flag:false,
       currentstation:'',
+      value: "",
+      category: [{
+        value: '选项1',
+        label: 'Metrics Rank List'
+      },{
+        value: '选项2',
+        label: 'RMSE Distribution'
+      },{
+        value: '选项3',
+        label: 'MAE Distribution'
+      },{
+        value: '选项4',
+        label: 'MAPE Distribution'
+      }]
     }
   },
   mounted () {
@@ -202,6 +223,7 @@ export default {
     },
     show(){
       let maxNum = Math.max(...this.model.mae_for_each_station)
+      let minNum = Math.min(...this.model.mae_for_each_station)
       console.log("max",maxNum)
       this.$data.center.push(this.model.station_lngs[0])
       this.$data.center.push(this.model.station_lats[0])
@@ -213,7 +235,7 @@ export default {
         })
         this.$data.maps[i].value.push(this.model.station_lngs[i])
         this.$data.maps[i].value.push(this.model.station_lats[i])
-        this.$data.maps[i].value.push(this.model.mae_for_each_station[i]/maxNum)
+        this.$data.maps[i].value.push((this.model.mae_for_each_station[i]-minNum)/(maxNum-minNum))
       }
       console.log("111",this.$data.maps)
       this.initCharts();
@@ -283,6 +305,9 @@ ${val.name}`
         _this.currentstation=params.data.name
       });
     },
+    BadcaseDistribution(){
+      console.log(111)
+    }
   },
 }
 </script>
