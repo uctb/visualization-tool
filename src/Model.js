@@ -28,7 +28,10 @@ export default class Model {
         var station_lngs = new Array(this.station_num);
         let error_matrix = new Array(this.time_length);
         let mae_for_each_station = new Array(this.station_num);
-        let st_raster_diff = new Array(this.station_num);
+        let rmse_for_each_station = new Array(this.station_num);
+        let mre_for_each_station = new Array(this.station_num);
+        let st_raster_diff = new Array(this.station_num);  
+        let st_raster_re = new Array(this.station_num);  // 相对误差
         
         //TODO: 下面内容可以封装成函数
         for (var i = 0; i < this.station_num; i++) {
@@ -37,18 +40,30 @@ export default class Model {
             var tmp_mae = 0;
             error_matrix[i] = new Array(this.time_length);
             st_raster_diff[i] = [];
+            st_raster_re[i] = [];
             for (var j = 0; j < this.time_length; j++) {
                 error_matrix[i][j] = this.st_raster_pred[i][j] - this.st_raster_gt[i][j];
                 tmp_mae += Math.abs(error_matrix[i][j]);
                 st_raster_diff[i].push(this.st_raster_pred[i][j] - this.st_raster_gt[i][j]);
+                let re = Math.abs(this.st_raster_pred[i][j] - this.st_raster_gt[i][j]) / this.st_raster_gt[i][j]
+                // if (re == 'NaN' || re == 'Infinity') {
+                //     console.log("gt:", this.st_raster_gt[i][j])
+                //     console.log("pd:", this.st_raster_pred[i][j])
+                // }
+                st_raster_re[i].push(Math.abs(this.st_raster_pred[i][j] - this.st_raster_gt[i][j]) / this.st_raster_gt[i][j]);
             }
             mae_for_each_station[i] = tmp_mae / this.station_num;
+            rmse_for_each_station[i] = this.ct.calculate_local_rmse(this.st_raster_pred[i], this.st_raster_gt[i]);
+            mre_for_each_station[i] = this.ct.calculateMean(st_raster_re[i]);
         }
         this.station_lats = station_lats;
         this.station_lngs = station_lngs;
         this.error_matrix = error_matrix;
         this.mae_for_each_station = mae_for_each_station;
+        this.rmse_for_each_station = rmse_for_each_station;
+        this.mre_for_each_station = mre_for_each_station;
         this.st_raster_diff = st_raster_diff;
+        this.st_raster_re = st_raster_re;
 
         // 判断时间设置得是否准确
         if (this.ts_flag) {

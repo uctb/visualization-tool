@@ -81,6 +81,7 @@ export default class ComputeTool  {
         return rmse;
     }
 
+
     MapWeekDay(param) {
         const weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
         return weekdays.indexOf(param);

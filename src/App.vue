@@ -183,6 +183,7 @@ export default {
     confirm(){
       console.log('here',this.flag);
       this.model.testupdate();
+      console.log("mre_for_each_station:", this.model.mre_for_each_station);
       // 最小系统判断
       if(this.flag)
         this.show();
@@ -201,21 +202,22 @@ export default {
       console.log(this.model.temp_bad_case_param)
     },
     show(){
-      let maxNum = Math.max(...this.model.mae_for_each_station)
-      console.log("max",maxNum)
+      // let maxNum = Math.max(...this.model.mre_for_each_station)
+      // console.log("max",maxNum)
       this.$data.center.push(this.model.station_lngs[0])
       this.$data.center.push(this.model.station_lats[0])
       console.log("center",this.$data.center)
-      for(let i=0;i<this.model.mae_for_each_station.length;i++){
+      for(let i=0;i<this.model.station_num;i++){
         this.$data.maps.push({
           name:"station"+i,
           value:[],
         })
         this.$data.maps[i].value.push(this.model.station_lngs[i])
         this.$data.maps[i].value.push(this.model.station_lats[i])
-        this.$data.maps[i].value.push(this.model.mae_for_each_station[i]/maxNum)
+        this.$data.maps[i].value.push(this.model.mre_for_each_station[i])
+        // this.$data.maps[i].value.push(this.model.rmse_for_each_station[i]/maxNum)
       }
-      console.log("111",this.$data.maps)
+      console.log("data of maps:",this.$data.maps)
       this.initCharts();
     },
     //地图初始化
