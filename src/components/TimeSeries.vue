@@ -11,16 +11,8 @@
   </el-date-picker>
   <div class="flex center_spaceBetweeen">
     <ul class="Datasets">
-         <el-input v-model="interval" size="mini" id="datasets" />
+         <el-input v-model="interval" size="mini" id="datasets" placeholder="input Time fitness /min"/>
     </ul>
-    <el-select v-model="value" placeholder="option" size="mini">
-      <el-option
-        v-for="item in options"
-        :key="item.value"
-        :label="item.label"
-        :value="item.label">
-      </el-option>
-    </el-select>
     <div>
       <el-button  type="warning" size="mini" id="el-button" @click="updateTime">setting</el-button>
     </div>
@@ -38,25 +30,16 @@ export default {
     return {
       timeRange: "",
       interval: "",
-      value: "",
-      options: [{
-        value: '选项1',
-        label: 'min'
-      }, {
-        value: '选项2',
-        label: 'hour'
-      }]
     }
   },
   methods:{
     updateTime(){
-        this.TimeInfoProcessor.updateParam(this.timeRange[0],this.timeRange[1],this.interval,this.value)
+        this.TimeInfoProcessor.updateParam(this.timeRange[0],this.timeRange[1],this.interval,"min")
         this.TimeInfoProcessor.emitTimeSeries()
     },
     clear(){
         this.timeRange = ""
         this.interval = ""
-        this.value = ""
     }
   }
 }
@@ -64,20 +47,6 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h3 {
-  margin: 40px 0 0;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
-}
 .el-date-editor.el-input__inner {
   width: 18rem;
 }
@@ -92,7 +61,7 @@ a {
 	text-align: left;
 	margin-left: .2rem;
 }
-.el-button{
+<<<.el-button{
 	width: .1rem;
 }
 .flex{
