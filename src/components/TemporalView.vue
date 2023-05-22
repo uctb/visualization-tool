@@ -163,6 +163,6 @@ export default {
 
 <style>
 .echarts {
-  height: 15rem;background-size: contain;background-repeat: no-repeat;background-position: 50% 50%;  position: relative;
+  height: 10rem;background-size: contain;background-repeat: no-repeat;background-position: 50% 50%;  position: relative;
 }
 </style>

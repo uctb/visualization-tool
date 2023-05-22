@@ -337,7 +337,6 @@ export default class Model {
         this.badcase_temp_distribution = badcase_temp_num;
         console.log("badcase_temporal_distribution:", badcase_temp_num);
     }
-    
 
     // 获得各站点bad case的分布规律
     emitBadcaseDistributionRules() {
@@ -381,13 +380,22 @@ export default class Model {
         this.PeakSum = PeakSum;
         this.WeekDistribution = WeekDistribution;
         this.HourDistribution = HourDistribution;
-        console.log("WeekSum is:", this.WeekSum);
-        console.log("PeakSum is:", this.PeakSum);
-        console.log("Week Distribution is:", this.WeekDistribution);
-        console.log("Hour Distribution is:", this.HourDistribution);
     }
 
-    emitBadcase
+    emitMeanGTDistribution(interval_num) {
+        // 先验知识：流量
+        // 求平均gt的分布
+        let mean_gt_for_each_station = [];
+        for (let i=0; i<this.station_num; i++) {
+            mean_gt_for_each_station[i] = this.ct.calculateMean(this.st_raster_gt[i]);
+        }
+        this.gtRange = this.ct.getSequenceRange(mean_gt_for_each_station, interval_num);
+        for (let i=0; i<this.station_num; i++) {
+            let interval_id = this.ct.getIntervalID(this.gtRange['interval_point'], interval_num, mean_gt_for_each_station[i]);
+            this.gtRange[interval_id]++;
+        }
+    }
+
     /*
         绘图参数
     */
@@ -475,7 +483,7 @@ export default class Model {
         console.log("rmse_distribution_param:", this.rmse_distribution_param);
     }
 
-    // bad case distribution rules
+    // bad case temporal distribution rules
     getBadcaseDistributionRulesParam(spatial_ind) {
         console.log("=========plot bad case distribution rules=========")
         let weekday_statistic = Object.values(this.WeekSum[spatial_ind]);
@@ -503,6 +511,19 @@ export default class Model {
         console.log("badcase_peak_statistic_param:", this.badcase_peak_statistic_param);
         console.log("badcase_week_distribution_rules_param:", this.badcase_week_distribution_rules_param);
         console.log("badcase_hour_distribution_rules_param:", this.badcase_hour_distribution_rules_param);
+    }
+    
+    // bad case spatial distribution rules
+    getBadcaseSpatialDistributionRulseParam() {
+        let interval_num = 15;  // 可修改参数
+        this.emitMeanGTDistribution(interval_num);
+        console.log("=========plot spataial bad case distribution=========")
+        let bc_distribution_num = [];
+        for (let i=0; i<interval_num; i++) {
+            bc_distribution_num.push(this.gtRange[i]);
+        }
+        this.badcase_spatial_distribution_rules_param = [this.gtRange['interval_name'], bc_distribution_num];
+        console.log("badcase_spatial_distribution_rules_param:", this.badcase_spatial_distribution_rules_param);
     }
 
     // bad case distribution - temporal view

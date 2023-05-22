@@ -54,7 +54,7 @@
 
         <li style="width: 27%">
           <!--prediction et truth-->
-          <div class="boxall" style="height:18rem;width:28rem;margin-left:-12%">
+          <div class="boxall" style="height:10rem;width:28rem;margin-left:-12%">
             <div class="alltitle">Groundtruth and Prediction {{currentstation}}</div>
 <!--            <div class="chart_change_button" id="bad_case_button">-->
 <!--            </div>-->
@@ -62,9 +62,9 @@
             <div class="boxfoot"></div>
           </div>
 
-          <!--bad case distribution rules-->
-          <div class="boxall" style="height:18rem;width:28rem;margin-left:-12%">
-            <div class="alltitle" id="line_graph">Bad case distribution rules</div>
+          <!--bad case distribution rules -- temporal-->
+          <div class="boxall" style="height:10rem;width:28rem;margin-left:-12%">
+            <div class="alltitle">Bad case Temporal Distribution Rules</div>
             <el-select v-model="value" placeholder="bad case distribution rules" size="mini">
               <el-option
                 v-for="item in category"
@@ -78,20 +78,14 @@
             <div class="boxfoot"></div>
           </div>
 
-        <!--rmse-->
-        <!-- <div class="boxall" style="height: 3.5rem">
-          <div class="alltitle" id="rmse2">Global Error Analysis</div>
-          <div class="chart_change_button" id="metrics_button">
-            <el-select v-model="value" size="mini" id="MetricsDistributionButton" placeholder="Metrics Rank List"
-              @change="MetricsDistribution">
-              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
-              </el-option>
-            </el-select>
-          </div>
-          <div class="allnav2" id="rmseline2"></div>
+        <!--bad case distribution rules -- spatial-->
+          <div class="boxall" style="height:10rem;width:28rem;margin-left:-12%">
+          <div class="alltitle">Bad case Spatial Distribution Rules</div>
+          <SortMetric :sort_metric_param="this.model.badcase_spatial_distribution_rules_param"/>
           <div class="boxfoot"></div>
-        </div> -->
+        </div>
       </li>
+
         <MetricDistribution :metric_distribution_param="this.model.rmse_distribution_param"/>
       </ul>
     </div>
@@ -173,7 +167,9 @@ export default {
   watch: {
     'TimeInfoProcessor.flag': function(newValue, oldValue) {
       if (newValue) {
-        const Success = this.model.setTimeseries(this.TimeInfoProcessor.TimeSeries, this.TimeInfoProcessor.WeekSeries, this.TimeInfoProcessor.PeakSeries, this.TimeInfoProcessor.HourSeries);
+        const Success = this.model.setTimeseries(this.TimeInfoProcessor.TimeSeries,
+            this.TimeInfoProcessor.WeekSeries, this.TimeInfoProcessor.PeakSeries, this.TimeInfoProcessor.HourSeries);
+        this.model.getBadcaseDistributionRulesParam(0);
         if (!Success) {
           alert("Time Range or Time fitness is false! Please select again.")
         }
@@ -206,12 +202,13 @@ export default {
       this.model.testupdate();
       console.log("mre_for_each_station:", this.model.mre_for_each_station);
       // 最小系统判断
-      if(this.flag)
+      if(this.flag) {
         this.show();
+      }
       else
         this.model.getMetricRankListParam();
       this.model.getTemporalBadCaseParam(0);
-      this.model.getBadcaseDistributionRulesParam(0);
+      this.model.getBadcaseSpatialDistributionRulseParam();
       this.$data.currentstation="station0"
       // this.model.getMetricDistributionParam();
       // this.model.emitErrorHotspotIndex();
