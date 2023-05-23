@@ -22,6 +22,7 @@ export default class TimeInfoProcessor
         this.end_time = ""
         this.time_fitness = 0
         this.time_type = ""
+        this.flag = false
     }
 
     getWeekDay(date) {
