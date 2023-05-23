@@ -11,10 +11,11 @@
   </el-date-picker>
   <div class="flex center_spaceBetweeen">
     <ul class="Datasets">
-         <el-input v-model="interval" size="mini" id="datasets" placeholder="Input Time Fitness /min"/>
+         <el-input v-model="interval" size="mini" id="datasets" placeholder="Input Time Fitness/min"/>
     </ul>
     <div>
-      <el-button  type="warning" size="mini" id="el-button" @click="updateTime">setting</el-button>
+      <el-button  type="warning" size="mini" id="el-button" @click="updateTime">setting<i class="el-icon-edit el-icon--right"></i></el-button>
+      <el-icon><EditPen /></el-icon>
     </div>
   </div>
  </div>
@@ -48,7 +49,9 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .el-date-editor.el-input__inner {
-  width: 18rem;
+  width: 16.4rem;
+  padding: 3px 0px;
+  margin-bottom: .8rem;
 }
 .Datasets>ul>li{ float: left; padding: 0 .1rem;width: 25%}
 .Datasets>ul>li:nth-child(2){ width: 50%;padding: 0}
