@@ -1,5 +1,5 @@
 <template>
-<el-button type="danger" size="mini" @click="$emit('click-refresh')">{{diff_type}}</el-button>
+<el-button type="danger" size="mini" @click="$emit('click-refresh')">{{diff_type}}<i class="el-icon-delete el-icon--right"></i></el-button>
 </template>
 
 <script>
