@@ -11,62 +11,60 @@
         <!-- 左边部分 -->
         <li style="width: 21%">
           <div class="boxall">
-            <div class="alltitle">gt</div>
-              <HelloWorld @process-upload="inputprocess" type="gt" ref="gt"/>
-             <div class="boxfoot"></div>
-          </div>
-          <div class="boxall">
-            <div class="alltitle">pred</div>
-              <HelloWorld @process-upload="inputprocess" type="pred" ref="pred"/>
-             <div class="boxfoot"></div>
-          </div>
-          <div class="boxall">
-            <div class="alltitle">StationInfo</div>
-              <HelloWorld @process-upload="inputprocess" type="stationinfo" ref="stationinfo"/>
-             <div class="boxfoot"></div>
-          </div>  
-          <div class="boxall">
-            <div class="alltitle">TimeSeries</div>
+            <div class="alltitle">Data Options</div>
+              <div class="boxall">
+                <div class="alltitle">Groundtruth</div>
+                  <HelloWorld @process-upload="inputprocess" type="gt" ref="gt"/>
+                <div class="boxfoot"></div>
+              </div>
+              <div class="boxall">
+                <div class="alltitle">Prediction</div>
+                 <HelloWorld @process-upload="inputprocess" type="pred" ref="pred"/>
+                <div class="boxfoot"></div>
+              </div>
+              <div class="boxall">
+                <div class="alltitle">StationInfo</div>
+                 <HelloWorld @process-upload="inputprocess" type="stationinfo" ref="stationinfo"/>
+                <div class="boxfoot"></div>
+              </div>  
+              <div class="boxall">
+                <div class="alltitle">TimeSeries</div>
 <!--              <TimeSeries @process-upload="timeinfoprocess" :TimeInfoProcessor="this.TimeInfoProcessor" ref="time"/>-->
-              <TimeSeries :TimeInfoProcessor="this.TimeInfoProcessor" ref="time"/>
-             <div class="boxfoot"></div>
-          </div> 
-          <div class="boxall">
-            <div class="alltitle">StationInfo</div>
+                 <TimeSeries :TimeInfoProcessor="this.TimeInfoProcessor" ref="time"/>
+                <div class="boxfoot"></div>
+              </div> 
               <RefreshButton @click-refresh="refresh" diff_type="refresh"/>
               <FuncButton @click-confirm="confirm" diff_type="confirm"/>
              <div class="boxfoot"></div>
           </div> 
-          <div class="boxall">
-            <div class="alltitle">Info</div>
-              <SpatialBadCase @station-change="changeTimeSeries" :CasesError="this.model.mae_for_each_station" :CasesLats="this.model.station_lats" :CasesLngs="this.model.station_lngs"/>
+          <div class="boxall" style="height: 21rem">
+            <!-- <div class="alltitle">Info</div>
+              <SpatialBadCase @station-change="changeTimeSeries" :CasesError="this.model.mae_for_each_station" :CasesLats="this.model.station_lats" :CasesLngs="this.model.station_lngs"/> -->
             <div class="boxfoot"></div>
           </div>
         </li>
 
         <!--中间部分-->
-        <li style="width: 50%">
+        <li style="width: 46.6%">
           <div class="map" id="map_1" >
-            <div v-if="flag" class="bmap" id="bmap" ref="bmap" style="height: 31.3rem; width: 41.5rem;"></div>
-            <SortMetric :sort_metric_param="this.model.sort_rmse_param"/>
+            <div v-if="flag" class="bmap" id="bmap" ref="bmap" style="height:46rem; width: 40.1rem;"></div>
+            <SortMetric v-if="!flag" :sort_metric_param="this.model.sort_rmse_param" style="height: 31.3rem; width: 38rem;"/>
           </div>
         </li>
         <!--右边部分-->
 
         <li style="width: 27%">
           <!--prediction et truth-->
-          <div class="boxall" style="height:15rem;width:28rem;margin-left:-12%">
+          <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
             <div class="alltitle">Groundtruth and Prediction {{currentstation}}</div>
-<!--            <div class="chart_change_button" id="bad_case_button">-->
-<!--            </div>-->
-            <TemporalBadCase :temp_bad_case_param="this.model.temp_bad_case_param"/>
+              <TemporalBadCase :temp_bad_case_param="this.model.temp_bad_case_param"/>
             <div class="boxfoot"></div>
           </div>
 
           <!--bad case distribution rules -- temporal-->
-          <div class="boxall" style="height:15rem;width:28rem;margin-left:-12%">
+          <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
             <div class="alltitle">Bad case Temporal Distribution Rules</div>
-            <el-select v-model="value" placeholder="bad case distribution rules" size="mini">
+            <el-select v-model="value" placeholder="Badcase Week" size="mini" @change="BadcaseDistribution">
               <el-option
                 v-for="item in category"
                 :key="item.value"
@@ -74,20 +72,17 @@
                 :value="item.label">
               </el-option>
             </el-select>
-            <!-- 通过v-show当选择不同选项时进行不同组件的切换 -->
-            <BadcaseDistributionRules v-show="value=='Metrics Rank List'" :badcase_distribution_param="this.model.badcase_week_distribution_rules_param"/>
+            <BadcaseDistributionRules :badcase_distribution_param="this.badcase_distribution_param"/>
             <div class="boxfoot"></div>
           </div>
 
         <!--bad case distribution rules -- spatial-->
-          <div class="boxall" style="height:15rem;width:28rem;margin-left:-12%">
+          <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
           <div class="alltitle">Bad case Spatial Distribution Rules</div>
           <BadcaseDistributionRules :badcase_distribution_param="this.model.badcase_spatial_distribution_rules_param"/>
           <div class="boxfoot"></div>
         </div>
       </li>
-
-        <MetricDistribution :metric_distribution_param="this.model.rmse_distribution_param"/>
       </ul>
     </div>
   </div>
@@ -106,7 +101,7 @@ import RefreshButton from './components/RefreshButton.vue'
 import SpatialBadCase from './components/SpatialView.vue'
 import TemporalBadCase from './components/TemporalView.vue'
 import SortMetric from './components/SortMetric'
-import MetricDistribution from './components/MetricDistribution'
+// import MetricDistribution from './components/MetricDistribution'
 import BadcaseDistributionRules from './components/BadCaseDistributionRules'
 // import ErrorHotspot from './components/ErrorHotspot'
 
@@ -120,36 +115,34 @@ export default {
     SpatialBadCase,
     TemporalBadCase,
     SortMetric,
-    MetricDistribution,
+    // MetricDistribution,
     BadcaseDistributionRules,
     // ErrorHotspot,
   },
   data(){
     return{
-      model:new Model(),
+      model: new Model(),
       TimeInfoProcessor: new TimeInfoProcessor(),
-      // starttime:'2000-01-01T00:00:00',
-      // endtime:'2001-01-01T00:00:00',
-      // StandardofRMSE:2,
       ispoint:0,
       maps:[],
       options:{},
       center:[],
       flag:false,
       currentstation:'',
-      value: "",
+      badcase_distribution_param:null,
+      value: 'Badcase Week',
       category: [{
         value: '选项1',
-        label: 'Metrics Rank List'
+        label: 'Badcase Week'
       },{
         value: '选项2',
-        label: 'RMSE Distribution'
+        label: 'Badcase Peak'
       },{
         value: '选项3',
-        label: 'MAE Distribution'
+        label: 'Badcase Weekday'
       },{
         value: '选项4',
-        label: 'MAPE Distribution'
+        label: 'Badcase Hour'
       }]
     }
   },
@@ -187,6 +180,8 @@ export default {
       this.options={};
       this.center=[];
       this.model.refresh();
+      this.value='Badcase Week';
+      this.badcase_distribution_param=null;
       this.TimeInfoProcessor.refresh();
       this.$refs.gt.clear();
       this.$refs.pred.clear();
@@ -198,6 +193,7 @@ export default {
     confirm(){
       console.log('confirm!',this.flag);
       this.model.testupdate();
+      this.badcase_distribution_param = this.model.badcase_week_distribution_rules_param;
       // 最小系统判断
       if(this.flag) {
         this.show();
@@ -297,11 +293,30 @@ ${val.name}`
         id=params.data.name.slice(7,length)
         console.log(id)
         _this.model.getTemporalBadCaseParam(id);
+        if(_this.TimeInfoProcessor.flag){
+          _this.model.getBadcaseDistributionRulesParam(id);
+          _this.BadcaseDistribution()
+        }
         _this.currentstation=params.data.name
       });
     },
     BadcaseDistribution(){
-      console.log(111)
+      switch(this.value){
+        case 'Badcase Weekday':
+          this.badcase_distribution_param = this.model.badcase_weekday_statistic_param;
+          break;
+        case 'Badcase Peak':
+          this.badcase_distribution_param = this.model.badcase_peak_statistic_param;
+          break;
+        case 'Badcase Week':
+          this.badcase_distribution_param = this.model.badcase_week_distribution_rules_param;
+          break;
+        case 'Badcase Hour':
+          this.badcase_distribution_param = this.model.badcase_hour_distribution_rules_param;
+          break;
+      }
+      console.log(this.model)
+      console.log(this.badcase_distribution_param)
     }
   },
 }
@@ -314,7 +329,8 @@ ${val.name}`
 	box-sizing: border-box}
 *,body{padding:0px;	margin:0px;color: #222;font-family: "微软雅黑";}
 @font-face{font-family:electronicFont;src:url("./font/DS-DIGIT.TTF")}
-body{ background:#000d4a url(./images/bg.jpg) center top; background-size:cover;color:#666;font-size: .1rem;}
+body{ background:#000d4a url(./images/bg.jpg) center top;background-size:cover;color:#666;font-size: .1rem; height: 50rem; overflow: auto;
+background-repeat: no-repeat;}
 li{ list-style-type:none;}
 table{}
 i{ margin:0px; padding:0px; text-indent:0px;}
@@ -470,15 +486,13 @@ a:hover{ color:#06c; text-decoration: none!important}
 .mainbox>ul>li{ float: left; padding: 0 .1rem}
 .mainbox>ul>li{ width: 25%}
 .mainbox>ul>li:nth-child(2){ width: 50%;padding: 0}
-.boxall{ border: 1px solid rgba(25,186,139,.17); padding:0.1rem;  background: rgba(255,255,255,.04) url("./images/line.png"); background-size: 100% auto; position: relative; margin-bottom: .15rem; z-index: 10;}
-.boxall:before,
-.boxall:after{ position:absolute; width: .1rem; height: .1rem; content: "";  border-top: 2px solid #02a6b5; top: 0;}
+.boxall{ border: 1px solid rgba(25,186,139,.17); padding:0.4rem;  background: rgba(255,255,255,.04) url("./images/line.png"); background-size: 100% auto; position: relative; margin-bottom: .5rem; z-index: 10;}
+.boxall:before,.boxall:after{ position:absolute; width: .4rem; height: .4rem; content: "";  border-top: 2px solid #02a6b5; top: 0;}
 .boxall:before,.boxfoot:before{border-left: 2px solid #02a6b5;left: 0;}
 .boxall:after,.boxfoot:after{border-right: 2px solid #02a6b5; right: 0;}
-.alltitle{ font-size:.2rem; color:#fff; text-align: center; margin-bottom: 0.1rem;}
+.alltitle{ font-size:.2rem; color:#fff; text-align: center; margin-bottom: 0.4rem;}
 .boxfoot{ position:absolute; bottom: 0; width: 100%; left: 0;}
-.boxfoot:before,
-.boxfoot:after{ position:absolute; width: .1rem; height: .1rem;  content: "";border-bottom: 2px solid #02a6b5; bottom: 0;}
+.boxfoot:before,.boxfoot:after{ position:absolute; width: .4rem; height: .4rem;  content: "";border-bottom: 2px solid #02a6b5; bottom: 0;}
 
 .bar{background:rgba(101,132,226,.1); padding: .15rem;}
 .barbox li,.barbox2 li{ width:25%; text-align: center; position: relative; z-index: 100;}
@@ -493,7 +507,7 @@ a:hover{ color:#06c; text-decoration: none!important}
 .barbox li{ font-size: .5rem; color: #ffeb7b; padding: .05rem 0;  font-family:electronicFont; font-weight: bold;}
 .barbox2 li{ font-size: .19rem; color:rgba(255,255,255,.7); padding-top: .1rem;}
 
-.map{  position:relative; height: 31.3rem; z-index: 9; width: 41.5rem;}
+.map{  position:relative; height: 46rem; z-index: 9; width: 40.1rem;}
 .map4{ width: 200%; height:7rem;  position: relative; left: -50%; top: 4%; margin-top: .2rem; z-index: 5;}
 .map1,.map2,.map3{ position:absolute; opacity: .5}
 .map1{ width:6.43rem; z-index: 2;top:.45rem; left: .7rem;  animation: myfirst2 15s infinite linear;}
