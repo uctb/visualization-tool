@@ -8,7 +8,7 @@
 export default {
   name: 'TemporalBadCase',
   props:{
-    temp_bad_case_param: Array,
+    temp_bad_case_param: Object,
   },
   data (){
     return {
@@ -163,6 +163,6 @@ export default {
 
 <style>
 .echarts {
-  height: 10rem;background-size: contain;background-repeat: no-repeat;background-position: 50% 50%;  position: relative;
+  height: 13rem;background-size: contain;background-repeat: no-repeat;background-position: 50% 50%;  position: relative;
 }
 </style>

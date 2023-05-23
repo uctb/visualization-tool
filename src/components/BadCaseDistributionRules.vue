@@ -6,7 +6,7 @@
 export default {
   name: "BadCaseDistributionRules",
   props:{
-    badcase_distribution_param: Array,
+    badcase_distribution_param: Object,
   },
   data (){
     return {

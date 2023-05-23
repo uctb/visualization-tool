@@ -65,19 +65,20 @@ export default class Model {
         this.st_raster_diff = st_raster_diff;
         this.st_raster_re = st_raster_re;
 
-        // 判断时间设置得是否准确
+        // 判断是否设置时间
         if (this.ts_flag) {
+            // 判断时间设置得是否准确
             if (this.time_length != this.ts.length) {
                 alert("Time Range or Time fitness is false! Please select again.");
             } else {
                 this.emitBadcaseDistributionRules();
+                this.getBadcaseDistributionRulesParam(0);
             }
         }
         else {
             this.ts = this.ct.range(0, this.time_length, 1);
         }
         
-
         this.emitBadCase();
         this.emitErrorHotspotIndex();
         this.emitBadcaseTemporalDistribution();
@@ -307,8 +308,8 @@ export default class Model {
         this.k = 2 * this.semi_k;
         bad_case_len_list.sort((a, b) => a.length > b.length ? -1 : a.length < b.length ? 1 : 0);
         bad_case_error_list.sort((a, b) => a.error > b.error ? -1 : a.error< b.error ? 1 : 0);
-        console.log("sorted_bad_case_len_list:", bad_case_len_list);
-        console.log("sorted_bad_case_error_list:", bad_case_error_list);
+        // console.log("sorted_bad_case_len_list:", bad_case_len_list);
+        // console.log("sorted_bad_case_error_list:", bad_case_error_list);
         
         // 取top-k error hotspot的索引
         this.error_hotspot_index = {
@@ -319,7 +320,7 @@ export default class Model {
             this.error_hotspot_index['length'].push(bad_case_len_list[i]['index']);
             this.error_hotspot_index['error'].push(bad_case_error_list[i]['index']);
         }
-        console.log("error hotpost index:", this.error_hotspot_index);
+        // console.log("error hotpost index:", this.error_hotspot_index);
     }
     
     // 获得各时间片bad case的个数
@@ -335,7 +336,7 @@ export default class Model {
             }
         }
         this.badcase_temp_distribution = badcase_temp_num;
-        console.log("badcase_temporal_distribution:", badcase_temp_num);
+        // console.log("badcase_temporal_distribution:", badcase_temp_num);
     }
 
     // 获得各站点bad case的分布规律
@@ -372,7 +373,7 @@ export default class Model {
                         PeakSum[station_id]['others']++;
                     }
                     // 统计bad case都是哪一个小时
-                    HourDistribution[this.hs[i]] ++;
+                    HourDistribution[station_id][this.hs[i]]++;
                 }
             }
         }
@@ -380,19 +381,27 @@ export default class Model {
         this.PeakSum = PeakSum;
         this.WeekDistribution = WeekDistribution;
         this.HourDistribution = HourDistribution;
+        console.log("HourDistribution:", HourDistribution)
     }
 
     emitMeanGTDistribution(interval_num) {
         // 先验知识：流量
         // 求平均gt的分布
+        console.log("=======emit Mean GT Distribuion========")
         let mean_gt_for_each_station = [];
         for (let i=0; i<this.station_num; i++) {
             mean_gt_for_each_station[i] = this.ct.calculateMean(this.st_raster_gt[i]);
         }
+        console.log("mean_gt_for_each_station:", mean_gt_for_each_station);
         this.gtRange = this.ct.getSequenceRange(mean_gt_for_each_station, interval_num);
+        console.log(this.gtRange);
+        // 统计预测得糟糕的站点落在什么范围内：超出所有站点平均误差的站点视为预测得糟糕的站点
+        let threshold = this.ct.calculateMean(this.mre_for_each_station);
         for (let i=0; i<this.station_num; i++) {
-            let interval_id = this.ct.getIntervalID(this.gtRange['interval_point'], interval_num, mean_gt_for_each_station[i]);
-            this.gtRange[interval_id]++;
+            if (this.mre_for_each_station[i] > threshold) {
+                let interval_id = this.ct.getIntervalID(this.gtRange['interval_point'], interval_num, mean_gt_for_each_station[i]);
+                this.gtRange[interval_id]++;
+            }
         }
     }
 
@@ -462,8 +471,15 @@ export default class Model {
             mae_index_list.push(this.PointSortedMAE[i][0]);
             sorted_mae_list.push(this.PointSortedMAE[i][1]);
         }
-        this.sort_rmse_param = [rmse_index_list, sorted_rmse_list];
-        this.sort_mae_param = [mae_index_list, sorted_mae_list];
+        // this.sort_rmse_param = [rmse_index_list, sorted_rmse_list];
+        this.sort_rmse_param = {
+            'x_data': sorted_rmse_list,
+            'y_data': rmse_index_list
+        };
+        this.sort_mae_param = {
+            'x_data': sorted_mae_list,
+            'y_data': mae_index_list
+        };
         console.log("sort_rmse_param:", this.sort_rmse_param);
     }
 
@@ -522,7 +538,11 @@ export default class Model {
         for (let i=0; i<interval_num; i++) {
             bc_distribution_num.push(this.gtRange[i]);
         }
-        this.badcase_spatial_distribution_rules_param = [this.gtRange['interval_name'], bc_distribution_num];
+        this.badcase_spatial_distribution_rules_param = {
+            'axisvalue': this.gtRange['interval_name'],
+            'distribution': bc_distribution_num,
+            // 'name': 'Local Bad Case '
+        }
         console.log("badcase_spatial_distribution_rules_param:", this.badcase_spatial_distribution_rules_param);
     }
 
@@ -532,7 +552,8 @@ export default class Model {
         let ts = this.ts;
         this.badcase_temp_distribution_param = {
             'axisvalue': ts,
-            'badcase_temp_num': this.badcase_temp_distribution,
+            'badcase_num': this.badcase_temp_distribution,
+            'name': 'Local Bad Case Temporal Distribution'
         }
         console.log("badcase_temporal_distribution_param:", this.badcase_temp_distribution_param);
     }

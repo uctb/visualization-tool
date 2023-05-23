@@ -27,7 +27,8 @@
           </div>  
           <div class="boxall">
             <div class="alltitle">TimeSeries</div>
-              <TimeSeries @process-upload="timeinfoprocess" :TimeInfoProcessor="this.TimeInfoProcessor" ref="time"/>
+<!--              <TimeSeries @process-upload="timeinfoprocess" :TimeInfoProcessor="this.TimeInfoProcessor" ref="time"/>-->
+              <TimeSeries :TimeInfoProcessor="this.TimeInfoProcessor" ref="time"/>
              <div class="boxfoot"></div>
           </div> 
           <div class="boxall">
@@ -54,7 +55,7 @@
 
         <li style="width: 27%">
           <!--prediction et truth-->
-          <div class="boxall" style="height:10rem;width:28rem;margin-left:-12%">
+          <div class="boxall" style="height:15rem;width:28rem;margin-left:-12%">
             <div class="alltitle">Groundtruth and Prediction {{currentstation}}</div>
 <!--            <div class="chart_change_button" id="bad_case_button">-->
 <!--            </div>-->
@@ -63,7 +64,7 @@
           </div>
 
           <!--bad case distribution rules -- temporal-->
-          <div class="boxall" style="height:10rem;width:28rem;margin-left:-12%">
+          <div class="boxall" style="height:15rem;width:28rem;margin-left:-12%">
             <div class="alltitle">Bad case Temporal Distribution Rules</div>
             <el-select v-model="value" placeholder="bad case distribution rules" size="mini">
               <el-option
@@ -79,9 +80,9 @@
           </div>
 
         <!--bad case distribution rules -- spatial-->
-          <div class="boxall" style="height:10rem;width:28rem;margin-left:-12%">
+          <div class="boxall" style="height:15rem;width:28rem;margin-left:-12%">
           <div class="alltitle">Bad case Spatial Distribution Rules</div>
-          <SortMetric :sort_metric_param="this.model.badcase_spatial_distribution_rules_param"/>
+          <BadcaseDistributionRules :badcase_distribution_param="this.model.badcase_spatial_distribution_rules_param"/>
           <div class="boxfoot"></div>
         </div>
       </li>
@@ -108,7 +109,6 @@ import SortMetric from './components/SortMetric'
 import MetricDistribution from './components/MetricDistribution'
 import BadcaseDistributionRules from './components/BadCaseDistributionRules'
 // import ErrorHotspot from './components/ErrorHotspot'
-// import BadcaseTemporalDistribution from './components/BadcaseTemporalDistribution'
 
 export default {
   name: 'App',
@@ -121,9 +121,8 @@ export default {
     TemporalBadCase,
     SortMetric,
     MetricDistribution,
-    BadcaseDistributionRules
+    BadcaseDistributionRules,
     // ErrorHotspot,
-    // BadcaseTemporalDistribution,
   },
   data(){
     return{
@@ -169,7 +168,6 @@ export default {
       if (newValue) {
         const Success = this.model.setTimeseries(this.TimeInfoProcessor.TimeSeries,
             this.TimeInfoProcessor.WeekSeries, this.TimeInfoProcessor.PeakSeries, this.TimeInfoProcessor.HourSeries);
-        this.model.getBadcaseDistributionRulesParam(0);
         if (!Success) {
           alert("Time Range or Time fitness is false! Please select again.")
         }
@@ -198,9 +196,8 @@ export default {
       console.log(this.TimeInfoProcessor)
     },
     confirm(){
-      console.log('here',this.flag);
+      console.log('confirm!',this.flag);
       this.model.testupdate();
-      console.log("mre_for_each_station:", this.model.mre_for_each_station);
       // 最小系统判断
       if(this.flag) {
         this.show();
@@ -208,7 +205,6 @@ export default {
       else
         this.model.getMetricRankListParam();
       this.model.getTemporalBadCaseParam(0);
-      this.model.getBadcaseSpatialDistributionRulseParam();
       this.$data.currentstation="station0"
       // this.model.getMetricDistributionParam();
       // this.model.emitErrorHotspotIndex();
@@ -225,7 +221,7 @@ export default {
       // console.log("max",maxNum)
       this.$data.center.push(this.model.station_lngs[0])
       this.$data.center.push(this.model.station_lats[0])
-      console.log("center",this.$data.center)
+      // console.log("center",this.$data.center)
       for(let i=0;i<this.model.station_num;i++){
         this.$data.maps.push({
           name:"station"+i,
@@ -237,7 +233,6 @@ export default {
         // this.$data.maps[i].value.push((this.model.mae_for_each_station[i]-minNum)/(maxNum-minNum))
 
       }
-      console.log("data of maps:",this.$data.maps)
       this.initCharts();
     },
     //地图初始化

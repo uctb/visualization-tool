@@ -71,10 +71,10 @@ export default class TimeInfoProcessor
         this.WeekSeries = WeekSeries;
         this.PeakSeries = PeakSeries;
         this.HourSeries = HourSeries;
-        console.log("Time Series is:", this.TimeSeries);
-        console.log("Week Series is:", this.WeekSeries);
-        console.log("Peak Series is:", this.PeakSeries);
-        console.log("Hour Series is:", this.HourSeries);
+        // console.log("Time Series is:", this.TimeSeries);
+        // console.log("Week Series is:", this.WeekSeries);
+        // console.log("Peak Series is:", this.PeakSeries);
+        // console.log("Hour Series is:", this.HourSeries);
     }
 
 

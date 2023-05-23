@@ -28,8 +28,6 @@ export default {
   },
   computed: {
       publishedTableData(){
-        console.log("=========draw table=========")
-        console.log("casesError:", this.CasesError);
           var tableData = new Array();
           var n = this.CasesError.length;
           for(var i=0;i<n;i++)

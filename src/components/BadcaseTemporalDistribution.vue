@@ -6,7 +6,7 @@
 export default {
   name: "BadcaseTemporalDistribution",
   props:{
-    badcase_temp_distribution_param: Array,
+    badcase_temp_distribution_param: Object,
   },
   data (){
     return {
@@ -29,7 +29,8 @@ export default {
   computed: {
     options() {
       let x_data = this.badcase_temp_distribution_param['axisvalue']
-      let y_data = this.badcase_temp_distribution_param['badcase_temp_num']
+      let y_data = this.badcase_temp_distribution_param['badcase_num']
+      let name = this.badcase_temp_distribution_param['name']
 
       return {
         legend : {
@@ -55,7 +56,7 @@ export default {
           trigger: 'axis'
         },
         series: {
-          name: 'Local Bad Case Temporal Distribution',
+          name: name,
           type: 'bar',
           itemStyle: {
             normal: {
@@ -64,45 +65,6 @@ export default {
           },
           data: y_data
         },
-        // dataZoom: [
-        //   {
-        //     type: 'slider',
-        //     show: true,
-        //     xAxisIndex: 0,
-        //     //filterMode: 'empty',   //这句话加上的话，不会随着数据改变轴
-        //     startValue: 0,
-        //     endValue: 30,
-        //     handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
-        //     handleSize: '80%',
-        //     height: 20,
-        //     handleStyle: {
-        //       color: '#fff',
-        //       shadowBlur: 3,
-        //       shadowColor: 'rgba(0, 0, 0, 0.6)',
-        //       shadowOffsetX: 2,
-        //       shadowOffsetY: 2
-        //     }
-        //   },
-        //   {
-        //     type: 'inside',
-        //     show: true,
-        //     xAxisIndex: 0,
-        //   },
-        //   {
-        //     type: 'slider',
-        //     yAxisIndex: 0,
-        //     handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
-        //     handleSize: '80%',
-        //     width: 20,
-        //     handleStyle: {
-        //       color: '#fff',
-        //       shadowBlur: 3,
-        //       shadowColor: 'rgba(0, 0, 0, 0.6)',
-        //       shadowOffsetX: 2,
-        //       shadowOffsetY: 2
-        //     }
-        //   }
-        // ]
       };
     }
   },
@@ -116,7 +78,6 @@ export default {
 
 <style scoped>
 .echarts {
-  width: 100%;
-  height: 500px;
+  height: 13rem;background-size: contain;background-repeat: no-repeat;background-position: 50% 50%;  position: relative;
 }
 </style>

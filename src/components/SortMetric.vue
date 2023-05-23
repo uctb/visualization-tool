@@ -6,7 +6,7 @@
 export default {
   name: "SortMetric",
   props:{
-    sort_metric_param: Array,
+    sort_metric_param: Object,
   },
   data (){
     return {
@@ -15,8 +15,8 @@ export default {
   },
   mounted () {
     this.mychart = this.$echarts.init(this.$refs.sort_metric)
-    console.log(this.sort_metric_param[1])
-    console.log(this.sort_metric_param[0])
+    console.log(this.sort_metric_param['x_data'])
+    console.log(this.sort_metric_param['y_data'])
   },
   watch: {
     sort_metric_param: {
@@ -30,8 +30,8 @@ export default {
   },
   computed: {
     options() {
-      let x_data = this.sort_metric_param[0]
-      let y_data = this.sort_metric_param[1]
+      let x_data = this.sort_metric_param['x_data']
+      let y_data = this.sort_metric_param['y_data']
 
       return {
         legend : {

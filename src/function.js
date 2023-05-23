@@ -86,8 +86,9 @@ export default class ComputeTool  {
     }
 
     calculateMean(sequence) {
-        const sum = sequence.reduce((acc, value) => acc + value, 0);
-        const mean = sum / sequence.length;
+        const filteredSequence = sequence.filter(value => isFinite(value));
+        const sum = filteredSequence.reduce((acc, value) => acc + value, 0);
+        const mean = sum / filteredSequence.length;
         return mean;
     }
 
@@ -117,7 +118,7 @@ export default class ComputeTool  {
     }
     
     get24HourSeries() {
-        hour_series = [];
+        let hour_series = [];
         for (let i=0; i<24; i++) {
             hour_series.push(i.toString().padStart(2, '0'))
         }
