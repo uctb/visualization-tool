@@ -10,13 +10,14 @@ export default class Model {
         this.temp_bad_case_param = null;
         this.st_raster_gt = null;
         this.st_raster_pred = null;
-        this.station_info = null;
+        this.station_info = [];
         this.ts_flag = false;
     }
 
     /*
     TODO: 1.实现SpatialBadCaseLocateModel、TemporalBadCaseLocateModel、InfoProcessModel；2.思考更新输入文件怎么办
     UPDATE: (by hyy) 新增了计算diff序列和badcase
+    UPDATE: (by xxh) 在testupdate新增了stationinfo文件的判断
     */
     testupdate() {
         this.st_raster_gt = this.ip.gt_st_raster;
@@ -32,11 +33,14 @@ export default class Model {
         let mre_for_each_station = new Array(this.station_num);
         let st_raster_diff = new Array(this.station_num);  
         let st_raster_re = new Array(this.station_num);  // 相对误差
-        
+        console.log('length',this.station_info.length)
         //TODO: 下面内容可以封装成函数
         for (var i = 0; i < this.station_num; i++) {
-            station_lats[i] = this.station_info[i][0];
-            station_lngs[i] = this.station_info[i][1];
+            // 判断是否传入StatinInfo文件
+            if(this.station_info.length!=0){
+                station_lats[i] = this.station_info[i][0];
+                station_lngs[i] = this.station_info[i][1];
+            }
             var tmp_mae = 0;
             error_matrix[i] = new Array(this.time_length);
             st_raster_diff[i] = [];
@@ -56,8 +60,10 @@ export default class Model {
             rmse_for_each_station[i] = this.ct.calculate_local_rmse(this.st_raster_pred[i], this.st_raster_gt[i]);
             mre_for_each_station[i] = this.ct.calculateMean(st_raster_re[i]);
         }
-        this.station_lats = station_lats;
-        this.station_lngs = station_lngs;
+        if(this.station_info.length!=0){
+            this.station_lats = station_lats;
+            this.station_lngs = station_lngs;
+        }
         this.error_matrix = error_matrix;
         this.mae_for_each_station = mae_for_each_station;
         this.rmse_for_each_station = rmse_for_each_station;
@@ -87,7 +93,7 @@ export default class Model {
     refresh() {
         this.ip = new InputProcessor();
         this.ct = new ComputeTool();
-        this.station_info = null;
+        this.station_info = [];
         this.station_lats = [];
         this.station_lngs = [];
         this.mae_for_each_station = [];
