@@ -47,8 +47,8 @@
         <!--中间部分-->
         <li style="width: 46.6%">
           <div class="map" id="map_1" >
-            <div v-if="flag" class="bmap" id="bmap" ref="bmap" style="height:46rem; width: 40.1rem;"></div>
-            <SortMetric v-if="!flag" :sort_metric_param="this.model.sort_rmse_param" style="height: 31.3rem; width: 38rem;"/>
+            <div v-if="this.flag" class="bmap" id="bmap" ref="bmap" style="height:46rem; width: 40.1rem;"></div>
+            <SortMetric v-if="!this.flag" :sort_metric_param="this.model.sort_rmse_param" style="height: 31.3rem; width: 38rem; left: 1.2rem"/>
           </div>
         </li>
         <!--右边部分-->
@@ -124,10 +124,10 @@ export default {
       model: new Model(),
       TimeInfoProcessor: new TimeInfoProcessor(),
       ispoint:0,
+      flag:false,
       maps:[],
       options:{},
       center:[],
-      flag:false,
       currentstation:'',
       badcase_distribution_param:null,
       value: 'Badcase Week',
@@ -170,15 +170,14 @@ export default {
   methods:{
     inputprocess(file,type){
       this.model.setSTRaster(file,type);
-      if(type=='stationinfo')
-        this.flag=true;
-      else
-        this.flag=false;
+      if(type=="stationinfo")
+        this.flag = true
     },
     refresh(){
       this.maps=[];
       this.options={};
       this.center=[];
+      this.flag=false;
       this.model.refresh();
       this.value='Badcase Week';
       this.badcase_distribution_param=null;
@@ -191,13 +190,12 @@ export default {
       console.log(this.TimeInfoProcessor)
     },
     confirm(){
-      console.log('confirm!',this.flag);
       this.model.testupdate();
       this.badcase_distribution_param = this.model.badcase_week_distribution_rules_param;
+      console.log('app length',this.model.station_info.length)
       // 最小系统判断
-      if(this.flag) {
-        this.show();
-      }
+      if(this.flag)
+        this.show()
       else
         this.model.getMetricRankListParam();
       this.model.getTemporalBadCaseParam(0);
