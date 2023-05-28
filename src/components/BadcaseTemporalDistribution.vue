@@ -1,20 +1,20 @@
 <template>
-  <div ref="bc_temp_distribution" class="echarts"></div>
+  <div ref="pp_distribution" class="echarts"></div>
 </template>
 
 <script>
 export default {
-  name: "BadcaseTemporalDistribution",
-  props:{
+  name: "BadCaseTemporalDistributionRules",
+  props: {
     badcase_temp_distribution_param: Object,
   },
-  data (){
+  data() {
     return {
-      mychart:null
+      mychart: null
     }
   },
-  mounted () {
-    this.mychart = this.$echarts.init(this.$refs.bc_temp_distribution)
+  mounted() {
+    this.mychart = this.$echarts.init(this.$refs.pp_distribution)
   },
   watch: {
     badcase_temp_distribution_param: {
@@ -29,20 +29,26 @@ export default {
   computed: {
     options() {
       let x_data = this.badcase_temp_distribution_param['axisvalue']
-      let y_data = this.badcase_temp_distribution_param['badcase_num']
+      let y_data = this.badcase_temp_distribution_param['distribution']
       let name = this.badcase_temp_distribution_param['name']
+      let xAxisname = this.badcase_temp_distribution_param['xAxisname']
 
       return {
-        legend : {
+        legend: {
           left: '2%',
           top: '5%',
-          textStyle:{color:'#fff'}
+          textStyle: {color: '#fff'}
         },
         xAxis: {
+          name: xAxisname,
+          nameTextStyle: {
+            color: '#fff',
+          },
           type: 'category',
           data: x_data,
           axisLabel: {
-            color: '#fff'
+            interval: 0,
+            color: '#fff',
           }
         },
         yAxis: {
@@ -78,6 +84,10 @@ export default {
 
 <style scoped>
 .echarts {
-  height: 13rem;background-size: contain;background-repeat: no-repeat;background-position: 50% 50%;  position: relative;
+  height: 14.5rem;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  position: relative;
 }
 </style>

@@ -9,7 +9,7 @@
     <div class="mainbox">
       <ul class="clearfix">
         <!-- 左边部分 -->
-        <li style="width: 21%">
+        <li v-if="this.flag" style="width: 21%">
           <div class="boxall">
             <div class="alltitle">Data Options</div>
               <div class="boxall">
@@ -43,6 +43,35 @@
             <div class="boxfoot"></div>
           </div>
         </li>
+        <li v-if="!this.flag" style="width: 21%">
+          <div class="boxall">
+            <div class="alltitle">Data Options</div>
+            <div class="boxall">
+              <div class="alltitle">Groundtruth</div>
+              <HelloWorld @process-upload="inputprocess" type="gt" ref="gt"/>
+              <div class="boxfoot"></div>
+            </div>
+            <div class="boxall">
+              <div class="alltitle">Prediction</div>
+              <HelloWorld @process-upload="inputprocess" type="pred" ref="pred"/>
+              <div class="boxfoot"></div>
+            </div>
+            <div class="boxall">
+              <div class="alltitle">StationInfo</div>
+              <HelloWorld @process-upload="inputprocess" type="stationinfo" ref="stationinfo"/>
+              <div class="boxfoot"></div>
+            </div>
+            <div class="boxall">
+              <div class="alltitle">TimeSeries</div>
+              <!--              <TimeSeries @process-upload="timeinfoprocess" :TimeInfoProcessor="this.TimeInfoProcessor" ref="time"/>-->
+              <TimeSeries :TimeInfoProcessor="this.TimeInfoProcessor" ref="time"/>
+              <div class="boxfoot"></div>
+            </div>
+            <RefreshButton @click-refresh="refresh" diff_type="refresh"/>
+            <FuncButton @click-confirm="confirm" diff_type="confirm"/>
+            <div class="boxfoot"></div>
+          </div>
+        </li>
 
         <!--中间部分-->
         <li style="width: 46.6%">
@@ -51,9 +80,17 @@
             <SortMetric v-if="!this.flag" :sort_metric_param="this.model.sort_rmse_param" style="height: 31.3rem; width: 38rem; left: 1.2rem"/>
           </div>
         </li>
-        <!--右边部分-->
 
-        <li style="width: 27%">
+        <!--右边部分-->
+        <li v-if="this.flag" style="width: 27%">
+
+          <!--distribution rules of problem point-->
+          <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
+            <div class="alltitle">Bad case Spatial Distribution Rules</div>
+            <BadcaseDistributionRules :badcase_distribution_param="this.model.badcase_spatial_distribution_rules_param"/>
+            <div class="boxfoot"></div>
+          </div>
+
           <!--prediction et truth-->
           <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
             <div class="alltitle">Groundtruth and Prediction {{currentstation}}</div>
@@ -72,17 +109,30 @@
                 :value="item.label">
               </el-option>
             </el-select>
-            <BadcaseDistributionRules :badcase_distribution_param="this.badcase_distribution_param"/>
+            <BadcaseTemporalDistributionRules :badcase_temp_distribution_param="this.badcase_distribution_param"/>
             <div class="boxfoot"></div>
           </div>
 
-        <!--bad case distribution rules -- spatial-->
-          <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
-          <div class="alltitle">Bad case Spatial Distribution Rules</div>
-          <BadcaseDistributionRules :badcase_distribution_param="this.model.badcase_spatial_distribution_rules_param"/>
-          <div class="boxfoot"></div>
-        </div>
+
       </li>
+        <li v-if="!this.flag" style="width: 27%">
+
+          <!--bad case distribution rules -- spatial-->
+          <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
+            <div class="alltitle">Distribution Rules of Problem Point</div>
+            <BadcaseDistributionRules :badcase_distribution_param="this.model.badcase_spatial_distribution_rules_param"/>
+            <div class="boxfoot"></div>
+          </div>
+
+          <!--prediction et truth-->
+          <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
+            <div class="alltitle">Groundtruth and Prediction {{currentstation}}</div>
+            <TemporalBadCase :temp_bad_case_param="this.model.temp_bad_case_param"/>
+            <div class="boxfoot"></div>
+          </div>
+
+
+        </li>
       </ul>
     </div>
   </div>
@@ -101,9 +151,8 @@ import RefreshButton from './components/RefreshButton.vue'
 import SpatialBadCase from './components/SpatialView.vue'
 import TemporalBadCase from './components/TemporalView.vue'
 import SortMetric from './components/SortMetric'
-// import MetricDistribution from './components/MetricDistribution'
 import BadcaseDistributionRules from './components/BadCaseDistributionRules'
-// import ErrorHotspot from './components/ErrorHotspot'
+import BadcaseTemporalDistributionRules from './components/BadcaseTemporalDistribution'
 
 export default {
   name: 'App',
@@ -115,9 +164,8 @@ export default {
     SpatialBadCase,
     TemporalBadCase,
     SortMetric,
-    // MetricDistribution,
     BadcaseDistributionRules,
-    // ErrorHotspot,
+    BadcaseTemporalDistributionRules
   },
   data(){
     return{
@@ -130,19 +178,19 @@ export default {
       center:[],
       currentstation:'',
       badcase_distribution_param:null,
-      value: 'Badcase Week',
+      value: 'Distribution Rules of Bad Case',
       category: [{
         value: '选项1',
-        label: 'Badcase Week'
+        label: 'On what day of the week?'
       },{
         value: '选项2',
-        label: 'Badcase Peak'
+        label: 'Morning/Evening Peak?'
       },{
         value: '选项3',
-        label: 'Badcase Weekday'
+        label: 'Weekday or Weekends?'
       },{
         value: '选项4',
-        label: 'Badcase Hour'
+        label: 'On which hour of the 24?'
       }]
     }
   },
@@ -198,10 +246,10 @@ export default {
         this.show()
       else
         this.model.getMetricRankListParam();
+      // this.model.emitCluster();
       this.model.getTemporalBadCaseParam(0);
+      this.model.getBadcaseSpatialDistributionRulseParam();
       this.$data.currentstation="station0"
-      // this.model.getMetricDistributionParam();
-      // this.model.emitErrorHotspotIndex();
     },
     changeTimeSeries(id){
       console.log(id)
@@ -298,23 +346,22 @@ ${val.name}`
         _this.currentstation=params.data.name
       });
     },
+
     BadcaseDistribution(){
       switch(this.value){
-        case 'Badcase Weekday':
+        case 'Weekday or Weekends?':
           this.badcase_distribution_param = this.model.badcase_weekday_statistic_param;
           break;
-        case 'Badcase Peak':
+        case 'Morning/Evening Peak?':
           this.badcase_distribution_param = this.model.badcase_peak_statistic_param;
           break;
-        case 'Badcase Week':
+        case 'On what day of the week?':
           this.badcase_distribution_param = this.model.badcase_week_distribution_rules_param;
           break;
-        case 'Badcase Hour':
+        case 'On which hour of the 24?':
           this.badcase_distribution_param = this.model.badcase_hour_distribution_rules_param;
           break;
       }
-      console.log(this.model)
-      console.log(this.badcase_distribution_param)
     }
   },
 }
@@ -345,21 +392,10 @@ a:hover{ color:#06c; text-decoration: none!important}
 .clearfix:after {
 	clear: both
 }
-
-.pulll_left{float:left;}
-.pulll_right{float:right;}
 /*谷歌滚动条样式*/
   ::-webkit-scrollbar {width:5px;height:5px;position:absolute}
   ::-webkit-scrollbar-thumb {background-color:#5bc0de}
   ::-webkit-scrollbar-track {background-color:#ddd}
-/*全局相关设置*/
-.left{
-	float: left;
-}
-/*导航栏的设置*/
-.nav{
-	width: 35%;
-}
 .nav>ul{
 
 }
@@ -395,15 +431,6 @@ a:hover{ color:#06c; text-decoration: none!important}
 	font-size: 14px;
 }
 
-.li_ul{
-	position: absolute;
-	background-color: #030829;
-	width: 100%;
-	/*border-top:4px solid #4b8df8;*/
-	display: none;
-	z-index: 999;
-
-}
 .li_ul li{
 	line-height: 40px !important;
 }
@@ -415,21 +442,6 @@ a:hover{ color:#06c; text-decoration: none!important}
 	font-size: 13px;
 }
 
-.nav_1{
-	background-image: url("./images/nav_1.png");
-}
-.nav_2{
-	background-image: url("./images/nav_1.png");
-}
-.nav_active{
-	border-bottom: 4px solid #4b8df8;
-	box-shadow: -10px 0px 15px #034c6a inset, /*å·¦è¾¹é˜´å½±*/
-	0px -10px 15px #034c6a inset, /*ä¸Šè¾¹é˜´å½±*/
-	10px 0px 15px #034c6a inset, 
-	0px 10px 15px #034c6a inset;
-
-	box-sizing: border-box;
-}
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -492,23 +504,13 @@ a:hover{ color:#06c; text-decoration: none!important}
 .boxfoot{ position:absolute; bottom: 0; width: 100%; left: 0;}
 .boxfoot:before,.boxfoot:after{ position:absolute; width: .4rem; height: .4rem;  content: "";border-bottom: 2px solid #02a6b5; bottom: 0;}
 
-.bar{background:rgba(101,132,226,.1); padding: .15rem;}
 .barbox li,.barbox2 li{ width:25%; text-align: center; position: relative; z-index: 100;}
-.barbox:before,
-.barbox:after{ position:absolute; width: .3rem; height: .1rem; content: ""; }
-.barbox:before{border-left: 2px solid #02a6b5;left: 0;border-top: 2px solid #02a6b5; }
-.barbox:after{border-right: 2px solid #02a6b5; right: 0; bottom: 0;border-bottom: 2px solid #02a6b5; }
 
 .barbox li:first-child:before{ position:absolute; content: ""; height:50%; width: 1px; background: rgba(255,255,255,.2); right: 0; top: 25%;}
 
-.barbox{  border: 1px solid rgba(25,186,139,.17); position: relative;}
 .barbox li{ font-size: .5rem; color: #ffeb7b; padding: .05rem 0;  font-family:electronicFont; font-weight: bold;}
 .barbox2 li{ font-size: .19rem; color:rgba(255,255,255,.7); padding-top: .1rem;}
 
 .map{  position:relative; height: 46rem; z-index: 9; width: 40.1rem;}
-.map4{ width: 200%; height:7rem;  position: relative; left: -50%; top: 4%; margin-top: .2rem; z-index: 5;}
-.map1,.map2,.map3{ position:absolute; opacity: .5}
-.map1{ width:6.43rem; z-index: 2;top:.45rem; left: .7rem;  animation: myfirst2 15s infinite linear;}
-.map2{ width:5.66rem; top:.85rem; left:1.2rem; z-index: 3; opacity: 0.2; animation: myfirst 10s infinite linear;}
-.map3{ width:5.18rem; top:1.07rem; left: 1.4rem; z-index: 1;}
+
 </style>

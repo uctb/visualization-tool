@@ -88,6 +88,7 @@ export default class Model {
         this.emitBadCase();
         this.emitErrorHotspotIndex();
         this.emitBadcaseTemporalDistribution();
+        this.emitMeanGTDistribution();
     }
 
     refresh() {
@@ -183,10 +184,6 @@ export default class Model {
         this.ts_flag = true;
         return true
     }
-    
-    emitStationInfo()
-    {
-    }
 
     // 获得模型误差降序排列数组
     emitMetricsRankList() {
@@ -200,8 +197,8 @@ export default class Model {
                 total_rmse_variance += Math.pow(Math.abs(this.st_raster_pred[i][j]-this.st_raster_gt[i][j]), 2);
                 total_absolute_error += Math.abs(this.st_raster_pred[i][j]-this.st_raster_gt[i][j]);
             }
-            RMSE.push(Math.sqrt(total_rmse_variance / this.time_length));
-            MAE.push(total_absolute_error / this.time_length);
+            RMSE.push(Math.round(Math.sqrt(total_rmse_variance / this.time_length) * 100) / 100);
+            MAE.push(Math.round((total_absolute_error / this.time_length) * 100) / 100);
         }
         this.PointSortedRMSE = RMSE.map((value, index) => [index, value]);
         this.PointSortedMAE = MAE.map((value, index) => [index, value]);
@@ -285,66 +282,6 @@ export default class Model {
         console.log("bad case is:", this.bad_case);
     }
 
-    // 获得error hotspot
-    emitErrorHotspotIndex() {
-        // 计算所有bad case的长度和rmse
-        let bad_case_len_list = [];
-        let bad_case_error_list = [];
-        for (let i=0; i<this.station_num; i++) {
-            // 获得站点对应的索引值
-            // let index = this.PointSortedRMSE[i][0];
-            // console.log("worest statation index:", index);
-            // 获得站点对应的bad case list
-            let bad_case_list = this.bad_case[i];
-            for (let j=0; j<bad_case_list.length; j++) {
-                // 对于每个bad case
-                let left = bad_case_list[j][0]['xAxis'];
-                let right = bad_case_list[j][1]['xAxis'];
-                // 计算bad case持续的长度
-                let bad_case_len = right - left;
-                bad_case_len_list.push({'index': [i, j], 'length': bad_case_len});
-                // 计算局部local rmse
-                let rmse = this.ct.calculate_local_rmse(this.st_raster_pred[i].slice(left, right+1), this.st_raster_gt[i].slice(left, right+1))
-                bad_case_error_list.push({'index': [i, j], 'error': rmse});
-            }
-        }
-
-        // 取前1%的bad case作为top-k error hotspot
-        this.semi_k = Math.ceil(0.01 * bad_case_len_list.length);
-        this.k = 2 * this.semi_k;
-        bad_case_len_list.sort((a, b) => a.length > b.length ? -1 : a.length < b.length ? 1 : 0);
-        bad_case_error_list.sort((a, b) => a.error > b.error ? -1 : a.error< b.error ? 1 : 0);
-        // console.log("sorted_bad_case_len_list:", bad_case_len_list);
-        // console.log("sorted_bad_case_error_list:", bad_case_error_list);
-        
-        // 取top-k error hotspot的索引
-        this.error_hotspot_index = {
-            'length': [],
-            'error': [],
-        };
-        for (let i=0; i<this.semi_k; i++) {
-            this.error_hotspot_index['length'].push(bad_case_len_list[i]['index']);
-            this.error_hotspot_index['error'].push(bad_case_error_list[i]['index']);
-        }
-        // console.log("error hotpost index:", this.error_hotspot_index);
-    }
-    
-    // 获得各时间片bad case的个数
-    emitBadcaseTemporalDistribution() {
-        let badcase_temp_num = Array(this.time_length).fill(0);
-        for (let i=0; i<this.station_num; i++) {
-            let diff = this.st_raster_diff[i];
-            const mean = this.ct.calculateMean(diff);
-            for (let j=0; j<this.time_length; j++) {
-                if (diff[j] > mean || diff[j] === Infinity) {
-                    badcase_temp_num[j] += 1;
-                }
-            }
-        }
-        this.badcase_temp_distribution = badcase_temp_num;
-        // console.log("badcase_temporal_distribution:", badcase_temp_num);
-    }
-
     // 获得各站点bad case的分布规律
     emitBadcaseDistributionRules() {
         console.log("============get week & peak status=========")
@@ -390,6 +327,7 @@ export default class Model {
         console.log("HourDistribution:", HourDistribution)
     }
 
+    // 获得问题站点关于流量的分布规律
     emitMeanGTDistribution(interval_num) {
         // 先验知识：流量
         // 求平均gt的分布
@@ -398,9 +336,8 @@ export default class Model {
         for (let i=0; i<this.station_num; i++) {
             mean_gt_for_each_station[i] = this.ct.calculateMean(this.st_raster_gt[i]);
         }
-        console.log("mean_gt_for_each_station:", mean_gt_for_each_station);
         this.gtRange = this.ct.getSequenceRange(mean_gt_for_each_station, interval_num);
-        console.log(this.gtRange);
+        console.log("平均gt分布：", this.gtRange);
         // 统计预测得糟糕的站点落在什么范围内：超出所有站点平均误差的站点视为预测得糟糕的站点
         let threshold = this.ct.calculateMean(this.mre_for_each_station);
         for (let i=0; i<this.station_num; i++) {
@@ -410,6 +347,48 @@ export default class Model {
             }
         }
     }
+
+    // 聚类
+    // emitCluster() {
+    //     console.log("==========cluster===========");
+    //     const nClusters = 3;
+    //
+    //     const trainingData = [
+    //         [123.456, 45.678, 8.5],
+    //         [12.345, 67.890, 7.2]
+    //     ];
+    //
+    //     // 创建 K-Means 聚类器并训练模型
+    //     const kmeans = new KMeans({ nClusters });
+    //     kmeans.fit(trainingData);
+    //
+    //     // 获取聚类结果
+    //     const labels = kmeans.predict(trainingData);
+    //
+    //     // 找出评价指标高的点所在的经纬度范围
+    //     const highScoreCluster = labels.find(label => {
+    //         const clusterPoints = dataset.filter((_, index) => labels[index] === label);
+    //         const clusterScores = clusterPoints.map(item => item.score);
+    //         const maxScore = Math.max(...clusterScores);
+    //         return maxScore >= 8.0; // 评价指标大于等于8.0的簇
+    //     });
+    //
+    //     if (highScoreCluster) {
+    //         const clusterPoints = dataset.filter((_, index) => labels[index] === highScoreCluster);
+    //         const longitudes = clusterPoints.map(item => item.longitude);
+    //         const latitudes = clusterPoints.map(item => item.latitude);
+    //         const minLongitude = Math.min(...longitudes);
+    //         const maxLongitude = Math.max(...longitudes);
+    //         const minLatitude = Math.min(...latitudes);
+    //         const maxLatitude = Math.max(...latitudes);
+    //
+    //         console.log('评价指标高的点所在的经纬度范围：');
+    //         console.log('最小经度：', minLongitude);
+    //         console.log('最大经度：', maxLongitude);
+    //         console.log('最小纬度：', minLatitude);
+    //         console.log('最大纬度：', maxLatitude);
+    //     }
+    // }
 
     /*
         绘图参数
@@ -435,33 +414,6 @@ export default class Model {
         }
         console.log("temp_bad_case_param:", this.temp_bad_case_param);
     }
-    
-    getErrorHotspotParam(type, index) {
-        // index：画的是第index个error hotspot
-        console.log("=========plot error hotspot===========");
-        let station_ind = this.error_hotspot_index[type][index][0];
-        let bad_case_ind = this.error_hotspot_index[type][index][1];
-        let left = this.bad_case[station_ind][bad_case_ind][0]['xAxis'];
-        let right = this.bad_case[station_ind][bad_case_ind][1]['xAxis'];
-        
-        let pd = this.st_raster_pred[station_ind].slice(left, right+1);
-        let gt = this.st_raster_gt[station_ind].slice(left, right+1);
-
-        let ts = this.ts;
-        
-        this.error_hotspot_param = {
-            'groundtruth':gt,
-            'prediction':pd,
-            'axisvalue':ts,
-        }
-        console.log("error_hotspot_param:", this.error_hotspot_param);
-        
-    }
-
-    // map
-    getMapParam() {
-        
-    }
 
     // metric rank list
     getMetricRankListParam() {
@@ -477,16 +429,143 @@ export default class Model {
             mae_index_list.push(this.PointSortedMAE[i][0]);
             sorted_mae_list.push(this.PointSortedMAE[i][1]);
         }
-        // this.sort_rmse_param = [rmse_index_list, sorted_rmse_list];
         this.sort_rmse_param = {
-            'x_data': sorted_rmse_list,
-            'y_data': rmse_index_list
-        };
-        this.sort_mae_param = {
-            'x_data': sorted_mae_list,
-            'y_data': mae_index_list
+            'rmse': sorted_rmse_list,
+            'mae': sorted_mae_list,
+            'y_data': rmse_index_list,
         };
         console.log("sort_rmse_param:", this.sort_rmse_param);
+    }
+
+    // bad case temporal distribution rules
+    getBadcaseDistributionRulesParam(spatial_ind) {
+        console.log("=========plot bad case distribution rules=========")
+        let weekday_statistic = Object.values(this.WeekSum[spatial_ind]);
+        let peak_statistic = Object.values(this.PeakSum[spatial_ind]);
+        let week_distribution = this.WeekDistribution[spatial_ind];
+        let hour_distribution = this.HourDistribution[spatial_ind];
+
+        this.badcase_weekday_statistic_param = {
+            'axisvalue': ['weekends', 'workday'],
+            'distribution': weekday_statistic,
+            'name': 'number of bad case',
+            'xAxisname': ''
+        }
+        this.badcase_peak_statistic_param = {
+            'axisvalue': ['moring peak', 'evening peak', 'others'],
+            'distribution': peak_statistic,
+            'name': 'number of bad case',
+            'xAxisname': ''
+        }
+        this.badcase_week_distribution_rules_param = {
+            'axisvalue': ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'],
+            'distribution': week_distribution,
+            'name': 'number of bad case',
+            'xAxisname': ''
+        }
+        this.badcase_hour_distribution_rules_param = {
+            'axisvalue:': this.ct.get24HourSeries(),
+            'distribution': hour_distribution,
+            'name': 'number of bad case',
+            'xAxisname': ''
+        }
+        console.log("badcase_weekday_statistic_param:", this.badcase_weekday_statistic_param);
+        console.log("badcase_peak_statistic_param:", this.badcase_peak_statistic_param);
+        console.log("badcase_week_distribution_rules_param:", this.badcase_week_distribution_rules_param);
+        console.log("badcase_hour_distribution_rules_param:", this.badcase_hour_distribution_rules_param);
+    }
+    
+    // distribution rules of Problem Point
+    getBadcaseSpatialDistributionRulseParam() {
+        let interval_num = 15;  // 可修改参数
+        this.emitMeanGTDistribution(interval_num);
+        console.log("=========plot spataial bad case distribution=========")
+        let bc_distribution_num = [];
+        for (let i=0; i<interval_num; i++) {
+            bc_distribution_num.push(this.gtRange[i]);
+        }
+        this.badcase_spatial_distribution_rules_param = {
+            'axisvalue': this.gtRange['interval_name'],
+            'distribution': bc_distribution_num,
+            'name': 'number of problem point',
+            'xAxisname': 'Flow Range'
+        }
+        console.log("badcase_spatial_distribution_rules_param:", this.badcase_spatial_distribution_rules_param);
+    }
+
+    
+    /*目前没用到的函数*/
+
+    // 获得error hotspot
+    emitErrorHotspotIndex() {
+        // 计算所有bad case的长度和rmse
+        let bad_case_len_list = [];
+        let bad_case_error_list = [];
+        for (let i=0; i<this.station_num; i++) {
+            // 获得站点对应的索引值
+            // let index = this.PointSortedRMSE[i][0];
+            // console.log("worest statation index:", index);
+            // 获得站点对应的bad case list
+            let bad_case_list = this.bad_case[i];
+            for (let j=0; j<bad_case_list.length; j++) {
+                // 对于每个bad case
+                let left = bad_case_list[j][0]['xAxis'];
+                let right = bad_case_list[j][1]['xAxis'];
+                // 计算bad case持续的长度
+                let bad_case_len = right - left;
+                bad_case_len_list.push({'index': [i, j], 'length': bad_case_len});
+                // 计算局部local rmse
+                let rmse = this.ct.calculate_local_rmse(this.st_raster_pred[i].slice(left, right+1), this.st_raster_gt[i].slice(left, right+1))
+                bad_case_error_list.push({'index': [i, j], 'error': rmse});
+            }
+        }
+
+        // 取前1%的bad case作为top-k error hotspot
+        this.semi_k = Math.ceil(0.01 * bad_case_len_list.length);
+        this.k = 2 * this.semi_k;
+        bad_case_len_list.sort((a, b) => a.length > b.length ? -1 : a.length < b.length ? 1 : 0);
+        bad_case_error_list.sort((a, b) => a.error > b.error ? -1 : a.error< b.error ? 1 : 0);
+        // console.log("sorted_bad_case_len_list:", bad_case_len_list);
+        // console.log("sorted_bad_case_error_list:", bad_case_error_list);
+
+        // 取top-k error hotspot的索引
+        this.error_hotspot_index = {
+            'length': [],
+            'error': [],
+        };
+        for (let i=0; i<this.semi_k; i++) {
+            this.error_hotspot_index['length'].push(bad_case_len_list[i]['index']);
+            this.error_hotspot_index['error'].push(bad_case_error_list[i]['index']);
+        }
+        // console.log("error hotpost index:", this.error_hotspot_index);
+    }
+
+    // 获得各时间片bad case的个数
+    emitBadcaseTemporalDistribution() {
+        let badcase_temp_num = Array(this.time_length).fill(0);
+        for (let i=0; i<this.station_num; i++) {
+            let diff = this.st_raster_diff[i];
+            const mean = this.ct.calculateMean(diff);
+            for (let j=0; j<this.time_length; j++) {
+                if (diff[j] > mean || diff[j] === Infinity) {
+                    badcase_temp_num[j] += 1;
+                }
+            }
+        }
+        this.badcase_temp_distribution = badcase_temp_num;
+        // console.log("badcase_temporal_distribution:", badcase_temp_num);
+    }
+    
+    // bad case distribution - temporal view
+    getBadcaseTemporalDistributionParam() {
+        console.log("=========plot bad case temporal distribution=========")
+        let ts = this.ts;
+        this.badcase_temp_distribution_param = {
+            'axisvalue': ts,
+            'badcase_num': this.badcase_temp_distribution,
+            'name': 'Local Bad Case Temporal Distribution'
+        }
+        console.log("badcase_temporal_distribution_param:", this.badcase_temp_distribution_param);
     }
 
     // metric distribution
@@ -505,65 +584,28 @@ export default class Model {
         console.log("rmse_distribution_param:", this.rmse_distribution_param);
     }
 
-    // bad case temporal distribution rules
-    getBadcaseDistributionRulesParam(spatial_ind) {
-        console.log("=========plot bad case distribution rules=========")
-        let weekday_statistic = Object.values(this.WeekSum[spatial_ind]);
-        let peak_statistic = Object.values(this.PeakSum[spatial_ind]);
-        let week_distribution = this.WeekDistribution[spatial_ind];
-        let hour_distribution = this.HourDistribution[spatial_ind];
+    // error hotspot
+    getErrorHotspotParam(type, index) {
+        // index：画的是第index个error hotspot
+        console.log("=========plot error hotspot===========");
+        let station_ind = this.error_hotspot_index[type][index][0];
+        let bad_case_ind = this.error_hotspot_index[type][index][1];
+        let left = this.bad_case[station_ind][bad_case_ind][0]['xAxis'];
+        let right = this.bad_case[station_ind][bad_case_ind][1]['xAxis'];
 
-        this.badcase_weekday_statistic_param = {
-            'axisvalue': ['weekends', 'workday'],
-            'distribution': weekday_statistic
-        }
-        this.badcase_peak_statistic_param = {
-            'axisvalue': ['moring peak', 'evening peak', 'others'],
-            'distribution': peak_statistic
-        }
-        this.badcase_week_distribution_rules_param = {
-            'axisvalue': ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'],
-            'distribution': week_distribution
-        }
-        this.badcase_hour_distribution_rules_param = {
-            'axisvalue:': this.ct.get24HourSeries(),
-            'distribution': hour_distribution
-        }
-        console.log("badcase_weekday_statistic_param:", this.badcase_weekday_statistic_param);
-        console.log("badcase_peak_statistic_param:", this.badcase_peak_statistic_param);
-        console.log("badcase_week_distribution_rules_param:", this.badcase_week_distribution_rules_param);
-        console.log("badcase_hour_distribution_rules_param:", this.badcase_hour_distribution_rules_param);
-    }
-    
-    // bad case spatial distribution rules
-    getBadcaseSpatialDistributionRulseParam() {
-        let interval_num = 15;  // 可修改参数
-        this.emitMeanGTDistribution(interval_num);
-        console.log("=========plot spataial bad case distribution=========")
-        let bc_distribution_num = [];
-        for (let i=0; i<interval_num; i++) {
-            bc_distribution_num.push(this.gtRange[i]);
-        }
-        this.badcase_spatial_distribution_rules_param = {
-            'axisvalue': this.gtRange['interval_name'],
-            'distribution': bc_distribution_num,
-            // 'name': 'Local Bad Case '
-        }
-        console.log("badcase_spatial_distribution_rules_param:", this.badcase_spatial_distribution_rules_param);
-    }
+        let pd = this.st_raster_pred[station_ind].slice(left, right+1);
+        let gt = this.st_raster_gt[station_ind].slice(left, right+1);
 
-    // bad case distribution - temporal view
-    getBadcaseTemporalDistributionParam() {
-        console.log("=========plot bad case temporal distribution=========")
         let ts = this.ts;
-        this.badcase_temp_distribution_param = {
-            'axisvalue': ts,
-            'badcase_num': this.badcase_temp_distribution,
-            'name': 'Local Bad Case Temporal Distribution'
-        }
-        console.log("badcase_temporal_distribution_param:", this.badcase_temp_distribution_param);
-    }
 
+        this.error_hotspot_param = {
+            'groundtruth':gt,
+            'prediction':pd,
+            'axisvalue':ts,
+        }
+        console.log("error_hotspot_param:", this.error_hotspot_param);
+
+    }
 
 
 }

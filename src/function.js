@@ -25,7 +25,7 @@ export default class ComputeTool  {
             interval_point.push(left);
 
             right = left + interval;
-            let range = left.toFixed(2) + ' ~ ' + right.toFixed(2);
+            let range = left.toFixed(0) + ' ~ ' + right.toFixed(0);
             interval_name.push(range);
 
             tmp[i] = 0;
