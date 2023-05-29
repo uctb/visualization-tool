@@ -63,18 +63,6 @@ a {
 
 .Datasets>ul>li{ float: left; padding: 0 .1rem;width: 25%}
 .Datasets>ul>li:nth-child(2){ width: 50%;padding: 0}
-.datasets{
-	float: left;
-	color: rgba(255,255,255,0.8);
-	font-size: .15rem;
-	width: 35%;
-	height: .5rem;
-	text-align: left;
-	margin-left: .2rem;
-}
-<<<.el-button{
-	width: .1rem;
-}
 .flex{
 	display: flex;
 	flex-wrap: nowrap;

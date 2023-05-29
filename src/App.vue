@@ -63,7 +63,6 @@
             </div>
             <div class="boxall">
               <div class="alltitle">TimeSeries</div>
-              <!--              <TimeSeries @process-upload="timeinfoprocess" :TimeInfoProcessor="this.TimeInfoProcessor" ref="time"/>-->
               <TimeSeries :TimeInfoProcessor="this.TimeInfoProcessor" ref="time"/>
               <div class="boxfoot"></div>
             </div>
@@ -77,7 +76,7 @@
         <li style="width: 46.6%">
           <div class="map" id="map_1" >
             <div v-if="this.flag" class="bmap" id="bmap" ref="bmap" style="height:46rem; width: 40.1rem;"></div>
-            <SortMetric v-if="!this.flag" :sort_metric_param="this.model.sort_rmse_param" style="height: 31.3rem; width: 38rem; left: 1.2rem"/>
+            <SortMetric v-if="!this.flag" @bar-click="changeTimeSeries" :sort_metric_param="this.model.sort_rmse_param" style="height: 31.3rem; width: 38rem; left: 1.2rem"/>
           </div>
         </li>
 
@@ -99,8 +98,8 @@
           </div>
 
           <!--bad case distribution rules -- temporal-->
-          <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
-            <div class="alltitle">Bad case Temporal Distribution Rules</div>
+          <div v-if="this.model.ts_flag" class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
+            <div class="alltitle">Distribution Rules of Bad Case</div>
             <el-select v-model="value" placeholder="Badcase Week" size="mini" @change="BadcaseDistribution">
               <el-option
                 v-for="item in category"
@@ -249,13 +248,12 @@ export default {
       // this.model.emitCluster();
       this.model.getTemporalBadCaseParam(0);
       this.model.getBadcaseSpatialDistributionRulseParam();
+      // this.model.getBadcaseDistributionRulesParam(0);
       this.$data.currentstation="station0"
     },
     changeTimeSeries(id){
       console.log(id)
       this.model.getTemporalBadCaseParam(id);
-      this.model.getBadcaseDistributionRulesParam(id);
-      console.log(this.model.temp_bad_case_param)
     },
     show(){
       // let maxNum = Math.max(...this.model.mae_for_each_station)
@@ -271,8 +269,12 @@ export default {
         })
         this.$data.maps[i].value.push(this.model.station_lngs[i])
         this.$data.maps[i].value.push(this.model.station_lats[i])
-        this.$data.maps[i].value.push(this.model.mre_for_each_station[i])
-        // this.$data.maps[i].value.push((this.model.mae_for_each_station[i]-minNum)/(maxNum-minNum))
+        // this.$data.maps[i].value.push(this.model.mre_for_each_station[i])
+        if(!this.model.invalid_station_index.includes(i)){
+          this.$data.maps[i].value.push(this.model.mre_for_filter_station[i])
+        }else{
+          this.$data.maps[i].value.push(Infinity)
+        }
 
       }
       this.initCharts();
@@ -316,10 +318,7 @@ export default {
             label: {
               show:true,
               formatter: function(val) {
-                            return `
-
-
-${val.name}`
+                            return `${val.name}`
                         },
               textStyle:{
                 color: "rgb(128,128,128)",

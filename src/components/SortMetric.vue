@@ -1,5 +1,5 @@
 <template>
-  <div ref="sort_metric" class="echarts"></div>
+  <div ref="sort_metric" @click="initChart" class="echarts"></div>
 </template>
 
 <script>
@@ -157,8 +157,13 @@ export default {
   },
   methods: {
     initChart() {
-      this.mychart.setOption(this.options)
-    }
+      let xValue = 0
+      this.mychart.setOption(this.options);
+      this.mychart.on('click', params => {
+        xValue = params.name;
+        this.$emit('bar-click', xValue);
+      })
+    },
   }
 }
 </script>

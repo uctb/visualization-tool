@@ -25,15 +25,34 @@ export default class Model {
         this.station_info = this.ip.station_info;
         this.time_length = this.st_raster_gt[0].length;
         this.station_num = this.st_raster_gt.length;
+        this.invalid_station_index = new Array();
+        // 求无效点的索引序列
+        for (let i=0; i<this.station_num; i++) {
+            let flag = false;
+            if (this.ct.calculateMean(this.st_raster_gt[i]) == 0) {
+                flag = true;
+            }
+            for (let j=0; j<this.time_length; j++) {
+                if (isNaN(this.st_raster_gt[i][j]) || !isFinite(this.st_raster_gt[i][j])){
+                    flag = true;
+                }
+            }
+            if (flag) {
+                this.invalid_station_index.push(i);
+            }
+        }
+        console.log("invalid_station_index:", this.invalid_station_index)
         var station_lats = new Array(this.station_num);
         var station_lngs = new Array(this.station_num);
         let error_matrix = new Array(this.time_length);
         let mae_for_each_station = new Array(this.station_num);
         let rmse_for_each_station = new Array(this.station_num);
         let mre_for_each_station = new Array(this.station_num);
+        let mre_for_filter_station = new Array(this.station_num-this.invalid_station_index.length);
         let st_raster_diff = new Array(this.station_num);  
         let st_raster_re = new Array(this.station_num);  // 相对误差
-        console.log('length',this.station_info.length)
+        let st_raster_re_filter = new Array(this.station_num-this.invalid_station_index.length)
+
         //TODO: 下面内容可以封装成函数
         for (var i = 0; i < this.station_num; i++) {
             // 判断是否传入StatinInfo文件
@@ -45,20 +64,24 @@ export default class Model {
             error_matrix[i] = new Array(this.time_length);
             st_raster_diff[i] = [];
             st_raster_re[i] = [];
+            st_raster_re_filter[i] = [];
+            // 计算相对误差&绝对误差
             for (var j = 0; j < this.time_length; j++) {
                 error_matrix[i][j] = this.st_raster_pred[i][j] - this.st_raster_gt[i][j];
                 tmp_mae += Math.abs(error_matrix[i][j]);
                 st_raster_diff[i].push(this.st_raster_pred[i][j] - this.st_raster_gt[i][j]);
                 let re = Math.abs(this.st_raster_pred[i][j] - this.st_raster_gt[i][j]) / this.st_raster_gt[i][j]
-                // if (re == 'NaN' || re == 'Infinity') {
-                //     console.log("gt:", this.st_raster_gt[i][j])
-                //     console.log("pd:", this.st_raster_pred[i][j])
-                // }
                 st_raster_re[i].push(Math.abs(this.st_raster_pred[i][j] - this.st_raster_gt[i][j]) / this.st_raster_gt[i][j]);
             }
             mae_for_each_station[i] = tmp_mae / this.station_num;
             rmse_for_each_station[i] = this.ct.calculate_local_rmse(this.st_raster_pred[i], this.st_raster_gt[i]);
             mre_for_each_station[i] = this.ct.calculateMean(st_raster_re[i]);
+            if (!this.invalid_station_index.includes(i)) {
+                for (var j = 0; j < this.time_length; j++) {
+                    st_raster_re_filter[i].push(Math.abs(this.st_raster_pred[i][j] - this.st_raster_gt[i][j]) / this.st_raster_gt[i][j]);
+                }
+            }
+            mre_for_filter_station[i] = this.ct.calculateMean(st_raster_re_filter[i]);
         }
         if(this.station_info.length!=0){
             this.station_lats = station_lats;
@@ -68,8 +91,14 @@ export default class Model {
         this.mae_for_each_station = mae_for_each_station;
         this.rmse_for_each_station = rmse_for_each_station;
         this.mre_for_each_station = mre_for_each_station;
+        this.mre_for_filter_station = mre_for_filter_station;
         this.st_raster_diff = st_raster_diff;
         this.st_raster_re = st_raster_re;
+
+        console.log("mae for each station", this.mae_for_each_station);
+        console.log("rmse for each station:", this.rmse_for_each_station);
+        console.log("mre for each station:", this.mre_for_each_station);
+        console.log("mre for filter station:", this.mre_for_filter_station)
 
         // 判断是否设置时间
         if (this.ts_flag) {
@@ -86,9 +115,10 @@ export default class Model {
         }
         
         this.emitBadCase();
-        this.emitErrorHotspotIndex();
-        this.emitBadcaseTemporalDistribution();
         this.emitMeanGTDistribution();
+        // this.emitErrorHotspotIndex();
+        // this.emitBadcaseTemporalDistribution();
+
     }
 
     refresh() {
@@ -336,8 +366,8 @@ export default class Model {
         for (let i=0; i<this.station_num; i++) {
             mean_gt_for_each_station[i] = this.ct.calculateMean(this.st_raster_gt[i]);
         }
+        console.log("mean gt for each station:", mean_gt_for_each_station);
         this.gtRange = this.ct.getSequenceRange(mean_gt_for_each_station, interval_num);
-        console.log("平均gt分布：", this.gtRange);
         // 统计预测得糟糕的站点落在什么范围内：超出所有站点平均误差的站点视为预测得糟糕的站点
         let threshold = this.ct.calculateMean(this.mre_for_each_station);
         for (let i=0; i<this.station_num; i++) {
@@ -479,7 +509,7 @@ export default class Model {
     getBadcaseSpatialDistributionRulseParam() {
         let interval_num = 15;  // 可修改参数
         this.emitMeanGTDistribution(interval_num);
-        console.log("=========plot spataial bad case distribution=========")
+        console.log("=========plot spatial bad case distribution=========")
         let bc_distribution_num = [];
         for (let i=0; i<interval_num; i++) {
             bc_distribution_num.push(this.gtRange[i]);
