@@ -33,12 +33,10 @@ function parseTSV(file, targetArray) {
             targetArray[i] = new Array();
             for (let j = 0; j < values.length; j++) {
                 if(i==lines.length-1) {
-                    console.log(targetArray[i][j])
                 }
                 targetArray[i][j] = parseFloat(values[j]);
             }
             if(i==lines.length-1) {
-                console.log(targetArray[i])
             }
         }
         console.log(targetArray);

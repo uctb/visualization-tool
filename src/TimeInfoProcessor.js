@@ -40,6 +40,12 @@ export default class TimeInfoProcessor
         const WeekSeries = []
         const PeakSeries = []
         const HourSeries = []
+        // 计算weekday，weekendes的时间片数
+        const weekday_num = {'SUN': 0, 'MON': 0, 'TUE': 0, 'WED': 0, 'THU': 0, 'FRI': 0, 'SAT': 0};
+        const weeksum_num = {'weekends': 0, 'workday': 0}
+        // 计算早、晚高峰和其他时间段的时间片数
+        const peak_num = {'mp': 0, 'ep': 0, 'others': 0};
+        // 计算24小时的时间片数
 
         while (currentTime <= endTime) {
             const year = currentTime.getFullYear().toString().slice(-2);
@@ -51,15 +57,27 @@ export default class TimeInfoProcessor
             const hour_num_type = currentTime.getHours();
 
             const timeString = `${year}/${month}/${day} ${hour}:${minute}`;
+
+            weekday_num[weekday]++;
+
+            if (weekday == 'SUN' || weekday == 'SAT') {
+                weeksum_num['weekends']++;
+            }
+            else {
+                weeksum_num['workday']++;
+            }
             
             if (this.MorningPeak.includes(hour)) {
                 PeakSeries.push('mp');
+                peak_num['mp']++;
             }
             else if (this.EveningPeak.includes(hour)) {
                 PeakSeries.push('ep');
+                peak_num['ep']++;
             }
             else {
-                PeakSeries.push('none')
+                PeakSeries.push('others');
+                peak_num['others']++;
             }
 
             TimeSeries.push(timeString);
@@ -72,10 +90,17 @@ export default class TimeInfoProcessor
         this.WeekSeries = WeekSeries;
         this.PeakSeries = PeakSeries;
         this.HourSeries = HourSeries;
-        // console.log("Time Series is:", this.TimeSeries);
-        // console.log("Week Series is:", this.WeekSeries);
-        // console.log("Peak Series is:", this.PeakSeries);
-        // console.log("Hour Series is:", this.HourSeries);
+
+        this.WeekdayNum = weekday_num;
+        this.WeeksumNum = weeksum_num;
+        this.PeakNum = peak_num;
+        console.log("Time Series is:", this.TimeSeries);
+        console.log("Week Series is:", this.WeekSeries);
+        console.log("Peak Series is:", this.PeakSeries);
+        console.log("Hour Series is:", this.HourSeries);
+        console.log("WeekdayNum:", this.WeekdayNum);
+        console.log("WeeksumNum:", this.WeeksumNum);
+        console.log("PeakNum:", this.PeakNum);
     }
 
 

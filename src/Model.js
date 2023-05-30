@@ -104,6 +104,9 @@ export default class Model {
         if (this.ts_flag) {
             // 判断时间设置得是否准确
             if (this.time_length != this.ts.length) {
+                console.log("time range fail!")
+                console.log(this.time_length)
+                console.log(this.ts.length)
                 alert("Time Range or Time fitness is false! Please select again.");
             } else {
                 this.emitBadcaseDistributionRules();
@@ -206,12 +209,15 @@ export default class Model {
        this.ip.setSTRaster(file,type) 
     }
     
-    setTimeseries(ts, ws, ps, hs) {
+    setTimeseries(ts, ws, ps, hs, wdn, wsm, pn) {
         console.log("set time series finish!")
         this.ts = ts;  // TimeSeries
         this.ws = ws;  // WeekSeries
         this.ps = ps;  // PeakSeries
         this.hs = hs;  // HourSeries
+        this.weekdaynum = wdn;  // weekday num
+        this.weeksumnum = wsm;
+        this.peaknum = pn;  // peak num
         this.ts_flag = true;
         return true
     }
@@ -318,11 +324,25 @@ export default class Model {
         console.log("============get week & peak status=========")
         let length = this.station_num;
         const weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+        const WeekSum = Array.from({length}, () => ( {'weekends': 0, 'workday': 0} ));
+        const PeakSum = Array.from({length}, () => ( {'mp': 0, 'ep': 0, 'others': 0} ));
+        const HourDistribution = Array.from({length}, () => Array(24).fill(0));
+        // const tmp = {};
+        // for (let i=0; i<weekdays.length; i++) { tmp[i] = 0;}
+        let WeekDistribution = [];
+        for (let i=0; i<length; i++) {
+            WeekDistribution[i] = {};
+            for (let j=0; j<weekdays.length; j++) {
+                WeekDistribution[i][j] = 0;
+            }
+        }
+        console.log(WeekDistribution)
 
-        let WeekSum = Array.from({length}, () => ( {'weekends': 0, 'workday': 0} ));
-        let PeakSum = Array.from({length}, () => ( {'mp': 0, 'ep': 0, 'others': 0} ));
-        let WeekDistribution = Array(length).fill(0).map(() => Array(7).fill(0));
-        let HourDistribution = Array(length).fill(0).map(() => Array(24).fill(0));
+        // let WeekDistribution = Array.from({ length }, () => ({ '0': 0, '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0 }));
+
+        const WeekDistributionRatio = [];
+        const WeekSumRatio = [];
+        const PeakSumRatio = [];
 
         for (let station_id=0; station_id<this.station_num; station_id++) {
             let diff = this.st_raster_diff[station_id];
@@ -330,7 +350,7 @@ export default class Model {
 
             for (let i=0; i<this.ws.length; i++) {
                 if (diff[i] >mean) {
-                    // 统计bad case都是星期几
+                    // 统计bad case在每个星期几的个数
                     for (let j=0; j<weekdays.length; j++) {
                         if (this.ws[i] == weekdays[j]) { WeekDistribution[station_id][j]++; }
                     }
@@ -350,12 +370,23 @@ export default class Model {
                     HourDistribution[station_id][this.hs[i]]++;
                 }
             }
+
+            // 统计星期几的比例，周末/工作日的比例，早/晚高峰/平峰的比例
+            WeekDistributionRatio[station_id] = this.ct.calculate_ratio(this.weekdaynum, WeekDistribution[station_id]);
+            WeekSumRatio[station_id] = this.ct.calculate_ratio(this.weeksumnum, WeekSum[station_id]);
+            PeakSumRatio[station_id] = this.ct.calculate_ratio(this.peaknum, PeakSum[station_id]);
         }
         this.WeekSum = WeekSum;
         this.PeakSum = PeakSum;
         this.WeekDistribution = WeekDistribution;
         this.HourDistribution = HourDistribution;
-        console.log("HourDistribution:", HourDistribution)
+
+        this.WeekDistributionRatio = WeekDistributionRatio;
+        this.WeekSumRatio = WeekSumRatio;
+        this.PeakSumRatio = PeakSumRatio;
+        console.log("WeekDistributionRatio:", this.WeekDistributionRatio[0]);
+        console.log("WeekSumRatio:", this.WeekSumRatio);
+        console.log("PeakSumRatio:",this.PeakSumRatio);
     }
 
     // 获得问题站点关于流量的分布规律
@@ -471,27 +502,27 @@ export default class Model {
     // bad case temporal distribution rules
     getBadcaseDistributionRulesParam(spatial_ind) {
         console.log("=========plot bad case distribution rules=========")
-        let weekday_statistic = Object.values(this.WeekSum[spatial_ind]);
-        let peak_statistic = Object.values(this.PeakSum[spatial_ind]);
-        let week_distribution = this.WeekDistribution[spatial_ind];
+        let weekday_statistic = Object.values(this.WeekSumRatio[spatial_ind]);
+        let peak_statistic = Object.values(this.PeakSumRatio[spatial_ind]);
+        let week_distribution = Object.values(this.WeekDistributionRatio[spatial_ind]);
         let hour_distribution = this.HourDistribution[spatial_ind];
 
         this.badcase_weekday_statistic_param = {
             'axisvalue': ['weekends', 'workday'],
             'distribution': weekday_statistic,
-            'name': 'number of bad case',
+            'name': 'ratio of bad case',
             'xAxisname': ''
         }
         this.badcase_peak_statistic_param = {
             'axisvalue': ['moring peak', 'evening peak', 'others'],
             'distribution': peak_statistic,
-            'name': 'number of bad case',
+            'name': 'ratio of bad case',
             'xAxisname': ''
         }
         this.badcase_week_distribution_rules_param = {
             'axisvalue': ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'],
             'distribution': week_distribution,
-            'name': 'number of bad case',
+            'name': 'ratio of bad case',
             'xAxisname': ''
         }
         this.badcase_hour_distribution_rules_param = {

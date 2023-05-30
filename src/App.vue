@@ -69,7 +69,7 @@
             <div class="boxfoot"></div>
           </div>
 
-          <!--bad case distribution rules -- temporal-->
+          <!--distribution rules of bad case-->
           <div v-if="this.model.ts_flag" class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
             <div class="alltitle">Distribution Rules of Bad Case</div>
             <el-select v-model="value" placeholder="On what day of the week?" size="mini" @change="BadcaseDistribution">
@@ -180,7 +180,9 @@ export default {
     'TimeInfoProcessor.flag': function(newValue, oldValue) {
       if (newValue) {
         const Success = this.model.setTimeseries(this.TimeInfoProcessor.TimeSeries,
-            this.TimeInfoProcessor.WeekSeries, this.TimeInfoProcessor.PeakSeries, this.TimeInfoProcessor.HourSeries);
+            this.TimeInfoProcessor.WeekSeries, this.TimeInfoProcessor.PeakSeries,
+            this.TimeInfoProcessor.HourSeries, this.TimeInfoProcessor.WeekdayNum,
+            this.TimeInfoProcessor.WeeksumNum, this.TimeInfoProcessor.PeakNum);
         if (!Success) {
           alert("Time Range or Time fitness is false! Please select again.")
         }
@@ -231,8 +233,8 @@ export default {
       this.model.getTemporalBadCaseParam(id);
     },
     show(){
-      // let maxNum = Math.max(...this.model.mae_for_each_station)
-      // let minNum = Math.min(...this.model.mae_for_each_station)
+      let maxNum = Math.max(...this.model.mre_for_filter_station)
+      let minNum = Math.min(...this.model.mre_for_filter_station)
       // console.log("max",maxNum)
       this.$data.center.push(this.model.station_lngs[0])
       this.$data.center.push(this.model.station_lats[0])
@@ -246,7 +248,7 @@ export default {
         this.$data.maps[i].value.push(this.model.station_lats[i])
         // this.$data.maps[i].value.push(this.model.mre_for_each_station[i])
         if(!this.model.invalid_station_index.includes(i)){
-          this.$data.maps[i].value.push(this.model.mre_for_filter_station[i])
+          this.$data.maps[i].value.push(this.model.mre_for_filter_station[i]/(maxNum-minNum))
         }else{
           this.$data.maps[i].value.push(Infinity)
         }

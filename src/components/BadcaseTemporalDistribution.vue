@@ -59,7 +59,11 @@ export default {
         },
         tooltip: {
           show: true,
-          trigger: 'axis'
+          trigger: 'axis',
+          formatter: function(params) {
+            let value = (params[0].data * 100).toFixed(1);
+            return params[0].axisValue + ':' + value + '%';
+          }
         },
         series: {
           name: name,

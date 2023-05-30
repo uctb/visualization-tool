@@ -111,6 +111,21 @@ export default class ComputeTool  {
         return rmse;
     }
 
+    calculate_ratio(all, sum) {
+        let result = {};
+        const all_keys = Object.keys(all)
+        const sum_keys = Object.keys(sum)
+        for (let i=0; i<all_keys.length; i++) {
+            let all_key = all_keys[i]
+            let sum_key = sum_keys[i]
+            if (all[all_key] !== 0) {
+                result[all_key] = sum[sum_key] / all[all_key];
+            }else {
+                result[all_key] = 0;
+            }
+        }
+        return result;
+    }
 
     MapWeekDay(param) {
         const weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
