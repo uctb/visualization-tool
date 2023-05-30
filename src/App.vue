@@ -85,7 +85,7 @@
 
           <!--distribution rules of problem point-->
           <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
-            <div class="alltitle">Bad case Spatial Distribution Rules</div>
+            <div class="alltitle">Distribution Rules of Problem Point</div>
             <BadcaseDistributionRules :badcase_distribution_param="this.model.badcase_spatial_distribution_rules_param"/>
             <div class="boxfoot"></div>
           </div>
