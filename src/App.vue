@@ -9,7 +9,7 @@
     <div class="mainbox">
       <ul class="clearfix">
         <!-- 左边部分 -->
-        <li v-if="this.flag" style="width: 21%">
+        <li style="width: 21%">
           <div class="boxall">
             <div class="alltitle">Data Options</div>
               <div class="boxall">
@@ -37,37 +37,9 @@
               <FuncButton @click-confirm="confirm" diff_type="confirm"/>
              <div class="boxfoot"></div>
           </div> 
-          <div class="boxall" style="height: 21rem">
+          <div v-if="this.flag" class="boxall" style="height: 21rem">
             <!-- <div class="alltitle">Info</div>
               <SpatialBadCase @station-change="changeTimeSeries" :CasesError="this.model.mae_for_each_station" :CasesLats="this.model.station_lats" :CasesLngs="this.model.station_lngs"/> -->
-            <div class="boxfoot"></div>
-          </div>
-        </li>
-        <li v-if="!this.flag" style="width: 21%">
-          <div class="boxall">
-            <div class="alltitle">Data Options</div>
-            <div class="boxall">
-              <div class="alltitle">Groundtruth</div>
-              <HelloWorld @process-upload="inputprocess" type="gt" ref="gt"/>
-              <div class="boxfoot"></div>
-            </div>
-            <div class="boxall">
-              <div class="alltitle">Prediction</div>
-              <HelloWorld @process-upload="inputprocess" type="pred" ref="pred"/>
-              <div class="boxfoot"></div>
-            </div>
-            <div class="boxall">
-              <div class="alltitle">StationInfo</div>
-              <HelloWorld @process-upload="inputprocess" type="stationinfo" ref="stationinfo"/>
-              <div class="boxfoot"></div>
-            </div>
-            <div class="boxall">
-              <div class="alltitle">TimeSeries</div>
-              <TimeSeries :TimeInfoProcessor="this.TimeInfoProcessor" ref="time"/>
-              <div class="boxfoot"></div>
-            </div>
-            <RefreshButton @click-refresh="refresh" diff_type="refresh"/>
-            <FuncButton @click-confirm="confirm" diff_type="confirm"/>
             <div class="boxfoot"></div>
           </div>
         </li>
@@ -76,7 +48,7 @@
         <li style="width: 46.6%">
           <div class="map" id="map_1" >
             <div v-if="this.flag" class="bmap" id="bmap" ref="bmap" style="height:46rem; width: 40.1rem;"></div>
-            <SortMetric v-if="!this.flag" @bar-click="changeTimeSeries" :sort_metric_param="this.model.sort_rmse_param" style="height: 31.3rem; width: 38rem; left: 1.2rem"/>
+            <SortMetric v-if="this.isShow&&!this.flag" @bar-click="changeTimeSeries" :sort_metric_param="this.model.sort_rmse_param" style="height: 31.3rem; width: 38rem; left: 1.2rem"/>
           </div>
         </li>
 
@@ -85,22 +57,22 @@
 
           <!--distribution rules of problem point-->
           <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
-            <div class="alltitle">Distribution Rules of Problem Point</div>
-            <BadcaseDistributionRules :badcase_distribution_param="this.model.badcase_spatial_distribution_rules_param"/>
+            <div class="alltitle">Bad case Spatial Distribution Rules</div>
+            <BadcaseDistributionRules v-if="this.isShow" :badcase_distribution_param="this.model.badcase_spatial_distribution_rules_param"/>
             <div class="boxfoot"></div>
           </div>
 
           <!--prediction et truth-->
           <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
             <div class="alltitle">Groundtruth and Prediction {{currentstation}}</div>
-              <TemporalBadCase :temp_bad_case_param="this.model.temp_bad_case_param"/>
+              <TemporalBadCase v-if="this.isShow" :temp_bad_case_param="this.model.temp_bad_case_param"/>
             <div class="boxfoot"></div>
           </div>
 
           <!--bad case distribution rules -- temporal-->
           <div v-if="this.model.ts_flag" class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
             <div class="alltitle">Distribution Rules of Bad Case</div>
-            <el-select v-model="value" placeholder="Badcase Week" size="mini" @change="BadcaseDistribution">
+            <el-select v-model="value" placeholder="On what day of the week?" size="mini" @change="BadcaseDistribution">
               <el-option
                 v-for="item in category"
                 :key="item.value"
@@ -119,14 +91,14 @@
           <!--bad case distribution rules -- spatial-->
           <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
             <div class="alltitle">Distribution Rules of Problem Point</div>
-            <BadcaseDistributionRules :badcase_distribution_param="this.model.badcase_spatial_distribution_rules_param"/>
+            <BadcaseDistributionRules v-if="this.isShow" :badcase_distribution_param="this.model.badcase_spatial_distribution_rules_param"/>
             <div class="boxfoot"></div>
           </div>
 
           <!--prediction et truth-->
           <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
             <div class="alltitle">Groundtruth and Prediction {{currentstation}}</div>
-            <TemporalBadCase :temp_bad_case_param="this.model.temp_bad_case_param"/>
+            <TemporalBadCase v-if="this.isShow" :temp_bad_case_param="this.model.temp_bad_case_param"/>
             <div class="boxfoot"></div>
           </div>
 
@@ -172,12 +144,13 @@ export default {
       TimeInfoProcessor: new TimeInfoProcessor(),
       ispoint:0,
       flag:false,
+      isShow:true,
       maps:[],
       options:{},
       center:[],
       currentstation:'',
       badcase_distribution_param:null,
-      value: 'Distribution Rules of Bad Case',
+      value: 'On what day of the week?',
       category: [{
         value: '选项1',
         label: 'On what day of the week?'
@@ -219,14 +192,16 @@ export default {
       this.model.setSTRaster(file,type);
       if(type=="stationinfo")
         this.flag = true
+      this.isShow=true;
     },
     refresh(){
       this.maps=[];
       this.options={};
       this.center=[];
       this.flag=false;
+      this.isShow=false;
       this.model.refresh();
-      this.value='Badcase Week';
+      this.value='On what day of the week?';
       this.badcase_distribution_param=null;
       this.TimeInfoProcessor.refresh();
       this.$refs.gt.clear();
