@@ -147,6 +147,7 @@ export default class Model {
         this.mae_distribution_param = {};
         this.sort_rmse_param = {};
         this.sort_mae_param = {};
+        this.ts_flag = false;
     }
 
     // update(jsonData) {
