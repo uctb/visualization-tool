@@ -37,7 +37,7 @@
               <FuncButton @click-confirm="confirm" diff_type="confirm"/>
              <div class="boxfoot"></div>
           </div> 
-          <div v-if="this.flag" class="boxall" style="height: 21rem">
+          <div v-if="this.model.ts_flag" class="boxall" style="height: 21rem">
             <!-- <div class="alltitle">Info</div>
               <SpatialBadCase @station-change="changeTimeSeries" :CasesError="this.model.mae_for_each_station" :CasesLats="this.model.station_lats" :CasesLngs="this.model.station_lngs"/> -->
             <div class="boxfoot"></div>
@@ -46,8 +46,8 @@
 
         <!--中间部分-->
         <li style="width: 46.6%">
-          <div class="map" id="map_1" >
-            <div v-if="this.flag" class="bmap" id="bmap" ref="bmap" style="height:46rem; width: 40.1rem;"></div>
+          <div :class='[this.model.ts_flag==true?"long":"short"]' id="map_1" >
+            <div v-if="this.flag" :class='[this.model.ts_flag==true?"blong":"bshort"]' id="bmap" ref="bmap" ></div>
             <SortMetric v-if="this.isShow&&!this.flag" @bar-click="changeTimeSeries" :sort_metric_param="this.model.sort_rmse_param" style="height: 31.3rem; width: 38rem; left: 1.2rem"/>
           </div>
         </li>
@@ -55,17 +55,17 @@
         <!--右边部分-->
         <li v-if="this.flag" style="width: 27%">
 
-          <!--distribution rules of problem point-->
-          <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
-            <div class="alltitle">Bad case Spatial Distribution Rules</div>
-            <BadcaseDistributionRules v-if="this.isShow" :badcase_distribution_param="this.model.badcase_spatial_distribution_rules_param"/>
-            <div class="boxfoot"></div>
-          </div>
-
           <!--prediction et truth-->
           <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
             <div class="alltitle">Groundtruth and Prediction {{currentstation}}</div>
               <TemporalBadCase v-if="this.isShow" :temp_bad_case_param="this.model.temp_bad_case_param"/>
+            <div class="boxfoot"></div>
+          </div>
+          
+          <!--distribution rules of problem point-->
+          <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
+            <div class="alltitle">Bad case Spatial Distribution Rules</div>
+            <BadcaseDistributionRules v-if="this.isShow" :badcase_distribution_param="this.model.badcase_spatial_distribution_rules_param"/>
             <div class="boxfoot"></div>
           </div>
 
@@ -84,17 +84,9 @@
             <div class="boxfoot"></div>
           </div>
 
+        </li>
 
-      </li>
         <li v-if="!this.flag" style="width: 27%">
-
-          <!--bad case distribution rules -- spatial-->
-          <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
-            <div class="alltitle">Distribution Rules of Problem Point</div>
-            <BadcaseDistributionRules v-if="this.isShow" :badcase_distribution_param="this.model.badcase_spatial_distribution_rules_param"/>
-            <div class="boxfoot"></div>
-          </div>
-
           <!--prediction et truth-->
           <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
             <div class="alltitle">Groundtruth and Prediction {{currentstation}}</div>
@@ -102,6 +94,12 @@
             <div class="boxfoot"></div>
           </div>
 
+          <!--bad case distribution rules -- spatial-->
+          <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
+            <div class="alltitle">Distribution Rules of Problem Point</div>
+            <BadcaseDistributionRules v-if="this.isShow" :badcase_distribution_param="this.model.badcase_spatial_distribution_rules_param"/>
+            <div class="boxfoot"></div>
+          </div>
 
         </li>
       </ul>
@@ -164,6 +162,14 @@ export default {
         value: '选项4',
         label: 'On which hour of the 24?'
       }]
+    }
+  },
+  computed: {
+    dynamicStyle(){
+      return {
+        height:'46rem',
+        width: '40.1rem'
+      }
     }
   },
   mounted () {
@@ -254,6 +260,7 @@ export default {
         }
 
       }
+      console.log(11,this.model.invalid_station_index)
       this.initCharts();
     },
     //地图初始化
@@ -305,11 +312,18 @@ export default {
             hoverAnimation: true,
             zlevel: 1,
             data:this.$data.maps,
+            emphasis: {
+              itemStyle: {
+                color: '#FFFACD',
+                shadowBlur: 20,
+                shadowColor: 'rgba(0, 0, 0, 0.5)'
+              }
+            }
           },
       ],
       })
       myChart.on('click', function (params) {
-        console.log(params.data.name);
+        console.log(params);
         let id ='';
         let length=params.data.name.length;
         id=params.data.name.slice(7,length)
@@ -487,6 +501,22 @@ a:hover{ color:#06c; text-decoration: none!important}
 .barbox li{ font-size: .5rem; color: #ffeb7b; padding: .05rem 0;  font-family:electronicFont; font-weight: bold;}
 .barbox2 li{ font-size: .19rem; color:rgba(255,255,255,.7); padding-top: .1rem;}
 
-.map{  position:relative; height: 46rem; z-index: 9; width: 40.1rem;}
+.long{
+  position:relative; z-index: 9; 
+  width: 40.1rem;
+  height: 46rem;
+}
+.short{
+  position:relative; z-index: 9; 
+  width: 40.1rem;
+  height: 30.5rem;
+}
+.blong{
+  height:46rem; width: 40.1rem;
+}
+.bshort{
+  height:30.5rem; width: 40.1rem;
+}
+
 
 </style>
