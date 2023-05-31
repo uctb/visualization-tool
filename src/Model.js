@@ -100,6 +100,9 @@ export default class Model {
         console.log("mre for each station:", this.mre_for_each_station);
         console.log("mre for filter station:", this.mre_for_filter_station)
 
+        this.emitBadCase();
+        this.emitMeanGTDistribution();
+
         // 判断是否设置时间
         if (this.ts_flag) {
             // 判断时间设置得是否准确
@@ -116,9 +119,7 @@ export default class Model {
         else {
             this.ts = this.ct.range(0, this.time_length, 1);
         }
-        
-        this.emitBadCase();
-        this.emitMeanGTDistribution();
+
         // this.emitErrorHotspotIndex();
         // this.emitBadcaseTemporalDistribution();
 
@@ -272,6 +273,8 @@ export default class Model {
         let markArea = new Array(this.station_num);
         let start_time = '';
         let end_time = '';
+        let start_time_invalid = '';
+        let end_time_invalid = '';
 
         for (let i=0; i<this.station_num; i++) {
             markArea[i] = [];
@@ -284,15 +287,31 @@ export default class Model {
             // let lowerThreshold = mean - standardDeviation;
             // 初始化滑动窗口
             let window = 0;
+            let window_invalid =0;
             // 滑动窗口求markArea
             for (let j=0; j<this.time_length; j++) {
                 if (diff[j] > mean) {
                     if (window === 0) {
                         window ++;
                         start_time = j;
-                    }
-                    else {
+                    } else {
                         window ++;
+                    }
+                }
+                else if (this.st_raster_gt[i][j] == 0 && this.st_raster_pred[i][j] == 0) {
+                    if (window >= bad_case_len) {
+                        end_time = j;
+                        window = 0;
+                        markArea[i].push([{'xAxis': start_time, 'itemStyle': {'color': 'red', 'opacity': 0.3}},
+                            {'xAxis': end_time}])
+                    } else {
+                        window = 0;
+                        if (window_invalid === 0) {
+                            window_invalid++;
+                            start_time_invalid = j;
+                        } else {
+                            window_invalid++;
+                        }
                     }
                 }
                 else {
@@ -301,19 +320,32 @@ export default class Model {
                         window = 0;
                         markArea[i].push([{'xAxis': start_time, 'itemStyle': {'color': 'red', 'opacity': 0.3}},
                             {'xAxis': end_time}])
-                    }
-                    else if (window > 0 && window < bad_case_len) {
+                    } else {
                         window = 0;
+                    }
+                    if (window_invalid >= bad_case_len) {
+                        end_time_invalid = j;
+                        window_invalid = 0;
+                        markArea[i].push([{'xAxis': start_time_invalid, 'itemStyle': {'color': 'red', 'opacity': 0.3}},
+                            {'xAxis': end_time_invalid}])
+                    } else if (window_invalid > 0 && window_invalid < bad_case_len) {
+                        window_invalid = 0;
                     }
                 }
             }
             // 最后一个时间片若满足mark_area也应该加入
-            if (window > bad_case_len) {
-                end_time = this.time_length -1;
-                markArea[i].push([{'xAxis': start_time, 'itemStyle': {'color': 'yellow', 'opacity': 0.3}},
-                    {'xAxis': end_time}]);
-                window = 0;
-            }
+            // if (window > bad_case_len) {
+            //     end_time = this.time_length -1;
+            //     markArea[i].push([{'xAxis': start_time, 'itemStyle': {'color': 'red', 'opacity': 0.3}},
+            //         {'xAxis': end_time}]);
+            //     window = 0;
+            // }
+            // if (window_invalid > bad_case_len) {
+            //     end_time_invalid = this.time_length -1;
+            //     markArea[i].push([{'xAxis': start_time_invalid, 'itemStyle': {'color': 'red', 'opacity': 0.3}},
+            //         {'xAxis': end_time_invalid}]);
+            //     window_invalid = 0;
+            // }
         }
         this.bad_case = markArea;
         console.log("bad case is:", this.bad_case);
@@ -336,9 +368,6 @@ export default class Model {
                 WeekDistribution[i][j] = 0;
             }
         }
-        console.log(WeekDistribution)
-
-        // let WeekDistribution = Array.from({ length }, () => ({ '0': 0, '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0 }));
 
         const WeekDistributionRatio = [];
         const WeekSumRatio = [];
@@ -347,9 +376,20 @@ export default class Model {
         for (let station_id=0; station_id<this.station_num; station_id++) {
             let diff = this.st_raster_diff[station_id];
             const mean = this.ct.calculateMean(diff);
+            let bad_case = this.bad_case[station_id];
+            let isInBadcase = false;
 
             for (let i=0; i<this.ws.length; i++) {
-                if (diff[i] >mean) {
+                for (let idx=0; idx<bad_case.length; idx++) {
+                    let start_time = bad_case[idx][0]['xAxis'];
+                    let end_time = bad_case[idx][1]['xAxis'];
+                    if (i > start_time && i < end_time) {
+                        isInBadcase = true;
+                    }
+                }
+                // if (diff[i] >mean)
+                if (isInBadcase == true) {
+                    isInBadcase = false;
                     // 统计bad case在每个星期几的个数
                     for (let j=0; j<weekdays.length; j++) {
                         if (this.ws[i] == weekdays[j]) { WeekDistribution[station_id][j]++; }
