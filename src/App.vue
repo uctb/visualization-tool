@@ -72,15 +72,30 @@
           <!--distribution rules of bad case-->
           <div v-if="this.model.ts_flag" class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
             <div class="alltitle">Distribution Rules of Bad Case</div>
-            <el-select v-model="value" placeholder="On what day of the week?" size="mini" @change="BadcaseDistribution">
+            <el-select v-model="distribution_value" placeholder="On what day of the week?" size="mini" @change="BadcaseDistribution">
               <el-option
-                v-for="item in category"
+                v-for="item in distribution_category"
                 :key="item.value"
                 :label="item.label"
                 :value="item.label">
               </el-option>
             </el-select>
             <BadcaseTemporalDistributionRules :badcase_temp_distribution_param="this.badcase_distribution_param"/>
+            <div class="boxfoot"></div>
+          </div>
+
+          <!--statistics of bad case-->
+          <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
+            <div class="alltitle">Statistics of Bad Case</div>
+            <el-select v-model="statistics_value" placeholder="Statistics" size="mini" @change="Statistics">
+              <el-option
+                  v-for="item in statistics_category"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.label">
+              </el-option>
+            </el-select>
+            <BadCaseStatistics :badcase_temp_distribution_param="this.badcase_statistics_param"/>
             <div class="boxfoot"></div>
           </div>
 
@@ -101,6 +116,28 @@
             <div class="boxfoot"></div>
           </div>
 
+          <!--statistics of bad case-->
+          <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
+            <div class="alltitle">Statistics of Bad Case</div>
+<!--            <el-select v-model="value" placeholder="Statistics" size="mini" @change="Statistics">-->
+<!--              <el-option-->
+<!--                  v-for="item in category"-->
+<!--                  :key="item.value"-->
+<!--                  :label="item.label"-->
+<!--                  :value="item.label">-->
+<!--              </el-option>-->
+<!--            </el-select>-->
+            <el-cascader
+                v-model="value"
+                placeholder="station attributes & time characteristics"
+                size="mini"
+                :options="statistics_option"
+                :props="{ expandTrigger: 'hover' }"
+                @change="Statistics"></el-cascader>
+            <BadCaseStatistics :badcase_temp_distribution_param="this.statistics_param"/>
+            <div class="boxfoot"></div>
+          </div>
+
         </li>
       </ul>
     </div>
@@ -117,11 +154,11 @@ import HelloWorld from './components/HelloWorld.vue'
 import TimeSeries from './components/TimeSeries.vue'
 import FuncButton from './components/FunctionalButton.vue'
 import RefreshButton from './components/RefreshButton.vue'
-import SpatialBadCase from './components/SpatialView.vue'
 import TemporalBadCase from './components/TemporalView.vue'
 import SortMetric from './components/SortMetric'
 import BadcaseDistributionRules from './components/BadCaseDistributionRules'
 import BadcaseTemporalDistributionRules from './components/BadcaseTemporalDistribution'
+import BadCaseStatistics from "./components/BadCaseStatistics";
 
 export default {
   name: 'App',
@@ -130,11 +167,11 @@ export default {
     TimeSeries,
     FuncButton,
     RefreshButton,
-    SpatialBadCase,
     TemporalBadCase,
     SortMetric,
     BadcaseDistributionRules,
-    BadcaseTemporalDistributionRules
+    BadcaseTemporalDistributionRules,
+    BadCaseStatistics
   },
   data(){
     return{
@@ -148,19 +185,41 @@ export default {
       center:[],
       currentstation:'',
       badcase_distribution_param:null,
-      value: 'On what day of the week?',
-      category: [{
-        value: '选项1',
-        label: 'On what day of the week?'
+      statistics_param: null,
+      value: [],
+      statistics_option: [{
+        value: 'station attributes',
+        label: 'station attributes',
+        children: [{
+          value: 'flow',
+          label: 'flow'
+        }]
       },{
-        value: '选项2',
-        label: 'Morning/Evening Peak?'
+        value: 'time characteristics',
+        label: 'time characteristics',
+        children: [{
+          value: 'Weekday or Weekends?',
+          label: 'Weekday or Weekends?'
+        }, {
+          value: 'Morning/Evening Peak?',
+          label: 'Morning/Evening Peak?'
+        }, {
+          value: 'On what day of the week?',
+          label: 'On what day of the week?'
+        }, {
+          value: 'On which hour of the 24?',
+          label: 'On which hour of the 24?'
+        }]
       },{
-        value: '选项3',
-        label: 'Weekday or Weekends?'
-      },{
-        value: '选项4',
-        label: 'On which hour of the 24?'
+        value: 'metric',
+        label: 'metric',
+        children: [{
+          value: 'RMSE Distribution',
+          label: 'RMSE Distribution'
+        }, {
+          value: 'MAE Distribution',
+          label: 'MAE Distribution'
+        }]
       }]
     }
   },
@@ -183,7 +242,7 @@ export default {
     }
   },
   watch: {
-    'TimeInfoProcessor.flag': function(newValue, oldValue) {
+    'TimeInfoProcessor.flag': function(newValue) {
       if (newValue) {
         const Success = this.model.setTimeseries(this.TimeInfoProcessor.TimeSeries,
             this.TimeInfoProcessor.WeekSeries, this.TimeInfoProcessor.PeakSeries,
@@ -223,15 +282,25 @@ export default {
       this.model.testupdate();
       this.badcase_distribution_param = this.model.badcase_week_distribution_rules_param;
       console.log('app length',this.model.station_info.length)
-      // 最小系统判断
-      if(this.flag)
+      /*
+        绘图
+      */
+
+      /* bad case定位 */
+
+      // 空间bad case定位
+      if(this.flag)  //// 最小系统判断
         this.show()
       else
         this.model.getMetricRankListParam();
-      // this.model.emitCluster();
-      this.model.getTemporalBadCaseParam(0);
-      this.model.getBadcaseSpatialDistributionRulseParam();
-      // this.model.getBadcaseDistributionRulesParam(0);
+      this.model.getTemporalBadCaseParam(0);  // 时间bad case定位
+
+      /* 时空数据分布 */
+      this.model.getStationAttributesDistributionParam();  // 站点属性分布
+      this.model.getMetricDistributionParam();  // 评价指标分布
+      /* bad case分布 */
+      this.model.getBadcaseSpatialDistributionRulseParam();  //空间bad case分布
+
       this.$data.currentstation="station0"
     },
     changeTimeSeries(id){
@@ -352,7 +421,44 @@ export default {
           this.badcase_distribution_param = this.model.badcase_hour_distribution_rules_param;
           break;
       }
-    }
+    },
+
+    Statistics(){
+      console.log(this.value[1])
+      switch(this.value){
+        // 站点属性（参数正确）
+        case 'flow':
+          this.statistics_param = this.model.gt_distribuion_param;
+          break;
+        // 时间特性（参数错误）
+        case 'Weekday or Weekends?':
+          this.statistics_param = this.model.badcase_weekday_statistic_param;
+          break;
+        case 'Morning/Evening Peak?':
+          this.badcase_distribution_param = this.model.badcase_peak_statistic_param;
+          break;
+        case 'On what day of the week?':
+          this.badcase_distribution_param = this.model.badcase_week_distribution_rules_param;
+          break;
+        case 'On which hour of the 24?':
+          this.badcase_distribution_param = this.model.badcase_hour_distribution_rules_param;
+          break;
+        // 评价指标（修改参数）
+        case 'RMSE Distribution':
+          this.statistics_param = this.model.badcase_weekday_statistic_param;
+          break;
+        case 'MAE Distribution':
+          this.statistics_param = this.model.badcase_peak_statistic_param;
+          break;
+        // case 'MAPE Distribution':
+        //   this.statistics_param = this.model.badcase_week_distribution_rules_param;
+        //   break;
+        // case 'Metric Rank List':
+        //   this.statistics_param = this.model.badcase_hour_distribution_rules_param;
+        //   break;
+      }
+    },
+
   },
 }
 </script>
