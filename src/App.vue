@@ -494,10 +494,12 @@ export default {
         );
         console.log('ModelUpdated')
         console.log(this.model.ts_flag)
-        if (this.flag)
-          //// 最小系统判断
-          this.show();
-        else this.model.getMetricRankListParam();
+        setTimeout(() => {
+          if (this.flag)
+            //// 最小系统判断
+            this.show();
+          else this.model.getMetricRankListParam(); 
+        }, 300);
         console.log('show!');
         this.model.getTemporalBadCaseParam(0); // 时间bad case定位
 
@@ -521,11 +523,13 @@ export default {
         this.flag = true;
         this.isShow = true;
         this.model.update(xm_hm["pred"], xm_hm["gt"], xm_hm["stationinfo"]);
+        setTimeout(() => {
+          if (this.flag)
+            //// 最小系统判断
+            this.show();
+          else this.model.getMetricRankListParam(); 
+        }, 300);
 
-        if (this.flag)
-          //// 最小系统判断
-          this.show();
-        else this.model.getMetricRankListParam();
         this.model.getTemporalBadCaseParam(0); // 时间bad case定位
 
         /* 时空数据分布 */
