@@ -49,6 +49,14 @@ export default {
           axisLabel: {
             interval: 0,
             color: '#fff',
+            rotate: 30,
+            formatter: function (value, index) {
+              if (y_data[index] !== 0) {
+                return value;
+              } else {
+                return '';
+              }
+            }
           }
         },
         yAxis: {

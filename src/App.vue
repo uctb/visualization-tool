@@ -3,14 +3,14 @@
     <div class="canvas" style="opacity: .2"></div>
     <div class="head">
       <div class="header_center">
-        <h1>ErrorDiagnosisToolbox</h1>
+        <h1>ErrorDiagnosisTool</h1>
       </div>
     </div>
     <div class="mainbox">
       <ul class="clearfix">
         <!-- 左边部分 -->
         <li style="width: 21%">
-          <div class="boxall">
+<!--          <div class="boxall">-->
             <div class="alltitle" style="font-weight: bold;font-size: 1rem">Data Loader</div>
               <el-tabs type="border-card" style="background-color: #000d4a;">
                 <el-tab-pane>
@@ -78,98 +78,84 @@
               <RefreshButton @click-refresh="refresh" diff_type="refresh"/>
               <FuncButton @click-confirm="confirm" diff_type="confirm"/>
              <div class="boxfoot"></div>
-          </div>
+<!--          </div>-->
         </li>
 
         <!--中间部分-->
         <li style="width: 46.6%">
-          <div class="alltitle" style="font-weight: bold;font-size: 1rem">Error</div>
-          <div :class='[this.model.ts_flag==true?"long":"short"]' id="map_1" >
-            <div v-if="this.flag" :class='[this.model.ts_flag==true?"blong":"bshort"]' id="bmap" ref="bmap" ></div>
-            <SortMetric v-if="this.isShow&&!this.flag" @bar-click="changeTimeSeries" :sort_metric_param="this.model.sort_rmse_param" style="height: 31.3rem; width: 38rem; left: 1.2rem"/>
-          </div>
+            <div class="alltitle" style="font-weight: bold;font-size: 1rem">Error</div>
+            <div class="bar">
+              <div class="barbox2">
+                <ul class="clearfix">
+                  <li class="pulll_left"> </li>
+                  <li class="pulll_left">RMSE</li>
+                  <li class="pulll_left">MAE </li>
+                  <li class="pulll_left">MAPE</li>
+                </ul>
+              </div>
+              <div class="barbox">
+                <ul class="clearfix">
+                  <li class="pulll_left counter" id="uv_name" style="font-family:微软雅黑; font-size: .3rem; color: rgba(255,255,255,0.8)">location</li>
+                  <!--            <li class="pulll_left counter" id="rmse" style="font-size: .3rem"> </li>-->
+                  <li class="pulll_left counter" id="rmse"> </li>
+                  <li class="pulll_left counter" id="mae"> </li>
+                  <li class="pulll_left counter" id="mape"> </li>
+                </ul>
+              </div>
+            </div>
+            <div :class='[this.model.ts_flag===true?"long":"short"]' id="map_1" >
+              <div v-if="this.flag" :class='[this.model.ts_flag===true?"blong":"bshort"]' id="bmap" ref="bmap" ></div>
+              <SortMetric v-if="this.isShow&&!this.flag" @bar-click="changeTimeSeries" :sort_metric_param="this.model.sort_rmse_param" style="height: 31.3rem; width: 38rem; left: 1.2rem"/>
+              <!--prediction et truth-->
+<!--              <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">-->
+                <div class="alltitle" style="font-weight: bold;font-size: 1rem">Groundtruth and Prediction {{currentstation}}</div>
+                <TemporalBadCase v-if="this.isShow" :temp_bad_case_param="this.model.temp_bad_case_param"/>
+<!--                <div class="boxfoot"></div>-->
+<!--              </div>-->
+            </div>
         </li>
 
         <!--右边部分-->
-        <li  v-if="this.flag" style="width: 27%">
-          <div class="alltitle" style="font-weight: bold;font-size: 1rem;margin-left:15.5%">Error Diagnosis</div>
-          <!--prediction et truth-->
-          <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
-            <div class="alltitle">Groundtruth and Prediction {{currentstation}}</div>
-              <TemporalBadCase v-if="this.isShow" :temp_bad_case_param="this.model.temp_bad_case_param"/>
-            <div class="boxfoot"></div>
-          </div>
-          
-          <!--空间bad case的分布-->
-          <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
-            <div class="alltitle">Bad case Spatial Distribution Rules</div>
-            <BadcaseDistributionRules v-if="this.isShow" :badcase_distribution_param="this.model.badcase_spatial_distribution_rules_param"/>
-            <div class="boxfoot"></div>
-          </div>
+        <li style="width: 32.4%">
+            <div class="alltitle" style="font-weight: bold;font-size: 1rem;margin-left:15.5%">Error Diagnosis</div>
 
-          <!--distribution rules of bad case-->
-          <div v-if="this.model.ts_flag" class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
-            <div class="alltitle">Distribution Rules of Bad Case</div>
-            <el-select v-model="value" placeholder="On what day of the week?" size="mini" @change="BadcaseDistribution">
-              <el-option
-                v-for="item in category"
-                :key="item.value"
-                :label="item.label"
-                :value="item.label">
-              </el-option>
-            </el-select>
-            <BadcaseTemporalDistributionRules :badcase_temp_distribution_param="this.badcase_distribution_param"/>
-            <div class="boxfoot"></div>
-          </div>
+            <!--prediction et truth-->
+<!--            <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">-->
+<!--              <div class="alltitle">Groundtruth and Prediction {{currentstation}}</div>-->
+<!--              <TemporalBadCase v-if="this.isShow" :temp_bad_case_param="this.model.temp_bad_case_param"/>-->
+<!--              <div class="boxfoot"></div>-->
+<!--            </div>-->
 
-          <!--statistics of bad case-->
+            <!--时空数据/评价指标的分布-->
+            <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
+<!--            <el-divider></el-divider>-->
+              <div class="alltitle">Statistics</div>
+              <el-cascader
+                  v-model="value"
+                  placeholder="station attributes & time characteristics"
+                  size="mini"
+                  :disabled="false"
+                  :options="statistics_option"
+                  :props="{ expandTrigger: 'hover' }"
+                  @change="Statistics"></el-cascader>
+              <BasicStatistics :statistics_param="this.statistics_param"/>
+              <div class="boxfoot"></div>
+            </div>
+
+          <!--bad case的分布规律-->
           <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
-            <div class="alltitle">Statistics of Bad Case</div>
-            <el-select v-model="statistics_value" placeholder="Statistics" size="mini" @change="Statistics">
-              <el-option
-                  v-for="item in statistics_category"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.label">
-              </el-option>
-            </el-select>
-            <BadCaseStatistics :badcase_temp_distribution_param="this.badcase_statistics_param"/>
-            <div class="boxfoot"></div>
-          </div>
-
-        </li>
-
-        <li v-if="!this.flag" style="width: 27%">
-          <div class="alltitle" style="font-weight: bold;font-size: 1rem;margin-left:15.5%">Error Diagnosis</div>
-          <!--prediction et truth-->
-          <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
-            <div class="alltitle">Groundtruth and Prediction {{currentstation}}</div>
-            <TemporalBadCase v-if="this.isShow" :temp_bad_case_param="this.model.temp_bad_case_param"/>
-            <div class="boxfoot"></div>
-          </div>
-
-          <!--时空数据/评价指标的分布-->
-          <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
-            <div class="alltitle">Statistics</div>
+            <div class="alltitle">Distribution of Bad Case</div>
             <el-cascader
-                v-model="value"
+                v-model="value_bc"
                 placeholder="station attributes & time characteristics"
                 size="mini"
                 :disabled="false"
-                :options="statistics_option"
+                :options="statistics_bc_option"
                 :props="{ expandTrigger: 'hover' }"
-                @change="Statistics"></el-cascader>
-            <BasicStatistics :statistics_param="this.statistics_param"/>
+                @change="BadcaseDistribution"></el-cascader>
+            <BadcaseTemporalDistributionRules :badcase_temp_distribution_param="this.badcase_distribution_param"/>
             <div class="boxfoot"></div>
           </div>
-
-          <!--bad case distribution rules -- spatial-->
-          <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
-            <div class="alltitle">Distribution Rules of Problem Point</div>
-            <BadcaseDistributionRules v-if="this.isShow" :badcase_distribution_param="this.model.badcase_spatial_distribution_rules_param"/>
-            <div class="boxfoot"></div>
-          </div>
-
 
         </li>
 
@@ -222,6 +208,7 @@ export default {
       badcase_distribution_param:null,
       statistics_param: null,
       value: [],
+      value_bc: [],
       value1: [],
       statistics_option: [{
         value: 'metric',
@@ -235,6 +222,32 @@ export default {
           label: 'MAE Distribution'
         }]
       }, {
+        value: 'station attributes',
+        label: 'station attributes',
+        disabled: false,
+        children: [{
+          value: 'flow',
+          label: 'flow'
+        }]
+      },{
+        value: 'time characteristics',
+        label: 'time characteristics',
+        disabled: true,
+        children: [{
+          value: 'Weekday or Weekends?',
+          label: 'Weekday or Weekends?'
+        }, {
+          value: 'Morning/Evening Peak?',
+          label: 'Morning/Evening Peak?'
+        }, {
+          value: 'On what day of the week?',
+          label: 'On what day of the week?'
+        }, {
+          value: 'On which hour of the 24?',
+          label: 'On which hour of the 24?'
+        }]
+      }],
+      statistics_bc_option: [{
         value: 'station attributes',
         label: 'station attributes',
         disabled: false,
@@ -329,7 +342,7 @@ export default {
     },
     confirm(){
       this.model.testupdate();
-      this.badcase_distribution_param = this.model.badcase_week_distribution_rules_param;
+      // this.badcase_distribution_param = this.model.badcase_week_distribution_rules_param;
       console.log('app length',this.model.station_info.length)
 
       /*
@@ -350,6 +363,9 @@ export default {
       this.model.getMetricDistributionParam();  // 评价指标分布
       /* bad case分布 */
       this.model.getBadcaseSpatialDistributionRulseParam();  //空间bad case分布
+
+      // 分布图表初始化
+      this.statistics_param = this.model.rmse_distribution_param;
 
       this.$data.currentstation="station0"
     },
@@ -385,8 +401,10 @@ export default {
 
     updateOptionDisabled(timeflag) {
       const targetOption = this.statistics_option.find(option => option.value === 'time characteristics')
+      const targetBcOption = this.statistics_bc_option.find(option => option.value === 'time characteristics')
       if(timeflag) {
         targetOption.disabled = false;
+        targetBcOption.disabled = false;
       }
     },
 
@@ -464,8 +482,12 @@ export default {
       });
     },
 
-    BadcaseDistribution(){
-      switch(this.value){
+    BadcaseDistribution(value){
+      switch(value[1]){
+          // 站点属性（参数正确）
+        case 'flow':
+          this.badcase_distribution_param = this.model.badcase_spatial_distribution_rules_param;
+          break;
         case 'Weekday or Weekends?':
           this.badcase_distribution_param = this.model.badcase_weekday_statistic_param;
           break;
@@ -607,6 +629,8 @@ a:hover{ color:#06c; text-decoration: none!important}
 	font-size: 13px;
 }
 
+.pulll_left{float:left;}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -668,28 +692,38 @@ a:hover{ color:#06c; text-decoration: none!important}
 .boxfoot{ position:absolute; bottom: 0; width: 100%; left: 0;}
 .boxfoot:before,.boxfoot:after{ position:absolute; width: .4rem; height: .4rem;  content: "";border-bottom: 2px solid #02a6b5; bottom: 0;}
 
+.bar{background:rgba(101,132,226,.1); padding: .15rem;}
 .barbox li,.barbox2 li{ width:25%; text-align: center; position: relative; z-index: 100;}
+.barbox:before,
+.barbox:after{ position:absolute; width: .3rem; height: .1rem; content: ""; }
+.barbox:before{border-left: 2px solid #02a6b5;left: 0;border-top: 2px solid #02a6b5; }
+.barbox:after{border-right: 2px solid #02a6b5; right: 0; bottom: 0;border-bottom: 2px solid #02a6b5; }
 
 .barbox li:first-child:before{ position:absolute; content: ""; height:50%; width: 1px; background: rgba(255,255,255,.2); right: 0; top: 25%;}
 
+.barbox{  border: 1px solid rgba(25,186,139,.17); position: relative;}
 .barbox li{ font-size: .5rem; color: #ffeb7b; padding: .05rem 0;  font-family:electronicFont; font-weight: bold;}
 .barbox2 li{ font-size: .19rem; color:rgba(255,255,255,.7); padding-top: .1rem;}
-
 .long{
   position:relative; z-index: 9; 
   width: 40.1rem;
-  height: 46rem;
+  /*height: 46rem;*/
+  height: 26rem;
 }
 .short{
   position:relative; z-index: 9; 
   width: 40.1rem;
-  height: 31.5rem;
+  /*height: 31.5rem;*/
+  height: 21.5rem;
 }
 .blong{
-  height:46rem; width: 40.1rem;
+  /*height:46rem; */
+  width: 40.1rem;
+  height:26rem;
 }
 .bshort{
-  height:31.5rem; width: 40.1rem;
+  height:31.5rem;
+  width: 40.1rem;
 }
 .el-tabs--border-card>.el-tabs__content {
     padding: 0px;
