@@ -775,6 +775,8 @@ export default class Model {
     // bad case temporal distribution rules
     getBadcaseDistributionRulesParam(spatial_ind) {
         console.log("=========plot bad case distribution rules=========")
+        spatial_ind = parseInt(spatial_ind)
+        console.log(this.WeekSumRatio)
         let weekday_statistic = Object.values(this.WeekSumRatio[spatial_ind]);
         let peak_statistic = Object.values(this.PeakSumRatio[spatial_ind]);
         let week_distribution = Object.values(this.WeekDistributionRatio[spatial_ind]);

@@ -479,58 +479,33 @@ export default {
       if (e == "violation_XM_ARIMA") {
         
         this.TimeInfoProcessor.updateParam(
-          xm_arima["start_time"],
-          xm_arima["end_time"],
-          xm_arima["time_fitness"],'min'
-        );
-        console.log('TimeInfoUpdated')
-        this.TimeInfoProcessor.emitTimeSeries()
-        this.flag = true;
-        this.isShow = true;
-        this.model.update(
-          xm_arima["pred"],
-          xm_arima["gt"],
-          xm_arima["stationinfo"]
-        );
-        console.log('ModelUpdated')
-        console.log(this.model.ts_flag)
-        setTimeout(() => {
-          if (this.flag)
-            //// 最小系统判断
-            this.show();
-          else this.model.getMetricRankListParam(); 
-        }, 300);
-        console.log('show!');
-        this.model.getTemporalBadCaseParam(0); // 时间bad case定位
-
-        /* 时空数据分布 */
-        this.model.getStationAttributesDistributionParam(); // 站点属性分布
-        this.model.getMetricDistributionParam(); // 评价指标分布
-        /* bad case分布 */
-        this.model.getBadcaseSpatialDistributionRulseParam(); //空间bad case分布
-
-        // 分布图表初始化
-        this.statistics_param = this.model.rmse_distribution_param;
-
-        this.$data.currentstation = "station0";
-      } else if (e == "violation_XM_HM") {
-        this.TimeInfoProcessor.updateParam(
           xm_hm["start_time"],
           xm_hm["end_time"],
           xm_hm["time_fitness"],'min'
         );
-        this.TimeInfoProcessor.emitTimeSeries()
+
+        
+        console.log('TimeInfoUpdated')
+
         this.flag = true;
         this.isShow = true;
-        this.model.update(xm_hm["pred"], xm_hm["gt"], xm_hm["stationinfo"]);
+        this.TimeInfoProcessor.emitTimeSeries()
+        setTimeout(() => {
+        this.model.update(
+          xm_hm["pred"],
+          xm_hm["gt"],
+          xm_hm["stationinfo"]
+        );},400)
+        
         setTimeout(() => {
           if (this.flag)
             //// 最小系统判断
             this.show();
           else this.model.getMetricRankListParam(); 
-        }, 300);
-
-        this.model.getTemporalBadCaseParam(0); // 时间bad case定位
+        }, 1000);
+        console.log('show!');
+        setTimeout(()=>{
+           this.model.getTemporalBadCaseParam(0); // 时间bad case定位
 
         /* 时空数据分布 */
         this.model.getStationAttributesDistributionParam(); // 站点属性分布
@@ -542,6 +517,50 @@ export default {
         this.statistics_param = this.model.rmse_distribution_param;
 
         this.$data.currentstation = "station0";
+        },600)
+       
+      } else if (e == "violation_XM_HM") {
+       this.TimeInfoProcessor.updateParam(
+          xm_arima["start_time"],
+          xm_arima["end_time"],
+          xm_arima["time_fitness"],'min'
+        );
+
+        
+        console.log('TimeInfoUpdated')
+
+        this.flag = true;
+        this.isShow = true;
+        this.TimeInfoProcessor.emitTimeSeries()
+        setTimeout(() => {
+        this.model.update(
+          xm_arima["pred"],
+          xm_arima["gt"],
+          xm_arima["stationinfo"]
+        );},400)
+        
+        setTimeout(() => {
+          if (this.flag)
+            //// 最小系统判断
+            this.show();
+          else this.model.getMetricRankListParam(); 
+        }, 1000);
+        console.log('show!');
+        setTimeout(()=>{
+           this.model.getTemporalBadCaseParam(0); // 时间bad case定位
+
+        /* 时空数据分布 */
+        this.model.getStationAttributesDistributionParam(); // 站点属性分布
+        this.model.getMetricDistributionParam(); // 评价指标分布
+        /* bad case分布 */
+        this.model.getBadcaseSpatialDistributionRulseParam(); //空间bad case分布
+
+        // 分布图表初始化
+        this.statistics_param = this.model.rmse_distribution_param;
+
+        this.$data.currentstation = "station0";
+        },600)
+       
       }
     },
     refresh() {
@@ -705,7 +724,6 @@ export default {
         _this.model.getTemporalBadCaseParam(id);
         if (_this.TimeInfoProcessor.flag) {
           _this.model.getBadcaseDistributionRulesParam(id);
-          _this.BadcaseDistribution();
         }
         _this.currentstation = params.data.name;
       });
