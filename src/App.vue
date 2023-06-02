@@ -54,11 +54,6 @@
               <RefreshButton @click-refresh="refresh" diff_type="refresh"/>
               <FuncButton @click-confirm="confirm" diff_type="confirm"/>
              <div class="boxfoot"></div>
-          </div> 
-          <div v-if="this.model.ts_flag" class="boxall" style="height: 21rem">
-            <!-- <div class="alltitle">Info</div>
-              <SpatialBadCase @station-change="changeTimeSeries" :CasesError="this.model.mae_for_each_station" :CasesLats="this.model.station_lats" :CasesLngs="this.model.station_lngs"/> -->
-            <div class="boxfoot"></div>
           </div>
         </li>
 
@@ -72,7 +67,7 @@
         </li>
 
         <!--右边部分-->
-        <li  style="width: 27%">
+        <li  v-if="this.flag" style="width: 27%">
           <div class="alltitle" style="font-weight: bold;font-size: 1rem;margin-left:15.5%">Error Diagnosis</div>
           <!--prediction et truth-->
           <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
@@ -81,7 +76,7 @@
             <div class="boxfoot"></div>
           </div>
           
-          <!--distribution rules of problem point-->
+          <!--空间bad case的分布-->
           <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
             <div class="alltitle">Bad case Spatial Distribution Rules</div>
             <BadcaseDistributionRules v-if="this.isShow" :badcase_distribution_param="this.model.badcase_spatial_distribution_rules_param"/>
@@ -121,10 +116,26 @@
         </li>
 
         <li v-if="!this.flag" style="width: 27%">
+          <div class="alltitle" style="font-weight: bold;font-size: 1rem;margin-left:15.5%">Error Diagnosis</div>
           <!--prediction et truth-->
           <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
             <div class="alltitle">Groundtruth and Prediction {{currentstation}}</div>
             <TemporalBadCase v-if="this.isShow" :temp_bad_case_param="this.model.temp_bad_case_param"/>
+            <div class="boxfoot"></div>
+          </div>
+
+          <!--时空数据/评价指标的分布-->
+          <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
+            <div class="alltitle">Statistics</div>
+            <el-cascader
+                v-model="value"
+                placeholder="station attributes & time characteristics"
+                size="mini"
+                :disabled="false"
+                :options="statistics_option"
+                :props="{ expandTrigger: 'hover' }"
+                @change="Statistics"></el-cascader>
+            <BasicStatistics :statistics_param="this.statistics_param"/>
             <div class="boxfoot"></div>
           </div>
 
@@ -135,19 +146,6 @@
             <div class="boxfoot"></div>
           </div>
 
-          <!--statistics of bad case-->
-          <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
-            <div class="alltitle">Statistics of Bad Case</div>
-            <el-cascader
-                v-model="value"
-                placeholder="station attributes & time characteristics"
-                size="mini"
-                :options="statistics_option"
-                :props="{ expandTrigger: 'hover' }"
-                @change="Statistics"></el-cascader>
-            <BadCaseStatistics :badcase_temp_distribution_param="this.statistics_param"/>
-            <div class="boxfoot"></div>
-          </div>
 
         </li>
 
@@ -170,7 +168,7 @@ import TemporalBadCase from './components/TemporalView.vue'
 import SortMetric from './components/SortMetric'
 import BadcaseDistributionRules from './components/BadCaseDistributionRules'
 import BadcaseTemporalDistributionRules from './components/BadcaseTemporalDistribution'
-import BadCaseStatistics from "./components/BadCaseStatistics";
+import BasicStatistics from "./components/Statistics";
 
 export default {
   name: 'App',
@@ -183,7 +181,7 @@ export default {
     SortMetric,
     BadcaseDistributionRules,
     BadcaseTemporalDistributionRules,
-    BadCaseStatistics
+    BasicStatistics
   },
   data(){
     return{
@@ -191,6 +189,7 @@ export default {
       TimeInfoProcessor: new TimeInfoProcessor(),
       ispoint:0,
       flag:false,
+      timeflag:false,
       isShow:true,
       maps:[],
       options:{},
@@ -199,9 +198,22 @@ export default {
       badcase_distribution_param:null,
       statistics_param: null,
       value: [],
+      value1: [],
       statistics_option: [{
+        value: 'metric',
+        label: 'metric',
+        disabled: false,
+        children: [{
+          value: 'RMSE Distribution',
+          label: 'RMSE Distribution'
+        }, {
+          value: 'MAE Distribution',
+          label: 'MAE Distribution'
+        }]
+      }, {
         value: 'station attributes',
         label: 'station attributes',
+        disabled: false,
         children: [{
           value: 'flow',
           label: 'flow'
@@ -209,6 +221,7 @@ export default {
       },{
         value: 'time characteristics',
         label: 'time characteristics',
+        disabled: true,
         children: [{
           value: 'Weekday or Weekends?',
           label: 'Weekday or Weekends?'
@@ -221,16 +234,6 @@ export default {
         }, {
           value: 'On which hour of the 24?',
           label: 'On which hour of the 24?'
-        }]
-      }, {
-        value: 'metric',
-        label: 'metric',
-        children: [{
-          value: 'RMSE Distribution',
-          label: 'RMSE Distribution'
-        }, {
-          value: 'MAE Distribution',
-          label: 'MAE Distribution'
         }]
       }],
       dataset: [{
@@ -269,6 +272,9 @@ export default {
             this.TimeInfoProcessor.WeeksumNum, this.TimeInfoProcessor.PeakNum);
         if (!Success) {
           alert("Time Range or Time fitness is false! Please select again.")
+        } else {
+          this.timeflag = true;
+          this.updateOptionDisabled(this.timeflag)
         }
       }
     }
@@ -302,6 +308,7 @@ export default {
       this.model.testupdate();
       this.badcase_distribution_param = this.model.badcase_week_distribution_rules_param;
       console.log('app length',this.model.station_info.length)
+
       /*
         绘图
       */
@@ -352,6 +359,14 @@ export default {
       console.log(11,this.model.invalid_station_index)
       this.initCharts();
     },
+
+    updateOptionDisabled(timeflag) {
+      const targetOption = this.statistics_option.find(option => option.value === 'time characteristics')
+      if(timeflag) {
+        targetOption.disabled = false;
+      }
+    },
+
     //地图初始化
     initCharts() {
       let _this=this;
@@ -425,6 +440,7 @@ export default {
         _this.currentstation=params.data.name
       });
     },
+
     BadcaseDistribution(){
       switch(this.value){
         case 'Weekday or Weekends?':
@@ -444,39 +460,34 @@ export default {
 
     Statistics(){
       console.log(this.value[1])
-      switch(this.value){
+      switch(this.value[1]){
           // 站点属性（参数正确）
         case 'flow':
           this.statistics_param = this.model.gt_distribuion_param;
           break;
           // 时间特性（参数错误）
         case 'Weekday or Weekends?':
-          this.statistics_param = this.model.badcase_weekday_statistic_param;
+          this.statistics_param = this.model.weekday_distribuion_param;
           break;
         case 'Morning/Evening Peak?':
-          this.badcase_distribution_param = this.model.badcase_peak_statistic_param;
+          this.statistics_param = this.model.peak_distribuion_param;
           break;
         case 'On what day of the week?':
-          this.badcase_distribution_param = this.model.badcase_week_distribution_rules_param;
+          this.statistics_param = this.model.week_distribuion_param;
           break;
         case 'On which hour of the 24?':
-          this.badcase_distribution_param = this.model.badcase_hour_distribution_rules_param;
+          this.statistics_param = this.model.hour_distribuion_param;
           break;
           // 评价指标（修改参数）
         case 'RMSE Distribution':
-          this.statistics_param = this.model.badcase_weekday_statistic_param;
+          this.statistics_param = this.model.rmse_distribution_param;
           break;
         case 'MAE Distribution':
-          this.statistics_param = this.model.badcase_peak_statistic_param;
+          this.statistics_param = this.model.mae_distribution_param;
           break;
-          // case 'MAPE Distribution':
-          //   this.statistics_param = this.model.badcase_week_distribution_rules_param;
-          //   break;
-          // case 'Metric Rank List':
-          //   this.statistics_param = this.model.badcase_hour_distribution_rules_param;
-          //   break;
       }
     },
+
     SelectDataset(){
       switch(this.value){
         case 'Weekday or Weekends?':
@@ -493,6 +504,7 @@ export default {
           break;
       }
     }
+
   },
 }
 </script>

@@ -4,9 +4,9 @@
 
 <script>
 export default {
-  name: "BadCaseStatistics",
+  name: "BasicStatistics",
   props:{
-    badcase_statistics_param: Object,
+    statistics_param: Object,
   },
   data (){
     return {
@@ -17,7 +17,7 @@ export default {
     this.mychart = this.$echarts.init(this.$refs.bc_statistics)
   },
   watch: {
-    badcase_statistics_param: {
+    statistics_param: {
       handler(newVal) {
         console.log(newVal)
         this.initChart()
@@ -28,10 +28,10 @@ export default {
   },
   computed: {
     options() {
-      let x_data = this.badcase_distribution_param['axisvalue']
-      let y_data = this.badcase_distribution_param['distribution']
-      let name = this.badcase_distribution_param['name']
-      let xAxisname = this.badcase_distribution_param['xAxisname']
+      let x_data = this.statistics_param['axisvalue']
+      let y_data = this.statistics_param['distribution']
+      let name = this.statistics_param['name']
+      let xAxisname = this.statistics_param['xAxisname']
 
       return {
         legend : {

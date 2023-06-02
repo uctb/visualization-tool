@@ -27,10 +27,12 @@ export default class Model {
         this.station_num = this.st_raster_gt.length;
         this.invalid_station_index = new Array();
 
+        console.log(this.time_length)
+
         // 求无效点的索引序列
         for (let i=0; i<this.station_num; i++) {
             let flag = false;
-            if (this.ct.calculateMean(this.st_raster_gt[i]) == 0) {
+            if (this.ct.calculateMean(this.st_raster_gt[i]) === 0) {
                 flag = true;
             }
             for (let j=0; j<this.time_length; j++) {
@@ -124,6 +126,7 @@ export default class Model {
 
                 // 绘图
                 // 时间特性绘图
+                this.getTimeStatisticsDistributionParam();
                 this.getBadcaseDistributionRulesParam(0);  // 时间bad case分布绘图
 
             }
@@ -553,6 +556,42 @@ export default class Model {
     // 时间特性分布
     getTimeStatisticsDistributionParam() {
         console.log("=========plot Time Statistics Distribution=========")
+
+        // 周末
+        this.weekday_distribuion_param = {
+            'axisvalue': ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'],
+            'distribution': this.weekdays_distribution,
+            'name': 'time slices amount',
+            'xAxisname': ''
+        }
+
+        // peak
+        this.peak_distribuion_param = {
+            'axisvalue': ['moring peak', 'evening peak', 'others'],
+            'distribution': this.peaksum_distribution,
+            'name': 'time slices amount',
+            'xAxisname': ''
+        }
+
+        // week
+        this.week_distribuion_param = {
+            'axisvalue': ['weekends', 'workday'],
+            'distribution': this.weeksum_distribution,
+            'name': 'time slices amount',
+            'xAxisname': ''
+        }
+
+        // hour
+        this.hour_distribuion_param = {
+            'axisvalue': this.ct.get24HourSeries(),
+            'distribution': this.hour_distribution,
+            'name': 'stime slices amount',
+            'xAxisname': ''
+        }
+        console.log("weekday_statistic_param:", this.weekday_distribuion_param);
+        console.log("peak_statistic_param:", this.peak_distribuion_param);
+        console.log("week_distribution_rules_param:", this.week_distribuion_param);
+        console.log("hour_distribution_rules_param:", this.hour_distribuion_param);
     }
 
     // 评价指标分布
@@ -570,9 +609,21 @@ export default class Model {
             rmse_distribution_num.push(this.PointRMSERange[i]);
             mae_distribution_num.push(this.PointMAERange[i]);
         }
-        this.rmse_distribution_param = [this.PointRMSERange['interval_name'], rmse_distribution_num];
-        this.mae_distribution_param = [this.PointMAERange['interval_name'], mae_distribution_num];
+        this.rmse_distribution_param = {
+            'axisvalue:': this.PointRMSERange['interval_name'],
+            'distribution': rmse_distribution_num,
+            'name': '# station',
+            'xAxisname': 'Range of RMSE Values'
+        }
+        this.mae_distribution_param = {
+            'axisvalue:': this.PointMAERange['interval_name'],
+            'distribution': mae_distribution_num,
+            'name': '# station',
+            'xAxisname': 'Range of MAE Values'
+        }
+
         console.log("rmse_distribution_param:", this.rmse_distribution_param);
+        console.log("mae_distribution_param:", this.mae_distribution_param);
     }
 
 
