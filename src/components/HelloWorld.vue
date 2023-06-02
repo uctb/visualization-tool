@@ -1,13 +1,20 @@
 <template>
   <div class="flex center_spaceBetweeen">
     <ul class="Datasets">
-      <el-input v-model="url" disabled="true" size="mini" id="dataset">
+      <el-input v-model="url" disabled="true" size="mini" id="dataset" placeholder="TSV file of vector">
       </el-input>
     </ul>
     <el-upload id="predload" class="upload-demo" :before-upload="beforeUpload" :limit="1" :show-file-list="false">
       <div>
-        <el-button  type="warning" size="mini" id="el-button">upload<i class="el-icon-upload el-icon--right"></i>
-        </el-button>
+        <el-popover
+          placement="top-start"
+          title="Example of 3 vectors with dimension 4:"
+          width="160"
+          trigger="hover"
+          close-delay=50
+          content="0.1\t0.2\t0.3\t0.40.2\t0.1\t5.0\t0.20.1\t0.1\t7.0\t0.8">
+          <el-button  type="warning" size="mini" id="el-button" slot="reference">upload<i class="el-icon-upload el-icon--right"></i></el-button>
+        </el-popover>
       </div>
     </el-upload>
   </div>
