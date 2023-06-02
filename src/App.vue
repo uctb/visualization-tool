@@ -28,7 +28,8 @@
                    <div class="boxfoot"></div>
                   </div>
                 </el-tab-pane>
-                <el-tab-pane label="Uplaod">
+                <el-tab-pane >
+                  <span slot="label"><i class="el-icon-edit el-icon--right">Upload</i></span>
                   <div class="boxall">
                 <div class="alltitle">Groundtruth</div>
                    <el-popover
@@ -79,6 +80,9 @@
               <FuncButton @click-confirm="confirm" diff_type="confirm"/>
              <div class="boxfoot"></div>
           </div>
+          <div class="boxall" style="height:1.85rem;">
+            <div class="boxfoot"></div>
+          </div> 
         </li>
 
         <!--中间部分-->
@@ -107,7 +111,7 @@
               <div v-if="this.flag" :class='[this.model.ts_flag===true?"blong":"bshort"]' id="bmap" ref="bmap" ></div>
               <SortMetric v-if="this.isShow&&!this.flag" @bar-click="changeTimeSeries" :sort_metric_param="this.model.sort_rmse_param" style="height: 14.5rem; width: 37rem; left: 1.2rem"/>
               <!--prediction et truth-->
-             <div class="boxall" style="height:16rem;width:39rem;margin-left:-0.5%;position:absolute;top:14.5rem" >
+             <div class="boxall" style="height:16rem;width:39rem;position:absolute;top:14.5rem" >
                <div class="alltitle" style="font-weight: bold;font-size: 1rem">Groundtruth and Prediction {{currentstation}}</div>
                <TemporalBadCase v-if="this.isShow" :temp_bad_case_param="this.model.temp_bad_case_param"/>
 
