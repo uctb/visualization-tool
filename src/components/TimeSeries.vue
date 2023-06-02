@@ -11,10 +11,10 @@
   </el-date-picker>
   <div class="flex center_spaceBetweeen">
     <ul class="Datasets">
-      <el-input v-model="interval" size="mini" id="datasets" placeholder="Input Time Fitness/min" style="margin-left: .7rem;"/>
+      <el-input v-model="interval" size="mini" id="datasets" placeholder="Input Time Fitness/min" style="margin-left: .7rem; margin-top: 1rem"/>
     </ul>
     <div>
-      <el-button  type="warning" size="mini" id="el-button" @click="updateTime" style="margin-right: .7rem;">setting<i class="el-icon-edit el-icon--right"></i></el-button>
+      <el-button type="warning" size="mini" id="el-button" @click="updateTime" style="margin-right: .7rem; margin-top: 1rem">setting<i class="el-icon-edit el-icon--right"></i></el-button>
       <el-icon><EditPen /></el-icon>
     </div>
   </div>
@@ -55,18 +55,6 @@ export default {
 }
 .Datasets>ul>li{ float: left; padding: 0 .1rem;width: 25%}
 .Datasets>ul>li:nth-child(2){ width: 50%;padding: 0}
-.datasets{
-	float: left;
-	color: rgba(255,255,255,0.8);
-	font-size: .15rem;
-	width: 10%;
-	height: .5rem;
-	text-align: left;
-	margin-right: .1rem;
-}
-<<<.el-button{
-	width: .1rem;
-}
 .flex{
 	display: flex;
 	flex-wrap: nowrap;

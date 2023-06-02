@@ -19,6 +19,123 @@ export default class Model {
     UPDATE: (by hyy) 新增了计算diff序列和badcase
     UPDATE: (by xxh) 在testupdate新增了stationinfo文件的判断
     */
+    update(pred,gt,station_info){
+        this.st_raster_gt = gt;
+        this.st_raster_pred = pred;
+        this.station_info = station_info;
+        this.time_length = this.st_raster_gt[0].length;
+        this.station_num = this.st_raster_gt.length;
+        this.invalid_station_index = new Array();
+
+        console.log(this.time_length)
+
+        // 求无效点的索引序列
+        for (let i=0; i<this.station_num; i++) {
+            let flag = false;
+            if (this.ct.calculateMean(this.st_raster_gt[i]) === 0) {
+                flag = true;
+            }
+            for (let j=0; j<this.time_length; j++) {
+                if (isNaN(this.st_raster_gt[i][j]) || !isFinite(this.st_raster_gt[i][j])){
+                    flag = true;
+                }
+            }
+            if (flag) {
+                this.invalid_station_index.push(i);
+            }
+        }
+        console.log("invalid_station_index:", this.invalid_station_index)
+
+        // 求各种error
+        var station_lats = new Array(this.station_num);
+        var station_lngs = new Array(this.station_num);
+        let error_matrix = new Array(this.time_length);
+        let mae_for_each_station = new Array(this.station_num);
+        let rmse_for_each_station = new Array(this.station_num);
+        let mre_for_each_station = new Array(this.station_num);
+        let mre_for_filter_station = new Array(this.station_num-this.invalid_station_index.length);
+        let st_raster_diff = new Array(this.station_num);  
+        let st_raster_re = new Array(this.station_num);  // 相对误差
+        let st_raster_re_filter = new Array(this.station_num-this.invalid_station_index.length)
+
+        //TODO: 下面内容可以封装成函数
+        for (var i = 0; i < this.station_num; i++) {
+            // 判断是否传入StatinInfo文件
+            if(this.station_info.length!=0){
+                station_lats[i] = this.station_info[i][0];
+                station_lngs[i] = this.station_info[i][1];
+            }
+            var tmp_mae = 0;
+            error_matrix[i] = new Array(this.time_length);
+            st_raster_diff[i] = [];
+            st_raster_re[i] = [];
+            st_raster_re_filter[i] = [];
+            // 计算相对误差&绝对误差
+            for (var j = 0; j < this.time_length; j++) {
+                error_matrix[i][j] = this.st_raster_pred[i][j] - this.st_raster_gt[i][j];
+                tmp_mae += Math.abs(error_matrix[i][j]);
+                st_raster_diff[i].push(this.st_raster_pred[i][j] - this.st_raster_gt[i][j]);
+                st_raster_re[i].push(Math.abs(this.st_raster_pred[i][j] - this.st_raster_gt[i][j]) / this.st_raster_gt[i][j]);
+            }
+            mae_for_each_station[i] = tmp_mae / this.station_num;
+            rmse_for_each_station[i] = this.ct.calculate_local_rmse(this.st_raster_pred[i], this.st_raster_gt[i]);
+            mre_for_each_station[i] = this.ct.calculateMean(st_raster_re[i]);
+            if (!this.invalid_station_index.includes(i)) {
+                for (var k = 0; k < this.time_length; k++) {
+                    st_raster_re_filter[i].push(Math.abs(this.st_raster_pred[i][k] - this.st_raster_gt[i][k]) / this.st_raster_gt[i][k]);
+                }
+            }
+            mre_for_filter_station[i] = this.ct.calculateMean(st_raster_re_filter[i]);
+        }
+
+        if(this.station_info.length!=0){
+            this.station_lats = station_lats;
+            this.station_lngs = station_lngs;
+        }
+        this.error_matrix = error_matrix;
+        this.mae_for_each_station = mae_for_each_station;
+        this.rmse_for_each_station = rmse_for_each_station;
+        this.mre_for_each_station = mre_for_each_station;
+        this.mre_for_filter_station = mre_for_filter_station;
+        this.st_raster_diff = st_raster_diff;
+        this.st_raster_re = st_raster_re;
+
+        console.log("mae for each station", this.mae_for_each_station);
+        console.log("rmse for each station:", this.rmse_for_each_station);
+        console.log("mre for each station:", this.mre_for_each_station);
+        console.log("mre for filter station:", this.mre_for_filter_station)
+
+        // 求各种需要的统计量
+        this.emitModelError();
+        this.emitBadCase();  // 定位bad case
+        this.emitMetricsRankList();   // metric降序排列
+        this.emitMetricDistribution();  // metric分布
+        this.emitMeanGTDistribution(15);  // 站点属性分布+spatial bad case的分布
+
+        // 判断是否设置时间
+        if (this.ts_flag) {
+            // 判断时间设置得是否准确
+            if (this.time_length != this.ts.length) {
+                console.log("time range fail!")
+                console.log(this.time_length)
+                console.log(this.ts.length)
+                alert("Time Range or Time fitness is false! Please select again.");
+            } else {
+                // 求分布统计量
+                this.emitTimeCharacteristicsDistribution();  // 时间特性的分布
+                this.emitBadcaseDistributionRules();  // 时间bad case的分布
+
+                // 绘图
+                // 时间特性绘图
+                this.getTimeStatisticsDistributionParam();
+                this.getBadcaseDistributionRulesParam(0);  // 时间bad case分布绘图
+
+            }
+        }
+        else {
+            this.ts = this.ct.range(0, this.time_length, 1);
+        }
+    }
     testupdate() {
         this.st_raster_gt = this.ip.gt_st_raster;
         this.st_raster_pred = this.ip.pred_st_raster;
@@ -137,7 +254,7 @@ export default class Model {
         }
 
     }
-
+    
     refresh() {
         this.ip = new InputProcessor();
         this.ct = new ComputeTool();
@@ -658,6 +775,8 @@ export default class Model {
     // bad case temporal distribution rules
     getBadcaseDistributionRulesParam(spatial_ind) {
         console.log("=========plot bad case distribution rules=========")
+        spatial_ind = parseInt(spatial_ind)
+        console.log(this.WeekSumRatio)
         let weekday_statistic = Object.values(this.WeekSumRatio[spatial_ind]);
         let peak_statistic = Object.values(this.PeakSumRatio[spatial_ind]);
         let week_distribution = Object.values(this.WeekDistributionRatio[spatial_ind]);
