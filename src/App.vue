@@ -33,11 +33,11 @@
                 <div class="alltitle">Groundtruth</div>
                    <el-popover
                     placement="top-start"
-                    title="Example of ground truth time series of 3 stations with 4 time loss:"
-                    width="160"
+                    width="480"
                     trigger="hover"
-                    close-delay=50
-                    content="0.1\t0.2\t0.3\t0.40.2\t0.1\t5.0\t0.20.1\t0.1\t7.0\t0.8">
+                    close-delay=50>
+                    <div><span>Example of ground truth time series of 3 stations with 4 time slots:</span></div>
+                    <div><p>0.1<span style="color:#823935;font-weight:bold">\t</span>0.2<span style="color:#823935;font-weight:bold">\t</span>0.3<span style="color:#823935;font-weight:bold">\t</span>0.4<br/>0.2<span style="color:#823935;font-weight:bold">\t</span>0.1<span style="color:#823935;font-weight:bold">\t</span>5.0<span style="color:#823935;font-weight:bold">\t</span>0.2<br/>0.1<span style="color:#823935;font-weight:bold">\t</span>0.1<span style="color:#823935;font-weight:bold">\t</span>7.0<span style="color:#823935;font-weight:bold">\t</span>0.8</p></div>
                       <HelloWorld @process-upload="inputprocess" type="gt" ref="gt" slot="reference"/>
                    </el-popover>
                 <div class="boxfoot"></div>
@@ -46,11 +46,11 @@
                 <div class="alltitle">Prediction</div>
                  <el-popover
                     placement="top-start"
-                    title="Example of prediction time series of 3 stations with 4 time loss:"
-                    width="160"
+                    width="460"
                     trigger="hover"
-                    close-delay=50
-                    content="0.1\t0.2\t0.3\t0.40.2\t0.1\t5.0\t0.20.1\t0.1\t7.0\t0.8">
+                    close-delay=50>
+                    <div><span>Example of prediction time series of 3 stations with 4 time slots:</span></div>
+                    <div><p>0.1<span style="color:#823935;font-weight:bold">\t</span>0.2<span style="color:#823935;font-weight:bold">\t</span>0.3<span style="color:#823935;font-weight:bold">\t</span>0.4<br/>0.2<span style="color:#823935;font-weight:bold">\t</span>0.1<span style="color:#823935;font-weight:bold">\t</span>5.0<span style="color:#823935;font-weight:bold">\t</span>0.2<br/>0.1<span style="color:#823935;font-weight:bold">\t</span>0.1<span style="color:#823935;font-weight:bold">\t</span>7.0<span style="color:#823935;font-weight:bold">\t</span>0.8</p></div>
                       <HelloWorld @process-upload="inputprocess" type="pred" ref="pred" slot="reference"/>
                   </el-popover>
                 <div class="boxfoot"></div>
@@ -59,11 +59,11 @@
                 <div class="alltitle">StationInfo<span class="optional" style="color:#6d9eeb"> (optional)</span></div>
                  <el-popover
                     placement="top-start"
-                    title="Example of spatial information of 3 stations(latitude first,longitude second):"
-                    width="100"
+                    width="535"
                     trigger="hover"
-                    close-delay=50
-                    content="30.1\t120.330.15\t120.2830.2\t120.2">
+                    close-delay=50>
+                    <div><span>Example of spatial information of 3 stations(latitude first, longitude second):</span></div>
+                    <div><span>30.1<span style="color:#823935;font-weight:bold">\t</span>120.3<br/>30.15<span style="color:#823935;font-weight:bold">\t</span>120.28<br/>30.2<span style="color:#823935;font-weight:bold">\t</span>120.2</span></div>
                       <HelloWorld @process-upload="inputprocess" type="stationinfo" ref="stationinfo" slot="reference"/>
                   </el-popover>
                 <div class="boxfoot"></div>
