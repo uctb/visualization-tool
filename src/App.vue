@@ -56,7 +56,7 @@
                 <div class="boxfoot"></div>
               </div>
               <div class="boxall">
-                <div class="alltitle">StationInfo<span class="optional" style="color:#6d9eeb"> (optional)</span></div>
+                <div class="alltitle">Longtitue&latitude of station<span class="optional" style="color:#6d9eeb"> (optional)</span></div>
                  <el-popover
                     placement="top-start"
                     width="535"
@@ -69,7 +69,7 @@
                 <div class="boxfoot"></div>
               </div>  
               <div class="boxall">
-                <div class="alltitle">TimeSeries<span class="optional" style="color:#6d9eeb"> (optional)</span></div>
+                <div class="alltitle">Time<span class="optional" style="color:#6d9eeb"> (optional)</span></div>
                  <TimeSeries :TimeInfoProcessor="this.TimeInfoProcessor" ref="time"/>
                 <div class="boxfoot"></div>
               </div> 
