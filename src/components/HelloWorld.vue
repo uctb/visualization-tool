@@ -6,7 +6,7 @@
     </ul>
     <el-upload id="predload" class="upload-demo" :before-upload="beforeUpload" :limit="1" :show-file-list="false">
       <div>
-          <el-button  type="warning" size="mini" id="el-button">upload<i class="el-icon-upload el-icon--right"></i></el-button>
+          <el-button  type="warning" size="mini" id="el-button" style="margin-right: 1rem;">upload<i class="el-icon-upload el-icon--right"></i></el-button>
       </div>
     </el-upload>
   </div>
@@ -57,7 +57,7 @@ a {
   color: #42b983;
 }
 .Datasets{
-	margin-right: .1rem;
+	margin-left: 1rem;
 }
 
 .Datasets>ul>li{ float: left; padding: 0 .1rem;width: 25%}
