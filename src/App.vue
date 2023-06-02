@@ -31,17 +31,41 @@
                 <el-tab-pane label="Uplaod">
                   <div class="boxall">
                 <div class="alltitle">Groundtruth</div>
-                  <HelloWorld @process-upload="inputprocess" type="gt" ref="gt"/>
+                   <el-popover
+                    placement="top-start"
+                    title="Example of ground truth time series of 3 stations with 4 time loss:"
+                    width="160"
+                    trigger="hover"
+                    close-delay=50
+                    content="0.1\t0.2\t0.3\t0.40.2\t0.1\t5.0\t0.20.1\t0.1\t7.0\t0.8">
+                      <HelloWorld @process-upload="inputprocess" type="gt" ref="gt" slot="reference"/>
+                   </el-popover>
                 <div class="boxfoot"></div>
               </div>
               <div class="boxall">
                 <div class="alltitle">Prediction</div>
-                 <HelloWorld @process-upload="inputprocess" type="pred" ref="pred"/>
+                 <el-popover
+                    placement="top-start"
+                    title="Example of prediction time series of 3 stations with 4 time loss:"
+                    width="160"
+                    trigger="hover"
+                    close-delay=50
+                    content="0.1\t0.2\t0.3\t0.40.2\t0.1\t5.0\t0.20.1\t0.1\t7.0\t0.8">
+                      <HelloWorld @process-upload="inputprocess" type="pred" ref="pred" slot="reference"/>
+                  </el-popover>
                 <div class="boxfoot"></div>
               </div>
               <div class="boxall">
                 <div class="alltitle">StationInfo<span class="optional" style="color:#6d9eeb"> (optional)</span></div>
-                 <HelloWorld @process-upload="inputprocess" type="stationinfo" ref="stationinfo"/>
+                 <el-popover
+                    placement="top-start"
+                    title="Example of spatial information of 3 stations(latitude first,longitude second):"
+                    width="100"
+                    trigger="hover"
+                    close-delay=50
+                    content="30.1\t120.330.15\t120.2830.2\t120.2">
+                      <HelloWorld @process-upload="inputprocess" type="stationinfo" ref="stationinfo" slot="reference"/>
+                  </el-popover>
                 <div class="boxfoot"></div>
               </div>  
               <div class="boxall">
@@ -206,7 +230,6 @@ export default {
   },
   methods:{
     inputprocess(file,type){
-      console.log('file',file)
       this.model.setSTRaster(file,type);
       if(type=="stationinfo")
         this.flag = true
