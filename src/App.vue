@@ -9,7 +9,7 @@
     <div class="mainbox">
       <ul class="clearfix">
         <!-- 左边部分 -->
-        <li style="width: 21%">
+        <li style="width: 24%">
           <div class="boxall">
             <div class="alltitle" style="font-weight: bold;font-size: 1rem">Data Loader</div>
               <el-tabs type="border-card" style="background-color: #000d4a;">
@@ -82,7 +82,7 @@
         </li>
 
         <!--中间部分-->
-        <li style="width: 46.6%">
+        <li style="width: 45%">
             <div class="alltitle" style="font-weight: bold;font-size: 1rem">Error</div>
             <div class="bar">
               <div class="barbox2">
@@ -105,21 +105,20 @@
             </div>
             <div :class='[this.model.ts_flag===true?"long":"short"]' id="map_1" >
               <div v-if="this.flag" :class='[this.model.ts_flag===true?"blong":"bshort"]' id="bmap" ref="bmap" ></div>
-              <SortMetric v-if="this.isShow&&!this.flag" @bar-click="changeTimeSeries" :sort_metric_param="this.model.sort_rmse_param" style="height: 31.3rem; width: 38rem; left: 1.2rem"/>
+              <SortMetric v-if="this.isShow&&!this.flag" @bar-click="changeTimeSeries" :sort_metric_param="this.model.sort_rmse_param" style="height: 14.5rem; width: 37rem; left: 1.2rem"/>
               <!--prediction et truth-->
-              <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
+             <div class="boxall" style="height:16rem;width:39rem;margin-left:-0.5%;position:absolute;top:14.5rem" >
+               <div class="alltitle" style="font-weight: bold;font-size: 1rem">Groundtruth and Prediction {{currentstation}}</div>
+               <TemporalBadCase v-if="this.isShow" :temp_bad_case_param="this.model.temp_bad_case_param"/>
 
-                <div class="alltitle" style="font-weight: bold;font-size: 1rem">Groundtruth and Prediction {{currentstation}}</div>
-                <TemporalBadCase v-if="this.isShow" :temp_bad_case_param="this.model.temp_bad_case_param"/>
-
-                <div class="boxfoot"></div>
-              </div>
+               <div class="boxfoot"></div>
+            </div>
             </div>
         </li>
 
         <!--右边部分-->
-        <li style="width: 32.4%">
-            <div class="alltitle" style="font-weight: bold;font-size: 1rem;margin-left:15.5%">Error Diagnosis</div>
+        <li style="width: 31%">
+            <div class="alltitle" style="font-weight: bold;font-size: 1rem;">Error Diagnosis</div>
 
             <!--prediction et truth-->
 <!--            <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">-->
@@ -129,7 +128,7 @@
 <!--            </div>-->
 
             <!--时空数据/评价指标的分布-->
-            <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
+            <div class="boxall" style="height:16.5rem;width:27rem;margin-left:-0.5%">
 <!--            <el-divider></el-divider>-->
               <div class="alltitle">Statistics</div>
               <el-cascader
@@ -144,7 +143,7 @@
               <div class="boxfoot"></div>
             </div>
             <!--bad case的分布规律-->
-            <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
+            <div class="boxall" style="height:15rem;width:27rem;margin-left:-0.5%">
             <div class="alltitle">Distribution of Bad Case</div>
             <el-cascader
                 v-model="value_bc"
@@ -706,24 +705,24 @@ a:hover{ color:#06c; text-decoration: none!important}
 .barbox2 li{ font-size: .19rem; color:rgba(255,255,255,.7); padding-top: .1rem;}
 .long{
   position:relative; z-index: 9; 
-  width: 40.1rem;
+  width: 39rem;
   /*height: 46rem;*/
-  height: 26rem;
+  height: 14.5rem;
 }
 .short{
   position:relative; z-index: 9; 
-  width: 40.1rem;
+  width: 39rem;
   /*height: 31.5rem;*/
-  height: 21.5rem;
+  height: 14.5rem;
 }
 .blong{
   /*height:46rem; */
-  width: 40.1rem;
-  height:26rem;
+  width: 39rem;
+  height:14.5rem;
 }
 .bshort{
-  height:31.5rem;
-  width: 40.1rem;
+  height:14.5rem;
+  width: 39rem;
 }
 .el-tabs--border-card>.el-tabs__content {
     padding: 0px;
