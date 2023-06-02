@@ -10,7 +10,7 @@
       <ul class="clearfix">
         <!-- 左边部分 -->
         <li style="width: 21%">
-<!--          <div class="boxall">-->
+          <div class="boxall">
             <div class="alltitle" style="font-weight: bold;font-size: 1rem">Data Loader</div>
               <el-tabs type="border-card" style="background-color: #000d4a;">
                 <el-tab-pane>
@@ -78,7 +78,7 @@
               <RefreshButton @click-refresh="refresh" diff_type="refresh"/>
               <FuncButton @click-confirm="confirm" diff_type="confirm"/>
              <div class="boxfoot"></div>
-<!--          </div>-->
+          </div>
         </li>
 
         <!--中间部分-->
@@ -108,8 +108,10 @@
               <SortMetric v-if="this.isShow&&!this.flag" @bar-click="changeTimeSeries" :sort_metric_param="this.model.sort_rmse_param" style="height: 31.3rem; width: 38rem; left: 1.2rem"/>
               <!--prediction et truth-->
 <!--              <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">-->
-                <div class="alltitle" style="font-weight: bold;font-size: 1rem">Groundtruth and Prediction {{currentstation}}</div>
-                <TemporalBadCase v-if="this.isShow" :temp_bad_case_param="this.model.temp_bad_case_param"/>
+
+<!--                <div class="alltitle" style="font-weight: bold;font-size: 1rem">Groundtruth and Prediction {{currentstation}}</div>-->
+<!--                <TemporalBadCase v-if="this.isShow" :temp_bad_case_param="this.model.temp_bad_case_param"/>-->
+
 <!--                <div class="boxfoot"></div>-->
 <!--              </div>-->
             </div>
@@ -141,9 +143,8 @@
               <BasicStatistics :statistics_param="this.statistics_param"/>
               <div class="boxfoot"></div>
             </div>
-
-          <!--bad case的分布规律-->
-          <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
+            <!--bad case的分布规律-->
+            <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
             <div class="alltitle">Distribution of Bad Case</div>
             <el-cascader
                 v-model="value_bc"
@@ -156,7 +157,6 @@
             <BadcaseTemporalDistributionRules :badcase_temp_distribution_param="this.badcase_distribution_param"/>
             <div class="boxfoot"></div>
           </div>
-
         </li>
 
       </ul>
@@ -174,9 +174,9 @@ import HelloWorld from './components/HelloWorld.vue'
 import TimeSeries from './components/TimeSeries.vue'
 import FuncButton from './components/FunctionalButton.vue'
 import RefreshButton from './components/RefreshButton.vue'
-import TemporalBadCase from './components/TemporalView.vue'
+// import TemporalBadCase from './components/TemporalView.vue'
 import SortMetric from './components/SortMetric'
-import BadcaseDistributionRules from './components/BadCaseDistributionRules'
+// import BadcaseDistributionRules from './components/BadCaseDistributionRules'
 import BadcaseTemporalDistributionRules from './components/BadcaseTemporalDistribution'
 import BasicStatistics from "./components/Statistics";
 
@@ -187,9 +187,9 @@ export default {
     TimeSeries,
     FuncButton,
     RefreshButton,
-    TemporalBadCase,
+    // TemporalBadCase,
     SortMetric,
-    BadcaseDistributionRules,
+    // BadcaseDistributionRules,
     BadcaseTemporalDistributionRules,
     BasicStatistics
   },
