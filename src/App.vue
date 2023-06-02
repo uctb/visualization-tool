@@ -11,8 +11,25 @@
         <!-- 左边部分 -->
         <li style="width: 21%">
           <div class="boxall">
-            <div class="alltitle">Data Options</div>
-              <div class="boxall">
+            <div class="alltitle" style="font-weight: bold;font-size: 1rem">Data Loader</div>
+              <el-tabs type="border-card" style="background-color: #000d4a;">
+                <el-tab-pane>
+                <span slot="label"><i class="el-icon-date"></i> Selection</span>
+                  <div class="boxall">
+                    <div class="alltitle">DataSet Selection</div>
+                      <el-select v-model="value1" placeholder="" size="mini" @change="SelectDataset">
+                        <el-option
+                          v-for="item in dataset"
+                          :key="item.value"
+                          :label="item.label"
+                          :value="item.value">
+                        </el-option>
+                      </el-select>
+                   <div class="boxfoot"></div>
+                  </div>
+                </el-tab-pane>
+                <el-tab-pane label="Uplaod">
+                  <div class="boxall">
                 <div class="alltitle">Groundtruth</div>
                   <HelloWorld @process-upload="inputprocess" type="gt" ref="gt"/>
                 <div class="boxfoot"></div>
@@ -23,16 +40,17 @@
                 <div class="boxfoot"></div>
               </div>
               <div class="boxall">
-                <div class="alltitle">StationInfo</div>
+                <div class="alltitle">StationInfo<span class="optional" style="color:#6d9eeb"> (optional)</span></div>
                  <HelloWorld @process-upload="inputprocess" type="stationinfo" ref="stationinfo"/>
                 <div class="boxfoot"></div>
               </div>  
               <div class="boxall">
-                <div class="alltitle">TimeSeries</div>
-<!--              <TimeSeries @process-upload="timeinfoprocess" :TimeInfoProcessor="this.TimeInfoProcessor" ref="time"/>-->
+                <div class="alltitle">TimeSeries<span class="optional" style="color:#6d9eeb"> (optional)</span></div>
                  <TimeSeries :TimeInfoProcessor="this.TimeInfoProcessor" ref="time"/>
                 <div class="boxfoot"></div>
               </div> 
+                </el-tab-pane>
+              </el-tabs>
               <RefreshButton @click-refresh="refresh" diff_type="refresh"/>
               <FuncButton @click-confirm="confirm" diff_type="confirm"/>
              <div class="boxfoot"></div>
@@ -46,6 +64,7 @@
 
         <!--中间部分-->
         <li style="width: 46.6%">
+          <div class="alltitle" style="font-weight: bold;font-size: 1rem">Error</div>
           <div :class='[this.model.ts_flag==true?"long":"short"]' id="map_1" >
             <div v-if="this.flag" :class='[this.model.ts_flag==true?"blong":"bshort"]' id="bmap" ref="bmap" ></div>
             <SortMetric v-if="this.isShow&&!this.flag" @bar-click="changeTimeSeries" :sort_metric_param="this.model.sort_rmse_param" style="height: 31.3rem; width: 38rem; left: 1.2rem"/>
@@ -53,8 +72,8 @@
         </li>
 
         <!--右边部分-->
-        <li v-if="this.flag" style="width: 27%">
-
+        <li  style="width: 27%">
+          <div class="alltitle" style="font-weight: bold;font-size: 1rem;margin-left:15.5%">Error Diagnosis</div>
           <!--prediction et truth-->
           <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
             <div class="alltitle">Groundtruth and Prediction {{currentstation}}</div>
@@ -81,23 +100,6 @@
               </el-option>
             </el-select>
             <BadcaseTemporalDistributionRules :badcase_temp_distribution_param="this.badcase_distribution_param"/>
-            <div class="boxfoot"></div>
-          </div>
-
-        </li>
-
-        <li v-if="!this.flag" style="width: 27%">
-          <!--prediction et truth-->
-          <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
-            <div class="alltitle">Groundtruth and Prediction {{currentstation}}</div>
-            <TemporalBadCase v-if="this.isShow" :temp_bad_case_param="this.model.temp_bad_case_param"/>
-            <div class="boxfoot"></div>
-          </div>
-
-          <!--bad case distribution rules -- spatial-->
-          <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
-            <div class="alltitle">Distribution Rules of Problem Point</div>
-            <BadcaseDistributionRules v-if="this.isShow" :badcase_distribution_param="this.model.badcase_spatial_distribution_rules_param"/>
             <div class="boxfoot"></div>
           </div>
 
@@ -161,6 +163,13 @@ export default {
       },{
         value: '选项4',
         label: 'On which hour of the 24?'
+      }],
+      dataset: [{
+        value: '选项1',
+        label: 'violation_xm'
+      },{
+        value: '选项2',
+        label: 'Bike_DC_XGBoost'
       }]
     }
   },
@@ -197,6 +206,7 @@ export default {
   },
   methods:{
     inputprocess(file,type){
+      console.log('file',file)
       this.model.setSTRaster(file,type);
       if(type=="stationinfo")
         this.flag = true
@@ -336,8 +346,23 @@ export default {
         _this.currentstation=params.data.name
       });
     },
-
     BadcaseDistribution(){
+      switch(this.value){
+        case 'Weekday or Weekends?':
+          this.badcase_distribution_param = this.model.badcase_weekday_statistic_param;
+          break;
+        case 'Morning/Evening Peak?':
+          this.badcase_distribution_param = this.model.badcase_peak_statistic_param;
+          break;
+        case 'On what day of the week?':
+          this.badcase_distribution_param = this.model.badcase_week_distribution_rules_param;
+          break;
+        case 'On which hour of the 24?':
+          this.badcase_distribution_param = this.model.badcase_hour_distribution_rules_param;
+          break;
+      }
+    },
+    SelectDataset(){
       switch(this.value){
         case 'Weekday or Weekends?':
           this.badcase_distribution_param = this.model.badcase_weekday_statistic_param;
@@ -461,7 +486,6 @@ a:hover{ color:#06c; text-decoration: none!important}
 .header_center h1{
 	margin-top: 2px !important;
 	margin-bottom: 20px !important;
-	/*font-size: 32px !important;*/
 	font-size: .5rem !important;
 }
 .head{ height: 5rem;
@@ -486,7 +510,7 @@ a:hover{ color:#06c; text-decoration: none!important}
 .mainbox>ul>li{ float: left; padding: 0 .1rem}
 .mainbox>ul>li{ width: 25%}
 .mainbox>ul>li:nth-child(2){ width: 50%;padding: 0}
-.boxall{ border: 1px solid rgba(25,186,139,.17); padding:0.4rem;  background: rgba(255,255,255,.04) url("./images/line.png"); background-size: 100% auto; position: relative; margin-bottom: .5rem; z-index: 10;}
+.boxall{ border: 1px solid rgba(25,186,139,.17); padding:0.4rem;  background: rgba(255,255,255,.04) url("./images/line.png"); background-size: 100% auto; position: relative; margin-bottom: 1.5rem; z-index: 10;}
 .boxall:before,.boxall:after{ position:absolute; width: .4rem; height: .4rem; content: "";  border-top: 2px solid #02a6b5; top: 0;}
 .boxall:before,.boxfoot:before{border-left: 2px solid #02a6b5;left: 0;}
 .boxall:after,.boxfoot:after{border-right: 2px solid #02a6b5; right: 0;}
@@ -509,14 +533,15 @@ a:hover{ color:#06c; text-decoration: none!important}
 .short{
   position:relative; z-index: 9; 
   width: 40.1rem;
-  height: 30.5rem;
+  height: 31.5rem;
 }
 .blong{
   height:46rem; width: 40.1rem;
 }
 .bshort{
-  height:30.5rem; width: 40.1rem;
+  height:31.5rem; width: 40.1rem;
 }
-
-
+.el-tabs--border-card>.el-tabs__content {
+    padding: 0px;
+}
 </style>
