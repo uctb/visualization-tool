@@ -106,6 +106,7 @@ export default class Model {
         console.log("mre for filter station:", this.mre_for_filter_station)
 
         // 求各种需要的统计量
+        this.emitModelError();
         this.emitBadCase();  // 定位bad case
         this.emitMetricsRankList();   // metric降序排列
         this.emitMetricDistribution();  // metric分布
@@ -185,6 +186,43 @@ export default class Model {
         this.peaknum = pn;  // peak num
         this.ts_flag = true;
         return true
+    }
+
+    // 获得模型整体误差
+    emitModelError() {
+        console.log("==========计算模型误差============")
+        let sumSquaredError = 0;
+        let absoluteErrors = 0;
+        let absolutePercentageError = 0;
+        let ape_num = 0;
+        // 计算平方误差的总和
+        for (let i = 0; i < this.station_num; i++) {
+            for (let j = 0; j < this.time_length; j++) {
+                const error = this.st_raster_pred[i][j] - this.st_raster_gt[i][j];
+                const squaredError = Math.pow(error, 2);
+                const ae = Math.abs(this.st_raster_pred[i][j] - this.st_raster_gt[i][j]);
+                if(this.st_raster_gt[i][j] !== 0){
+                    const ape = Math.abs((this.st_raster_pred[i][j] - this.st_raster_gt[i][j]) / this.st_raster_gt[i][j]);
+                    ape_num++;
+                    absolutePercentageError += ape;
+                }
+                sumSquaredError += squaredError;
+                absoluteErrors += ae;
+            }
+        }
+        // 计算rmse
+        const meanSquaredError = sumSquaredError / (this.station_num * this.time_length)
+        // mae
+        const meanAbsoluteError = (absoluteErrors / (this.station_num * this.time_length)).toFixed(2);
+        // mape
+        const meanAbsolutePercentageError = (absolutePercentageError / ape_num * 100).toFixed(2) + '%';
+        this.rmse = Math.sqrt(meanSquaredError).toFixed(2);
+        this.mae = meanAbsoluteError;
+        this.mape = meanAbsolutePercentageError
+        console.log("model error:", this.rmse, this.mae, this.mape);
+        document.getElementById('rmse').innerText = this.rmse;
+        document.getElementById('mape').innerText = this.mape;
+        document.getElementById('mae').innerText = this.mae;
     }
 
     // 获得local bad case
@@ -322,18 +360,6 @@ export default class Model {
     // 获得时间特性分布统计: 工作日vs周末，早晚高峰vs平峰，一周7天，24h
     emitTimeCharacteristicsDistribution() {
         console.log("==========emit statistics==========")
-        // let rmse_range = this.ct.getSequenceRange(this.rmse_for_each_station, interval_num);
-        // let mae_range = this.ct.getSequenceRange(this.mae_for_each_station, interval_num);
-        // let mre_range = this.ct.getSequenceRange(this.mre_for_each_station, interval_num);
-        // let metric_range_list = [rmse_range, mae_range, mre_range];
-        // for (let j=0; j<3; j++) {
-        //     let metric_range = metric_range_list[j];
-        //     for(let i=0; i<this.station_num; i++) {
-        //         let interval_id = this.ct.getIntervalID(metric_range['interval_point'], interval_num, this.rmse_for_each_station[i]);
-        //         metric_range[interval_id]++;
-        //     }
-        //     console.log("metric_range:", metric_range);
-        // }
 
         // 时间特性
         const weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];

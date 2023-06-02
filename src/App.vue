@@ -107,13 +107,13 @@
               <div v-if="this.flag" :class='[this.model.ts_flag===true?"blong":"bshort"]' id="bmap" ref="bmap" ></div>
               <SortMetric v-if="this.isShow&&!this.flag" @bar-click="changeTimeSeries" :sort_metric_param="this.model.sort_rmse_param" style="height: 31.3rem; width: 38rem; left: 1.2rem"/>
               <!--prediction et truth-->
-<!--              <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">-->
+              <div class="boxall" style="height:15rem;width:28rem;margin-left:-0.5%">
 
-<!--                <div class="alltitle" style="font-weight: bold;font-size: 1rem">Groundtruth and Prediction {{currentstation}}</div>-->
-<!--                <TemporalBadCase v-if="this.isShow" :temp_bad_case_param="this.model.temp_bad_case_param"/>-->
+                <div class="alltitle" style="font-weight: bold;font-size: 1rem">Groundtruth and Prediction {{currentstation}}</div>
+                <TemporalBadCase v-if="this.isShow" :temp_bad_case_param="this.model.temp_bad_case_param"/>
 
-<!--                <div class="boxfoot"></div>-->
-<!--              </div>-->
+                <div class="boxfoot"></div>
+              </div>
             </div>
         </li>
 
@@ -174,7 +174,7 @@ import HelloWorld from './components/HelloWorld.vue'
 import TimeSeries from './components/TimeSeries.vue'
 import FuncButton from './components/FunctionalButton.vue'
 import RefreshButton from './components/RefreshButton.vue'
-// import TemporalBadCase from './components/TemporalView.vue'
+import TemporalBadCase from './components/TemporalView.vue'
 import SortMetric from './components/SortMetric'
 // import BadcaseDistributionRules from './components/BadCaseDistributionRules'
 import BadcaseTemporalDistributionRules from './components/BadcaseTemporalDistribution'
@@ -187,7 +187,7 @@ export default {
     TimeSeries,
     FuncButton,
     RefreshButton,
-    // TemporalBadCase,
+    TemporalBadCase,
     SortMetric,
     // BadcaseDistributionRules,
     BadcaseTemporalDistributionRules,
