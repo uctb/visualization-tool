@@ -43,6 +43,8 @@ export default {
           name: xAxisname,
           nameTextStyle: {
             color: '#fff',
+            padding:[20,0,0,-240],
+            verticalAlign:"top",
           },
           type: 'category',
           data: x_data,
@@ -92,6 +94,6 @@ export default {
 
 <style scoped>
 .echarts {
-  height: 14.5rem;background-size: contain;background-repeat: no-repeat;background-position: 50% 50%;  position: relative;
+  height: 14.5rem;background-repeat: no-repeat;background-position: 50% 50%;  position: relative;width: 100%;
 }
 </style>
