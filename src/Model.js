@@ -587,7 +587,7 @@ export default class Model {
         this.weekday_distribuion_param = {
             'axisvalue': ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'],
             'distribution': this.weekdays_distribution,
-            'name': 'time slices amount',
+            'name': '# time slices',
             'xAxisname': ''
         }
 
@@ -595,7 +595,7 @@ export default class Model {
         this.peak_distribuion_param = {
             'axisvalue': ['moring peak', 'evening peak', 'others'],
             'distribution': this.peaksum_distribution,
-            'name': 'time slices amount',
+            'name': '# time slices',
             'xAxisname': ''
         }
 
@@ -603,7 +603,7 @@ export default class Model {
         this.week_distribuion_param = {
             'axisvalue': ['weekends', 'workday'],
             'distribution': this.weeksum_distribution,
-            'name': 'time slices amount',
+            'name': '# time slices',
             'xAxisname': ''
         }
 
@@ -611,7 +611,7 @@ export default class Model {
         this.hour_distribuion_param = {
             'axisvalue': this.ct.get24HourSeries(),
             'distribution': this.hour_distribution,
-            'name': 'stime slices amount',
+            'name': '# time slices',
             'xAxisname': ''
         }
         console.log("weekday_statistic_param:", this.weekday_distribuion_param);
@@ -666,25 +666,25 @@ export default class Model {
         this.badcase_weekday_statistic_param = {
             'axisvalue': ['weekends', 'workday'],
             'distribution': weekday_statistic,
-            'name': 'ratio of temporal bad case',
+            'name': '% temporal bad case',
             'xAxisname': ''
         }
         this.badcase_peak_statistic_param = {
             'axisvalue': ['moring peak', 'evening peak', 'others'],
             'distribution': peak_statistic,
-            'name': 'ratio of temporal bad case',
+            'name': '% temporal bad case',
             'xAxisname': ''
         }
         this.badcase_week_distribution_rules_param = {
             'axisvalue': ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'],
             'distribution': week_distribution,
-            'name': 'ratio of temporal bad case',
+            'name': '% temporal bad case',
             'xAxisname': ''
         }
         this.badcase_hour_distribution_rules_param = {
             'axisvalue:': this.ct.get24HourSeries(),
             'distribution': hour_distribution,
-            'name': 'number of temporal bad case',
+            'name': '# temporal bad case',
             'xAxisname': ''
         }
         console.log("badcase_weekday_statistic_param:", this.badcase_weekday_statistic_param);
@@ -704,7 +704,7 @@ export default class Model {
         this.badcase_spatial_distribution_rules_param = {
             'axisvalue': this.gtRange['interval_name'],
             'distribution': bc_distribution_num,
-            'name': 'number of spatial bad case',
+            'name': '# spatial bad case',
             'xAxisname': 'Flow Range'
         }
         console.log("badcase_spatial_distribution_rules_param:", this.badcase_spatial_distribution_rules_param);

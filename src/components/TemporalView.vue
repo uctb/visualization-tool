@@ -71,7 +71,7 @@ export default {
           var Myseries = [];
           var item1 =
               {
-                name: "Ground Truth",
+                name: "Groundtruth",
                 data: gt,
                 type: 'line',
                 symbol: 'triangle',
@@ -97,7 +97,7 @@ export default {
           Myseries.push(item1);
 
           var item2 = {
-            name: "prediction",
+            name: "Prediction",
             data: pd,
             type: 'line',
             color: '#FF8C00',
