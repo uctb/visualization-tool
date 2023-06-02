@@ -28,7 +28,8 @@
                    <div class="boxfoot"></div>
                   </div>
                 </el-tab-pane>
-                <el-tab-pane label="Uplaod">
+                <el-tab-pane >
+                  <span slot="label"><i class="el-icon-edit el-icon--right">Upload</i></span>
                   <div class="boxall">
                 <div class="alltitle">Groundtruth</div>
                    <el-popover
