@@ -701,7 +701,7 @@ export default class Model {
         console.log("=========plot Time Statistics Distribution=========")
 
         // 周末
-        this.weekday_distribuion_param = {
+        this.week_distribuion_param = {
             'axisvalue': ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'],
             'distribution': this.weekdays_distribution,
             'name': '# time slices',
@@ -717,7 +717,7 @@ export default class Model {
         }
 
         // week
-        this.week_distribuion_param = {
+        this.weekday_distribuion_param = {
             'axisvalue': ['weekends', 'workday'],
             'distribution': this.weeksum_distribution,
             'name': '# time slices',
@@ -777,9 +777,9 @@ export default class Model {
         console.log("=========plot bad case distribution rules=========")
         spatial_ind = parseInt(spatial_ind)
         console.log(this.WeekSumRatio)
-        let weekday_statistic = Object.values(this.WeekSumRatio[spatial_ind]);
+        let weekday_statistic = Object.values(this.WeekDistributionRatio[spatial_ind]);
         let peak_statistic = Object.values(this.PeakSumRatio[spatial_ind]);
-        let week_distribution = Object.values(this.WeekDistributionRatio[spatial_ind]);
+        let week_distribution = Object.values(this.WeekSumRatio[spatial_ind]);
         let hour_distribution = this.HourDistribution[spatial_ind];
 
         this.badcase_weekday_statistic_param = {
