@@ -182,7 +182,7 @@
               <SortMetric class="boxall" style="height: 20rem; margin-bottom: .6rem" v-if="this.isShow&&!this.flag" @bar-click="changeTimeSeries" :sort_metric_param="this.model.sort_rmse_param"/>
 
             <div class="boxall" style="height:16rem;">
-               <div class="alltitle" style="font-weight: bold;font-size: 1rem">Groundtruth and Prediction {{currentstation}}</div>
+               <div class="alltitle" style="font-weight: bold;font-size: 1rem">Groundtruth and Prediction ({{currentstation}})</div>
                <TemporalBadCase v-if="this.isShow" :temp_bad_case_param="this.model.temp_bad_case_param"/>
                <div class="boxfoot"></div>
             </div>
@@ -203,7 +203,7 @@
                   :options="statistics_option"
                   :props="{ expandTrigger: 'hover' }"
                   @change="Statistics"></el-cascader>
-              <BasicStatistics :statistics_param="this.statistics_param"/>
+              <BasicStatistics v-if="this.isShow" :statistics_param="this.statistics_param"/>
               <div class="boxfoot"></div>
             </div>
             <!--bad case的分布规律-->
@@ -219,7 +219,7 @@
               :props="{ expandTrigger: 'hover' }"
               @change="BadcaseDistribution"
             ></el-cascader>
-            <BadcaseTemporalDistributionRules
+            <BadcaseTemporalDistributionRules v-if="this.isShow"
               :badcase_temp_distribution_param="this.badcase_distribution_param"
             />
             <div class="boxfoot"></div>
