@@ -178,15 +178,13 @@
                 </ul>
               </div>
             </div>
-              <div v-if="this.isShow&&this.flag" class="boxall" style="height: 20rem; margin-bottom: .6rem" id="bmap" ref="bmap" ></div>
+              <div v-if="this.isShow&&this.flag" class="boxall" style="height: 20rem; margin-bottom: .6rem;width:39rem" id="bmap" ref="bmap" ></div>
               <SortMetric class="boxall" style="height: 20rem; margin-bottom: .6rem" v-if="this.isShow&&!this.flag" @bar-click="changeTimeSeries" :sort_metric_param="this.model.sort_rmse_param"/>
-
-            <div class="boxall" style="height:16rem;">
-               <div class="alltitle" style="font-weight: bold;font-size: 1rem">Groundtruth and Prediction ({{currentstation}})</div>
-               <TemporalBadCase v-if="this.isShow" :temp_bad_case_param="this.model.temp_bad_case_param"/>
-               <div class="boxfoot"></div>
-            </div>
-
+              <div class="boxall" style="height:16rem;">
+                <div class="alltitle" style="font-weight: bold;font-size: 1rem">Groundtruth and Prediction ({{currentstation}})</div>
+                <TemporalBadCase v-if="this.isShow" :temp_bad_case_param="this.model.temp_bad_case_param"/>
+                <div class="boxfoot"></div>
+              </div>
         </li>
 
         <!--右边部分-->
@@ -1111,5 +1109,10 @@ a:hover {
 .el-tabs--border-card > .el-tabs__content {
   padding: 0px;
 }
+
+.ec-extension-bmap{
+  width:98% !important;
+}
+
 .option{ border: 1px solid rgba(25,186,139,.17); padding:0.4rem;  background: rgba(255,255,255,.04) url("./images/line.png"); background-size: 100% auto; position: relative; margin-bottom: .8rem; z-index: 10;}
 </style>
