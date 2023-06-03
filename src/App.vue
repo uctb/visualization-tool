@@ -192,10 +192,10 @@
             <div class="head1" style="font-weight: bold;font-size: 1.5rem; color: rgba(255,255,255,.7)">Error Diagnosis</div>
             <!--时空数据/评价指标的分布-->
             <div class="boxall" style="height:20rem; margin-bottom: .6rem">
-              <div class="alltitle">Basic Statistics</div>
+              <div class="alltitle">Distribution of Spatial Bad Case Related to Station Attributes</div>
               <el-cascader
                   v-model="value"
-                  placeholder="station attributes & time characteristics"
+                  placeholder="station attributes"
                   size="mini"
                   :disabled="false"
                   :options="statistics_option"
@@ -207,10 +207,10 @@
             <!--bad case的分布规律-->
 <!--            <div class="boxall" style="height:15rem;width:27rem;margin-left:-0.5%">-->
             <div class="boxall" style="height: 20rem">
-            <div class="alltitle">Distribution of Bad Case</div>
+            <div class="alltitle">Distribution of Temporal Bad Case Related to Time Characteristic</div>
             <el-cascader
               v-model="value_bc"
-              placeholder="station attributes & time characteristics"
+              placeholder="time characteristics"
               size="mini"
               :disabled="false"
               :options="statistics_bc_option"
@@ -276,7 +276,7 @@ export default {
       value_bc: [],
       value1: [],
       statistics_option: [
-        {
+        /*{
           value: "metric",
           label: "metric",
           disabled: false,
@@ -290,7 +290,7 @@ export default {
               label: "MAE Distribution",
             },
           ],
-        },
+        },*/
         {
           value: "station attributes",
           label: "station attributes",
@@ -302,7 +302,7 @@ export default {
             },
           ],
         },
-        {
+/*        {
           value: "time characteristics",
           label: "time characteristics",
           disabled: true,
@@ -324,10 +324,10 @@ export default {
               label: "On which hour of the 24?",
             },
           ],
-        },
+        },*/
       ],
       statistics_bc_option: [
-        {
+        /*{
           value: "station attributes",
           label: "station attributes",
           disabled: false,
@@ -337,7 +337,7 @@ export default {
               label: "flow",
             },
           ],
-        },
+        },*/
         {
           value: "time characteristics",
           label: "time characteristics",
@@ -466,7 +466,8 @@ export default {
         this.model.getBadcaseSpatialDistributionRulseParam(); //空间bad case分布
 
         // 分布图表初始化
-        this.statistics_param = this.model.rmse_distribution_param;
+        this.statistics_param = this.model.badcase_spatial_distribution_rules_param;
+          this.badcase_distribution_param = this.model.badcase_weekday_statistic_param;
 
         this.$data.currentstation = "station0";
         },600)
@@ -507,7 +508,8 @@ export default {
         this.model.getBadcaseSpatialDistributionRulseParam(); //空间bad case分布
 
         // 分布图表初始化
-        this.statistics_param = this.model.rmse_distribution_param;
+        this.statistics_param = this.model.badcase_spatial_distribution_rules_param;
+          this.badcase_distribution_param = this.model.badcase_weekday_statistic_param;
 
         this.$data.currentstation = "station0";
         },600)
@@ -556,7 +558,8 @@ export default {
       this.model.getBadcaseSpatialDistributionRulseParam(); //空间bad case分布
 
       // 分布图表初始化
-      this.statistics_param = this.model.rmse_distribution_param;
+      this.statistics_param = this.model.badcase_spatial_distribution_rules_param;
+      this.badcase_distribution_param = this.model.badcase_weekday_statistic_param;
 
       this.$data.currentstation = "station0";
     },
@@ -592,14 +595,10 @@ export default {
     },
 
     updateOptionDisabled(timeflag) {
-      const targetOption = this.statistics_option.find(
-        (option) => option.value === "time characteristics"
-      );
       const targetBcOption = this.statistics_bc_option.find(
         (option) => option.value === "time characteristics"
       );
       if (timeflag) {
-        targetOption.disabled = false;
         targetBcOption.disabled = false;
       }
     },
@@ -683,10 +682,10 @@ export default {
     BadcaseDistribution(value) {
       switch (value[1]) {
         // 站点属性（参数正确）
-        case "flow":
+        /*case "flow":
           this.badcase_distribution_param =
             this.model.badcase_spatial_distribution_rules_param;
-          break;
+          break;*/
         case "Weekday or Weekends?":
           this.badcase_distribution_param =
             this.model.badcase_weekday_statistic_param;
@@ -711,10 +710,10 @@ export default {
       switch (this.value[1]) {
         // 站点属性（参数正确）
         case "flow":
-          this.statistics_param = this.model.gt_distribuion_param;
+          this.statistics_param = this.model.badcase_spatial_distribution_rules_param
           break;
         // 时间特性（参数错误）
-        case "Weekday or Weekends?":
+       /* case "Weekday or Weekends?":
           this.statistics_param = this.model.weekday_distribuion_param;
           break;
         case "Morning/Evening Peak?":
@@ -732,7 +731,7 @@ export default {
           break;
         case "MAE Distribution":
           this.statistics_param = this.model.mae_distribution_param;
-          break;
+          break;*/
       }
     },
 
