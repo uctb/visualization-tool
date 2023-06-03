@@ -532,6 +532,9 @@ export default {
       this.$refs.time.clear();
       console.log(this.model);
       console.log(this.TimeInfoProcessor);
+      document.getElementById('rmse').innerText = '';
+      document.getElementById('mape').innerText = '';
+      document.getElementById('mae').innerText = '';
     },
     confirm() {
       this.model.testupdate();
