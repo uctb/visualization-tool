@@ -57,9 +57,11 @@ export default {
         xAxis: {
           type: 'value',
           axisLabel: {
-                color: '#fff'
+            color: '#fff'
           },
-
+          splitLine:{ 
+            show:false
+          },
         },
         yAxis: {
           name: 'station ID',
