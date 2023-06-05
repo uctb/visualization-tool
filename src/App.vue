@@ -17,7 +17,7 @@
                 <span slot="label"><i class="el-icon-date"></i>Predefined</span>
                   <div class="option" style="margin-top: 1rem">
                     <div class="alltitle">Select Dataset</div>
-                      <el-select v-model="value1" placeholder="violation_XM_HM" size="mini" @change="TransferData">
+                      <el-select v-model="value1" placeholder="violation_XM_ARIMA" size="mini" @change="TransferData">
                         <el-option
                           v-for="item in dataset"
                           :key="item.value"
