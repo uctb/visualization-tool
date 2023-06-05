@@ -4,7 +4,7 @@
 
 <script>
 export default {
-  name: 'FuncButton',
+  name: 'ConfirmButton',
   props:{
     diff_type:String
   },

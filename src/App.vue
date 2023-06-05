@@ -65,7 +65,7 @@
                         >0.8
                         </p>
                       </div>
-                      <HelloWorld
+                      <UploadButton
                           @process-upload="inputprocess"
                           type="gt"
                           ref="gt"
@@ -110,7 +110,7 @@
                         >0.8
                       </p>
                     </div>
-                    <HelloWorld
+                    <UploadButton
                       @process-upload="inputprocess"
                       type="pred"
                       ref="pred"
@@ -139,7 +139,7 @@
                         >120.2</span
                       >
                     </div>
-                    <HelloWorld
+                    <UploadButton
                       @process-upload="inputprocess"
                       type="stationinfo"
                       ref="stationinfo"
@@ -153,7 +153,7 @@
                 </el-tab-pane>
               </el-tabs>
               <RefreshButton style="margin-top: 3.7rem;" @click-refresh="refresh" diff_type="refresh"/>
-              <FuncButton  style="margin-bottom: 3.7rem;"@click-confirm="confirm" diff_type="confirm"/>
+              <ConfirmButton  style="margin-bottom: 3.7rem;"@click-confirm="confirm" diff_type="confirm"/>
           </div>
         </li>
 
@@ -235,9 +235,9 @@ import Model from "./Model.js";
 import TimeInfoProcessor from "./TimeInfoProcessor";
 import xm_arima from "./data/violation_XM_ARIMA.json";
 import xm_hm from "./data/violation_XM_HM.json";
-import HelloWorld from "./components/HelloWorld.vue";
+import UploadButton from "./components/UploadButton.vue";
 import TimeSeries from "./components/TimeSeries.vue";
-import FuncButton from "./components/FunctionalButton.vue";
+import ConfirmButton from "./components/ConfirmButton.vue";
 import RefreshButton from "./components/RefreshButton.vue";
 import TemporalBadCase from "./components/TemporalView.vue";
 import SortMetric from "./components/SortMetric";
@@ -248,9 +248,9 @@ import BasicStatistics from "./components/Statistics";
 export default {
   name: "App",
   components: {
-    HelloWorld,
+    UploadButton,
     TimeSeries,
-    FuncButton,
+    ConfirmButton,
     RefreshButton,
     TemporalBadCase,
     SortMetric,
