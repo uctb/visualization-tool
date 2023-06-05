@@ -17,7 +17,7 @@
                 <span slot="label"><i class="el-icon-date"></i>Predefined</span>
                   <div class="option" style="margin-top: 1rem">
                     <div class="alltitle">Select Dataset</div>
-                      <el-select v-model="value1" placeholder="" size="mini" @change="TransferData">
+                      <el-select v-model="value1" placeholder="violation_XM_HM" size="mini" @change="TransferData">
                         <el-option
                           v-for="item in dataset"
                           :key="item.value"
@@ -391,6 +391,43 @@ export default {
         roam: false,
       },
     };
+    this.TimeInfoProcessor.updateParam(
+          xm_hm["start_time"],
+          xm_hm["end_time"],
+          xm_hm["time_fitness"],'min'
+    );
+    this.flag = true;
+    this.isShow = true;
+    this.TimeInfoProcessor.emitTimeSeries()
+    setTimeout(() => {
+      this.model.update(
+        xm_hm["pred"],
+        xm_hm["gt"],
+        xm_hm["stationinfo"]
+      );},400)
+        
+      setTimeout(() => {
+        if (this.flag)
+          //// 最小系统判断
+          this.show();
+        else this.model.getMetricRankListParam(); 
+      }, 1000);
+
+      setTimeout(()=>{
+        this.model.getTemporalBadCaseParam(0); // 时间bad case定位
+
+        /* 时空数据分布 */
+        this.model.getStationAttributesDistributionParam(); // 站点属性分布
+        this.model.getMetricDistributionParam(); // 评价指标分布
+        /* bad case分布 */
+        this.model.getBadcaseSpatialDistributionRulseParam(); //空间bad case分布
+
+        // 分布图表初始化
+        this.statistics_param = this.model.badcase_spatial_distribution_rules_param;
+        this.badcase_distribution_param = this.model.badcase_weekday_statistic_param;
+
+        this.$data.currentstation = "station0";
+      },600)
   },
   watch: {
     "TimeInfoProcessor.flag": function (newValue) {
