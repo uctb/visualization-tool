@@ -178,7 +178,7 @@
                 </ul>
               </div>
             </div>
-              <div v-if="this.isShow&&this.flag" class="boxall" style="height: 20rem; margin-bottom: .6rem;width:39rem" id="bmap" ref="bmap" ></div>
+              <div v-if="this.isShow&&this.flag" class="boxall" style="height: 20rem; margin-bottom: .6rem" id="bmap" ref="bmap" ></div>
               <SortMetric class="boxall" style="height: 20rem; margin-bottom: .6rem" v-if="this.isShow&&!this.flag" @bar-click="changeTimeSeries" :sort_metric_param="this.model.sort_rmse_param"/>
               <div class="boxall" style="height:16rem;">
                 <div class="alltitle" style="font-weight: bold;font-size: 1rem">Groundtruth and Prediction ({{currentstation}})</div>
