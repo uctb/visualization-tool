@@ -40,7 +40,7 @@ You can use the tool by visiting the URL above.
 
 ## Manual
 
-<img src="/Users/hyymmmint/Documents/XMU/project/uctb-web/figure/process.png" alt="process" style="zoom:67%;" />
+![manual](/Users/hyymmmint/Documents/XMU/project/visualization-tool-UCTB/manual.png)
 
 ### 1. Load Data
 
