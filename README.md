@@ -40,7 +40,7 @@ You can use the tool by visiting the URL above.
 
 ## Manual
 
-![manual](/Users/hyymmmint/Documents/XMU/project/visualization-tool-UCTB/manual.png)
+![manual](manual.png)
 
 ### 1. Load Data
 
