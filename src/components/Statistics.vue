@@ -46,6 +46,13 @@ export default {
             padding:[20,0,0,-240],
             verticalAlign:"top",
           },
+          symbol: ['none', 'arrow'],
+          symbolSize: [0, 8],
+          symbolOffset: [0, 5],
+          lineStyle: {
+            color: '#333',
+            width: 1
+          },
           type: 'category',
           data: x_data,
           axisLabel: {
