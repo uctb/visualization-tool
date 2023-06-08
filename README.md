@@ -1,40 +1,71 @@
-# visualization-tool-UCTB
+# ErrorDiagnosisTool
+
+we have developed a tool that integrates visualization, error localization, and error diagnosis. Specifically, it allows data to be uploaded, and provides interactive visual charts to show model errors, combined with spatiotemporal knowledge for error diagnosis
+
+Welcome to visit http://39.107.116.221/  for a trial!
 
 
 
-**可视化界面index.html打开方法：**
+## Deployment
 
-在命令行里键入：
+Deployment requires the following environment:
 
-```python
-// python 2.x
-python -m SimpleHTTPServer
+- node == 16.14.0
+- npm == 8.3.1
 
-// python 3.x
-python -m http.server
+
+
+### 1. Install dependencies
+
+```
+npm install
 ```
 
-这将会为当前目录在8000端口创建一个服务器，可以在浏览器地址栏里输入以下格式的地址来访问已经创建好的服务器：
+### 2. Start
+```
+npm run serve
+```
+
+Then you will see the following prompt on the screen:
 
 ```
-http://localhost:8000/file path
+ App running at:
+  - Local:   http://localhost:xxxx/ 
+  - Network: http://ip:xxxx/
 ```
 
-
-
-### 0918 update
+You can use the tool by visiting the URL above.
 
 
 
-**更新了几个功能：**
+## Manual
 
-- 右上图点击`more`按钮后可以切换不同图表
-  - groundtruth and prediction：新增在图表上可视化标记`bad case`
-  - 统计每个区域在全时间片上bad case的个数
-  - 统计各个时间片具有bad case的区域个数
-- 右下图点击`more`按钮后可以切换不同图表
-  - Metrics Rank List：新增MAE、MAPE指标的降序排列
-  - Metric Distribution：分别统计各区域RMSE、MAE、MAPE在不同数值区间的个数
+![manual](manual.png)
+
+### 1. Load Data
+
+You can use a predefined dataset or upload your own data in the data loader panel,  where the ground truth and prediction value are mandatory, spatial information (Geographical Coordinates) and time information (Time Range, Time Fitness) are optional. The data requirement is a tsv file.
+*Tips: The more data you provide, the more functions you can use!*
+
+
+
+### 2. Locate Error
+
+You can view model errors in the Error Visualization panel. The panel is divided into three parts from top to bottom, showing the overall error of the model, spatial bad case and temporal bad case. To find specific areas where the model performs poorly, we strongly recommend following our proposed two-step analysis strategy. First, observe from the spatial dimension to locate spatial bad cases, and then observe from the time dimension at the station level to locate temporal bad cases.
+
+
+
+### 3. Diagnose Error
+
+You can perform error diagnosis in the error diagnosis panel. By addressing the following two research questions, you can better understand the error patterns.
+
+*RQ1: Is the distribution of spatial bad cases related to station attributes?*
+
+*RQ2: Is the distribution of temporal bad cases realted to time characteristics?*
+
+The answers to these questions will provide you with valuable insights and suggestions for improving your model.
+
+
 
 
 
