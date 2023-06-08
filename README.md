@@ -1,8 +1,8 @@
 # ErrorDiagnosisTool
 
-we have developed a tool that integrates visualization, error localization, and error diagnosis. Specifically, it allows data to be uploaded, and provides interactive visual charts to show model errors, combined with spatiotemporal knowledge for error diagnosis
+We have developed a tool that integrates visualization, error localization, and error diagnosis. Specifically, it allows data to be uploaded, and provides interactive visual charts to show model errors, combined with spatiotemporal knowledge for error diagnosis
 
-Welcome to visit http://39.107.116.221/  for a trial!
+Welcome to visit the [website](http://39.107.116.221/)  for a trial!
 
 
 
@@ -15,14 +15,16 @@ Deployment requires the following environment:
 
 
 
-### 1. Install dependencies
+### 1. Clone repository and install dependencies
 
-```
+``` bash
+git clone https://github.com/uctb/visualization-tool-UCTB.git
+cd visualization-tool-UCTB
 npm install
 ```
 
 ### 2. Start
-```
+```bash
 npm run serve
 ```
 
