@@ -337,9 +337,9 @@ export default class Model {
         this.mae = meanAbsoluteError;
         this.mape = meanAbsolutePercentageError
         console.log("model error:", this.rmse, this.mae, this.mape);
-        document.getElementById('rmse').innerText = this.rmse;
-        document.getElementById('mape').innerText = this.mape;
-        document.getElementById('mae').innerText = this.mae;
+        // document.getElementById('rmse').innerText = this.rmse;
+        // document.getElementById('mape').innerText = this.mape;
+        // document.getElementById('mae').innerText = this.mae;
     }
 
     // 获得local bad case
@@ -427,26 +427,44 @@ export default class Model {
         console.log("bad case is:", this.bad_case);
     }
 
-    // 获得模型误差降序排列数组
+    // 获得站点误差以及降序排列数组
     emitMetricsRankList() {
         console.log("=========emit Metric Rank List============")
         let RMSE = [];
         let MAE = [];
+        let MAPE = [];
         for (let i=0; i<this.station_num; i++) {
             // 可以使用封装好的函数：calculate_local_rmse(pd, gt)
             let total_rmse_variance = 0;
             let total_absolute_error = 0;
+            let absolutePercentageError = 0;
+            let ape_num = 0;
             for (let j=0; j<this.time_length; j++) {
                 total_rmse_variance += Math.pow(Math.abs(this.st_raster_pred[i][j]-this.st_raster_gt[i][j]), 2);
                 total_absolute_error += Math.abs(this.st_raster_pred[i][j]-this.st_raster_gt[i][j]);
+                if(this.st_raster_gt[i][j] !== 0){
+                    ape_num++;
+                    absolutePercentageError += Math.abs((this.st_raster_pred[i][j] - this.st_raster_gt[i][j]) / this.st_raster_gt[i][j]);
+                }
             }
             RMSE.push(Math.round(Math.sqrt(total_rmse_variance / this.time_length) * 100) / 100);
             MAE.push(Math.round((total_absolute_error / this.time_length) * 100) / 100);
+            MAPE.push(Math.round(absolutePercentageError / ape_num * 100));
         }
+        this.PointRMSE = RMSE;
+        this.PointMAE = MAE;
+        this.PointMAPE = MAPE;
         this.PointSortedRMSE = RMSE.map((value, index) => [index, value]);
         this.PointSortedMAE = MAE.map((value, index) => [index, value]);
+        this.PointSortedMAPE = MAPE.map((value, index) => [index, value]);
         this.PointSortedRMSE.sort((a, b) => a[1] > b[1] ? -1 : a[1] < b[1] ? 1 : 0);
         this.PointSortedMAE.sort((a, b) => a[1] > b[1] ? -1 : a[1] < b[1] ? 1 : 0);
+        this.PointSortedMAPE.sort((a, b) => a[1] > b[1] ? -1 : a[1] < b[1] ? 1 : 0);
+        console.log("point mape:", this.PointMAPE);
+        console.log("point sorted rmse:", this.PointSortedRMSE);
+        document.getElementById('point_rmse').innerText = this.PointRMSE[0];
+        document.getElementById('point_mae').innerText = this.PointMAE[0];
+        document.getElementById('point_mape').innerText = this.PointMAPE[0] + '%';
     }
 
     // 获得Metric分布

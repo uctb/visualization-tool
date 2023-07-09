@@ -169,12 +169,20 @@
                   <li class="pulll_left">MAPE</li>
                 </ul>
               </div>
+<!--              <div class="barbox" style="height: 2.5rem">-->
+<!--                <ul class="clearfix">-->
+<!--                  <li class="pulll_left counter" id="uv_name" style="font-family:微软雅黑; font-size: 1rem; color: rgba(255,255,255,0.8)">Model</li>-->
+<!--                  <li class="pulll_left counter" id="rmse"> </li>-->
+<!--                  <li class="pulll_left counter" id="mae"> </li>-->
+<!--                  <li class="pulll_left counter" id="mape"> </li>-->
+<!--                </ul>-->
+<!--              </div>-->
               <div class="barbox" style="height: 2.5rem">
                 <ul class="clearfix">
-                  <li class="pulll_left counter" id="uv_name" style="font-family:微软雅黑; font-size: 1.2rem; color: rgba(255,255,255,0.8)">location</li>
-                  <li class="pulll_left counter" id="rmse"> </li>
-                  <li class="pulll_left counter" id="mae"> </li>
-                  <li class="pulll_left counter" id="mape"> </li>
+                  <li class="pulll_left counter" id="point_name" style="font-family:微软雅黑; font-size: 1.2rem; color: rgba(255,255,255,0.8)">{{currentstation}}</li>
+                  <li class="pulll_left counter" id="point_rmse"> </li>
+                  <li class="pulll_left counter" id="point_mae"> </li>
+                  <li class="pulll_left counter" id="point_mape"> </li>
                 </ul>
               </div>
             </div>
@@ -606,6 +614,10 @@ export default {
     changeTimeSeries(id) {
       console.log(id);
       this.model.getTemporalBadCaseParam(id);
+      console.log("aaaa", this.model.PointRMSE);
+      document.getElementById('point_rmse').innerText = this.model.PointRMSE[id];
+      document.getElementById('point_mae').innerText = this.model.PointMAE[id];
+      document.getElementById('point_mape').innerText = this.model.PointMAPE[id] + '%';
     },
     show() {
       let maxNum = Math.max(...this.model.mre_for_filter_station);
@@ -720,6 +732,10 @@ export default {
           _this.model.getBadcaseDistributionRulesParam(id);  //时间bad case分布
         }
         _this.currentstation = params.data.name;
+        console.log("aaaa", _this.model.PointRMSE);
+        document.getElementById('point_rmse').innerText = _this.model.PointRMSE[id];
+        document.getElementById('point_mae').innerText = _this.model.PointMAE[id];
+        document.getElementById('point_mape').innerText = _this.model.PointMAPE[id] + '%';
       });
     },
 
