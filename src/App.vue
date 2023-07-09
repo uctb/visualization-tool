@@ -153,7 +153,7 @@
                 </el-tab-pane>
               </el-tabs>
               <RefreshButton style="margin-top: 3.7rem;" @click-refresh="refresh" diff_type="refresh"/>
-              <ConfirmButton  style="margin-bottom: 3.7rem;"@click-confirm="confirm" diff_type="confirm"/>
+              <ConfirmButton  style="margin-bottom: 3.7rem;" @click-confirm="confirm" diff_type="confirm"/>
           </div>
         </li>
 
@@ -230,7 +230,7 @@
 
 <script>
 import "echarts/extension/bmap/bmap";
-
+import wgs842gcj022bd09 from "./utils.js";
 import Model from "./Model.js";
 import TimeInfoProcessor from "./TimeInfoProcessor";
 import xm_arima from "./data/violation_XM_ARIMA.json";
@@ -610,6 +610,7 @@ export default {
     show() {
       let maxNum = Math.max(...this.model.mre_for_filter_station);
       let minNum = Math.min(...this.model.mre_for_filter_station);
+      
       // console.log("max",maxNum)
       this.$data.center.push(this.model.station_lngs[0]);
       this.$data.center.push(this.model.station_lats[0]);
@@ -619,8 +620,11 @@ export default {
           name: "station" + i,
           value: [],
         });
-        this.$data.maps[i].value.push(this.model.station_lngs[i]);
-        this.$data.maps[i].value.push(this.model.station_lats[i]);
+
+      var bdlnglat = wgs842gcj022bd09(this.model.station_lngs[i],this.model.station_lats[i])
+
+        this.$data.maps[i].value.push(bdlnglat[0]);
+        this.$data.maps[i].value.push(bdlnglat[1]);
         // this.$data.maps[i].value.push(this.model.mre_for_each_station[i])
         if (!this.model.invalid_station_index.includes(i)) {
           this.$data.maps[i].value.push(
