@@ -27,7 +27,7 @@ export default class Model {
         this.station_num = this.st_raster_gt.length;
         this.invalid_station_index = new Array();
 
-        console.log(this.time_length)
+        console.log("time length is:" ,this.time_length)
 
         // 求无效点的索引序列
         for (let i=0; i<this.station_num; i++) {
@@ -104,6 +104,7 @@ export default class Model {
         console.log("rmse for each station:", this.rmse_for_each_station);
         console.log("mre for each station:", this.mre_for_each_station);
         console.log("mre for filter station:", this.mre_for_filter_station)
+        console.log("time length is :", this.time_length)
 
         // 求各种需要的统计量
         this.emitModelError();
@@ -136,6 +137,7 @@ export default class Model {
             this.ts = this.ct.range(0, this.time_length, 1);
         }
     }
+
     testupdate() {
         this.st_raster_gt = this.ip.gt_st_raster;
         this.st_raster_pred = this.ip.pred_st_raster;
@@ -144,7 +146,7 @@ export default class Model {
         this.station_num = this.st_raster_gt.length;
         this.invalid_station_index = new Array();
 
-        console.log(this.time_length)
+        console.log("time length is:" ,this.time_length)
 
         // 求无效点的索引序列
         for (let i=0; i<this.station_num; i++) {
@@ -232,6 +234,7 @@ export default class Model {
         // 判断是否设置时间
         if (this.ts_flag) {
             // 判断时间设置得是否准确
+            console.log("=======Is setting of time correct?========")
             if (this.time_length != this.ts.length) {
                 console.log("time range fail!")
                 console.log(this.time_length)

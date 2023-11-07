@@ -149,7 +149,7 @@
                 <div class="option" style="margin-bottom: 2rem;">
                 <div class="alltitle">TimeRange & TimeFitness<span class="optional" style="color:#6d9eeb"> (optional)</span></div>
                  <TimeSeries :TimeInfoProcessor="this.TimeInfoProcessor" ref="time"/>
-              </div> 
+                </div>
                 </el-tab-pane>
               </el-tabs>
               <RefreshButton style="margin-top: 3.7rem;" @click-refresh="refresh" diff_type="refresh"/>
@@ -200,7 +200,7 @@
             <div class="head1" style="font-weight: bold;font-size: 1.5rem; color: rgba(255,255,255,.7)">Error Diagnosis</div>
             <!--时空数据/评价指标的分布-->
             <div class="boxall" style="height:20rem; margin-bottom: .6rem">
-              <div class="alltitle">Distribution of Spatial Bad Case Related to Station Attributes</div>
+              <div class="alltitle"></div>
               <el-cascader
                   v-model="value"
                   placeholder="station attributes"
@@ -215,7 +215,7 @@
             <!--bad case的分布规律-->
 <!--            <div class="boxall" style="height:15rem;width:27rem;margin-left:-0.5%">-->
             <div class="boxall" style="height: 20rem">
-            <div class="alltitle">Distribution of Temporal Bad Case Related to Time Characteristic</div>
+            <div class="alltitle"></div>
             <el-cascader
               v-model="value_bc"
               placeholder="time characteristics"
@@ -413,15 +413,13 @@ export default {
         xm_hm["gt"],
         xm_hm["stationinfo"]
       );},400)
-        
-      setTimeout(() => {
+    setTimeout(() => {
         if (this.flag)
           //// 最小系统判断
           this.show();
         else this.model.getMetricRankListParam(); 
       }, 1000);
-
-      setTimeout(()=>{
+    setTimeout(()=>{
         this.model.getTemporalBadCaseParam(0); // 时间bad case定位
 
         /* 时空数据分布 */
@@ -440,6 +438,7 @@ export default {
   watch: {
     "TimeInfoProcessor.flag": function (newValue) {
       if (newValue) {
+        console.log("=====set time series======")
         const Success = this.model.setTimeseries(
           this.TimeInfoProcessor.TimeSeries,
           this.TimeInfoProcessor.WeekSeries,
@@ -464,6 +463,7 @@ export default {
       if (type == "stationinfo") this.flag = true;
       this.isShow = true;
     },
+    // predefined
     TransferData(e) {
       this.maps = [];
       this.options = {};
@@ -561,6 +561,7 @@ export default {
        
       }
     },
+
     refresh() {
       this.maps = [];
       this.options = {};
@@ -581,10 +582,29 @@ export default {
       document.getElementById('mape').innerText = '';
       document.getElementById('mae').innerText = '';
     },
+
     confirm() {
+      // 设置时间
+      console.log("=====set time series======")
+      const Success = this.model.setTimeseries(
+          this.TimeInfoProcessor.TimeSeries,
+          this.TimeInfoProcessor.WeekSeries,
+          this.TimeInfoProcessor.PeakSeries,
+          this.TimeInfoProcessor.HourSeries,
+          this.TimeInfoProcessor.WeekdayNum,
+          this.TimeInfoProcessor.WeeksumNum,
+          this.TimeInfoProcessor.PeakNum
+      );
+      if (!Success) {
+        alert("Time Range or Time fitness is false! Please select again.");
+      } else {
+        this.timeflag = true;
+        this.updateOptionDisabled(this.timeflag);
+      }
+
       this.model.testupdate();
       // this.badcase_distribution_param = this.model.badcase_week_distribution_rules_param;
-      console.log("app length", this.model.station_info.length);
+      console.log("station number", this.model.station_info.length);
 
       /*
         绘图
@@ -611,6 +631,7 @@ export default {
 
       this.$data.currentstation = "station0";
     },
+
     changeTimeSeries(id) {
       console.log(id);
       this.model.getTemporalBadCaseParam(id);
@@ -619,13 +640,16 @@ export default {
       document.getElementById('point_mae').innerText = this.model.PointMAE[id];
       document.getElementById('point_mape').innerText = this.model.PointMAPE[id] + '%';
     },
+
     show() {
+      console.log("======show=======")
       let maxNum = Math.max(...this.model.mre_for_filter_station);
       let minNum = Math.min(...this.model.mre_for_filter_station);
       // console.log("max",maxNum)
+      this.$data.center = new Array()
       this.$data.center.push(this.model.station_lngs[0]);
       this.$data.center.push(this.model.station_lats[0]);
-      // console.log("center",this.$data.center)
+      console.log("center",this.$data.center)
       for (let i = 0; i < this.model.station_num; i++) {
         this.$data.maps.push({
           name: "station" + i,
@@ -636,13 +660,14 @@ export default {
         // this.$data.maps[i].value.push(this.model.mre_for_each_station[i])
         if (!this.model.invalid_station_index.includes(i)) {
           this.$data.maps[i].value.push(
-            this.model.mre_for_filter_station[i] / (maxNum - minNum)
+            (this.model.mre_for_filter_station[i]) / (maxNum - minNum)
+              // this.model.mre_for_filter_station[i]
           );
         } else {
           this.$data.maps[i].value.push(Infinity);
         }
       }
-      console.log(11, this.model.invalid_station_index);
+      console.log(this.model.invalid_station_index);
       this.initCharts();
     },
 
@@ -661,7 +686,6 @@ export default {
       let _this = this;
       console.log(this.$refs.bmap)
       const myChart = this.$echarts.init(this.$refs.bmap);
-      console.log('initmychart!')
       myChart.setOption({
         bmap: {
           key: "uAEIuqTqw9WoIIjwKIGCeaprkb0ZQvyK&s=1",
@@ -728,7 +752,6 @@ export default {
           _this.model.getBadcaseDistributionRulesParam(id);  //时间bad case分布
         }
         _this.currentstation = params.data.name;
-        console.log("aaaa", _this.model.PointRMSE);
         document.getElementById('point_rmse').innerText = _this.model.PointRMSE[id];
         document.getElementById('point_mae').innerText = _this.model.PointMAE[id];
         document.getElementById('point_mape').innerText = _this.model.PointMAPE[id] + '%';
