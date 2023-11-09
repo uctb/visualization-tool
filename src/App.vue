@@ -35,7 +35,7 @@
                         placement="top-start"
                         width="480"
                         trigger="hover"
-                        close-delay="50">
+                        close-delay=50>
                       <div>
                       <span>Example of ground truth: <br>
                         time series of 3 stations with 4 time slots:</span>
@@ -81,7 +81,7 @@
                     placement="top-start"
                     width="460"
                     trigger="hover"
-                    close-delay="50">
+                    close-delay=50>
                     <div>
                       <span>Example of prediction: <br> time series of 3 stations with 4 time slots:</span>
                     </div>
@@ -123,7 +123,7 @@
                     placement="top-start"
                     width="535"
                     trigger="hover"
-                    close-delay="50">
+                    close-delay=50>
                     <div><span>Example of geographical coordinates of 3 stations<br>(latitude
                         first, longitude second):</span></div>
                     <div>
@@ -643,8 +643,8 @@ export default {
 
     show() {
       console.log("======show=======")
-      let maxNum = Math.max(...this.model.mre_for_filter_station);
-      let minNum = Math.min(...this.model.mre_for_filter_station);
+      let maxNum = Math.max(...this.model.rmse_for_each_station);
+      let minNum = Math.min(...this.model.rmse_for_each_station);
       // console.log("max",maxNum)
       this.$data.center = new Array()
       this.$data.center.push(this.model.station_lngs[0]);
@@ -660,7 +660,7 @@ export default {
         // this.$data.maps[i].value.push(this.model.mre_for_each_station[i])
         if (!this.model.invalid_station_index.includes(i)) {
           this.$data.maps[i].value.push(
-            (this.model.mre_for_filter_station[i]) / (maxNum - minNum)
+              (this.model.rmse_for_each_station[i]) / (maxNum - minNum)
               // this.model.mre_for_filter_station[i]
           );
         } else {
@@ -670,6 +670,36 @@ export default {
       console.log(this.model.invalid_station_index);
       this.initCharts();
     },
+
+    // show() {
+    //   console.log("======show=======")
+    //   let maxNum = Math.max(...this.model.mre_for_filter_station);
+    //   let minNum = Math.min(...this.model.mre_for_filter_station);
+    //   // console.log("max",maxNum)
+    //   this.$data.center = new Array()
+    //   this.$data.center.push(this.model.station_lngs[0]);
+    //   this.$data.center.push(this.model.station_lats[0]);
+    //   console.log("center",this.$data.center)
+    //   for (let i = 0; i < this.model.station_num; i++) {
+    //     this.$data.maps.push({
+    //       name: "station" + i,
+    //       value: [],
+    //     });
+    //     this.$data.maps[i].value.push(this.model.station_lngs[i]);
+    //     this.$data.maps[i].value.push(this.model.station_lats[i]);
+    //     // this.$data.maps[i].value.push(this.model.mre_for_each_station[i])
+    //     if (!this.model.invalid_station_index.includes(i)) {
+    //       this.$data.maps[i].value.push(
+    //         (this.model.mre_for_filter_station[i]) / (maxNum - minNum)
+    //           // this.model.mre_for_filter_station[i]
+    //       );
+    //     } else {
+    //       this.$data.maps[i].value.push(Infinity);
+    //     }
+    //   }
+    //   console.log(this.model.invalid_station_index);
+    //   this.initCharts();
+    // },
 
     updateOptionDisabled(timeflag) {
       const targetBcOption = this.statistics_bc_option.find(

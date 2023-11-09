@@ -173,7 +173,7 @@ export default class Model {
         let rmse_for_each_station = new Array(this.station_num);
         let mre_for_each_station = new Array(this.station_num);
         let mre_for_filter_station = new Array(this.station_num-this.invalid_station_index.length);
-        let st_raster_diff = new Array(this.station_num);  
+        let st_raster_diff = new Array(this.station_num);  // 绝对误差
         let st_raster_re = new Array(this.station_num);  // 相对误差
         let st_raster_re_filter = new Array(this.station_num-this.invalid_station_index.length)
 
@@ -193,7 +193,7 @@ export default class Model {
             for (var j = 0; j < this.time_length; j++) {
                 error_matrix[i][j] = this.st_raster_pred[i][j] - this.st_raster_gt[i][j];
                 tmp_mae += Math.abs(error_matrix[i][j]);
-                st_raster_diff[i].push(this.st_raster_pred[i][j] - this.st_raster_gt[i][j]);
+                st_raster_diff[i].push(Math.abs(this.st_raster_pred[i][j] - this.st_raster_gt[i][j]));
                 st_raster_re[i].push(Math.abs(this.st_raster_pred[i][j] - this.st_raster_gt[i][j]) / this.st_raster_gt[i][j]);
             }
             mae_for_each_station[i] = tmp_mae / this.station_num;
@@ -346,7 +346,7 @@ export default class Model {
     }
 
     // 获得local bad case
-    emitBadCase() {
+    /*emitBadCase() {
         console.log("calculate bad case!");
         let bad_case_len = 3;  // 可修改参数，表示至少连续多长的异常可以被定义为bad_case
         let markArea = new Array(this.station_num);
@@ -428,7 +428,85 @@ export default class Model {
         }
         this.bad_case = markArea;
         console.log("bad case is:", this.bad_case);
+    }*/
+
+
+    emitBadCase() {
+        console.log("calculate bad case for top 10%!");
+        let bad_case_len = 1; // 可修改参数，表示至少连续多长的异常可以被定义为bad_case
+        let markArea = new Array(this.station_num);
+    
+        for (let i = 0; i < this.station_num; i++) {
+            markArea[i] = [];
+            let diff = this.st_raster_diff[i]; // 绝对误差
+            let relative_diff = this.st_raster_re[i]; // 相对误差数组，假设这是已经计算好的
+    
+            // 绝对误差
+            let sortedDiff = [...diff].sort((a, b) => b - a);
+            let thresholdIndex = Math.floor(sortedDiff.length * 0.05) - 1;
+            let thresholdValue = sortedDiff[thresholdIndex]; // 前10%的阈值
+    
+            // 相对误差
+            let sortedRelativeDiff = [...relative_diff].sort((a, b) => b - a);
+            let relativeThresholdIndex = Math.floor(sortedRelativeDiff.length * 0.05) - 1;
+            let relativeThresholdValue = sortedRelativeDiff[relativeThresholdIndex]; // 相对误差的前10%的阈值
+    
+            // 初始化滑动窗口
+            let window = 0;
+            let relative_window = 0; // 相对误差的滑动窗口
+            let start_time = '';
+            let relative_start_time = ''; // 相对误差的开始时间
+    
+            // 滑动窗口求markArea
+            for (let j = 0; j < this.time_length; j++) {
+                // 绝对误差的标记逻辑
+                if (diff[j] > thresholdValue) {
+                    if (window === 0) {
+                        start_time = j;
+                    }
+                    window++;
+                } else {
+                    if (window >= bad_case_len) {
+                        let end_time = j;
+                        markArea[i].push([{'xAxis': start_time, 'itemStyle': {'color': 'yellow', 'opacity': 0.5}},
+                            {'xAxis': end_time}]);
+                    }
+                    window = 0;
+                }
+    
+                // 相对误差的标记逻辑
+                if (relative_diff[j] > relativeThresholdValue) {
+                    if (relative_window === 0) {
+                        relative_start_time = j;
+                    }
+                    relative_window++;
+                } else {
+                    if (relative_window >= bad_case_len) {
+                        let relative_end_time = j;
+                        markArea[i].push([{'xAxis': relative_start_time, 'itemStyle': {'color': 'red', 'opacity': 0.5}},
+                            {'xAxis': relative_end_time}]);
+                    }
+                    relative_window = 0;
+                }
+            }
+    
+            // 最后一个时间片的处理逻辑
+            if (window >= bad_case_len) {
+                let end_time = this.time_length - 1;
+                markArea[i].push([{'xAxis': start_time, 'itemStyle': {'color': 'yellow', 'opacity': 0.5}},
+                    {'xAxis': end_time}]);
+            }
+            if (relative_window >= bad_case_len) {
+                let relative_end_time = this.time_length - 1;
+                markArea[i].push([{'xAxis': relative_start_time, 'itemStyle': {'color': 'red', 'opacity': 0.5}},
+                    {'xAxis': relative_end_time}]);
+            }
+        }
+    
+        this.bad_case = markArea;
+        console.log("bad case is:", this.bad_case);
     }
+    
 
     // 获得站点误差以及降序排列数组
     emitMetricsRankList() {
@@ -798,9 +876,9 @@ export default class Model {
         console.log("=========plot bad case distribution rules=========")
         spatial_ind = parseInt(spatial_ind)
         console.log(this.WeekSumRatio)
-        let weekday_statistic = Object.values(this.WeekDistributionRatio[spatial_ind]);
+        let week_distribution = Object.values(this.WeekDistributionRatio[spatial_ind]);
         let peak_statistic = Object.values(this.PeakSumRatio[spatial_ind]);
-        let week_distribution = Object.values(this.WeekSumRatio[spatial_ind]);
+        let weekday_statistic = Object.values(this.WeekSumRatio[spatial_ind]);
         let hour_distribution = this.HourDistribution[spatial_ind];
 
         this.badcase_weekday_statistic_param = {
