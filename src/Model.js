@@ -1,3 +1,4 @@
+import { log } from '@tensorflow/tfjs';
 import InputProcessor from './InputProcessor.js'
 import ComputeTool from './function.js'
 export default class Model {
@@ -11,6 +12,7 @@ export default class Model {
         this.st_raster_gt = null;
         this.st_raster_pred = null;
         this.station_info = [];
+        this.graph = [];
         this.ts_flag = false;
     }
 
@@ -19,10 +21,11 @@ export default class Model {
     UPDATE: (by hyy) 新增了计算diff序列和badcase
     UPDATE: (by xxh) 在testupdate新增了stationinfo文件的判断
     */
-    update(pred,gt,station_info){
+    update(pred,gt,station_info,graph){
         this.st_raster_gt = gt;
         this.st_raster_pred = pred;
         this.station_info = station_info;
+        this.graph = graph;
         this.time_length = this.st_raster_gt[0].length;
         this.station_num = this.st_raster_gt.length;
         this.invalid_station_index = new Array();
@@ -139,9 +142,13 @@ export default class Model {
     }
 
     testupdate() {
+
+        console.log("======test update!========")
+
         this.st_raster_gt = this.ip.gt_st_raster;
         this.st_raster_pred = this.ip.pred_st_raster;
         this.station_info = this.ip.station_info;
+        this.graph = this.ip.graph;
         this.time_length = this.st_raster_gt[0].length;
         this.station_num = this.st_raster_gt.length;
         this.invalid_station_index = new Array();
@@ -175,7 +182,8 @@ export default class Model {
         let mre_for_filter_station = new Array(this.station_num-this.invalid_station_index.length);
         let st_raster_diff = new Array(this.station_num);  // 绝对误差
         let st_raster_re = new Array(this.station_num);  // 相对误差
-        let st_raster_re_filter = new Array(this.station_num-this.invalid_station_index.length)
+        let st_raster_re_filter = new Array(this.station_num-this.invalid_station_index.length);
+        let edges = new Array();
 
         //TODO: 下面内容可以封装成函数
         for (var i = 0; i < this.station_num; i++) {
@@ -205,11 +213,26 @@ export default class Model {
                 }
             }
             mre_for_filter_station[i] = this.ct.calculateMean(st_raster_re_filter[i]);
+            // 判断是否传入graph文件
+            if(this.graph.length!=0){
+                for(let j=i+1; j<this.graph[i].length; j++){ // 只遍历上三角
+                    if (this.graph[i][j] >= 1) {
+                        edges.push({
+                            source: `station${i}`,
+                            target: `station${j}`
+                        });
+                    }
+                }
+            }
         }
 
         if(this.station_info.length!=0){
             this.station_lats = station_lats;
             this.station_lngs = station_lngs;
+        }
+        if(this.graph.length!=0){
+            this.edges = edges;
+            console.log("edges:", this.edges);
         }
         this.error_matrix = error_matrix;
         this.mae_for_each_station = mae_for_each_station;
@@ -264,6 +287,8 @@ export default class Model {
         this.station_info = [];
         this.station_lats = [];
         this.station_lngs = [];
+        this.graph = [];
+        this.edges = [];
         this.mae_for_each_station = [];
         this.temp_bad_case_param = null;
         this.error_matrix = null;
@@ -432,7 +457,7 @@ export default class Model {
 
 
     emitBadCase() {
-        console.log("calculate bad case for top 10%!");
+        console.log("=======emit bad case for top 10%!=======");
         let bad_case_len = 1; // 可修改参数，表示至少连续多长的异常可以被定义为bad_case
         let markArea = new Array(this.station_num);
     
@@ -710,8 +735,13 @@ export default class Model {
         console.log("mean gt for each station:", mean_gt_for_each_station);
         this.gtRange = this.ct.getSequenceRange(mean_gt_for_each_station, interval_num);  // bad case 关于站点流量的分布
         this.gtDistribution = this.ct.getSequenceRange(mean_gt_for_each_station, interval_num); // 站点流量的分布
-        // 统计预测得糟糕的站点落在什么范围内：超出所有站点平均误差的站点视为预测得糟糕的站点
-        let threshold = this.ct.calculateMean(this.mre_for_each_station);
+
+        // 统计预测得糟糕的站点落在什么范围内：mre前10%的站点视为预测得糟糕的站点
+        let sorted_spatial_error = [...this.mre_for_each_station].sort((a, b) => b - a);
+        let thresholdIndex = Math.floor(sorted_spatial_error.length * 0.1) - 1;
+        let threshold = sorted_spatial_error[thresholdIndex]; // 前10%的阈值
+        // let threshold = this.ct.calculateMean(this.mre_for_each_station);  // 大于平均误差的站点为spatial bad case
+
         for (let i=0; i<this.station_num; i++) {
             let interval_id = this.ct.getIntervalID(this.gtDistribution['interval_point'], interval_num, mean_gt_for_each_station[i]);
             this.gtDistribution[interval_id]++;

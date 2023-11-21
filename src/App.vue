@@ -116,7 +116,7 @@
                       ref="pred"
                       slot="reference"/>
                   </el-popover>
-              </div>
+                </div>
                 <div class="option" style="margin-bottom: 2rem;">
                   <div class="alltitle">Geographical Coordinates<span class="optional" style="color:#6d9eeb"> (optional)</span></div>
                  <el-popover
@@ -147,11 +147,44 @@
                   </el-popover>
                 </div>
                 <div class="option" style="margin-bottom: 2rem;">
+                  <div class="alltitle">Spatial Relationship Graph<span class="optional" style="color:#6d9eeb"> (optional)</span></div>
+                 <el-popover
+                    placement="top-start"
+                    width="535"
+                    trigger="hover"
+                    close-delay=50>
+                    <div><span>Example of spatial relationship graph of 3 stations<br>(latitude
+                        first, longitude second):</span></div>
+                    <div>
+                      <span
+                        >30.1<span style="color: #823935; font-weight: bold"
+                          >\t</span
+                        >120.3<br />30.15<span
+                          style="color: #823935; font-weight: bold"
+                          >\t</span
+                        >120.28<br />30.2<span
+                          style="color: #823935; font-weight: bold"
+                          >\t</span
+                        >120.2</span
+                      >
+                    </div>
+                    <UploadButton
+                      @process-upload="inputprocess"
+                      type="graph"
+                      ref="graph"
+                      slot="reference"/>
+                  </el-popover>
+                </div>
+                <div class="option" style="margin-bottom: 2rem;">
                 <div class="alltitle">TimeRange & TimeFitness<span class="optional" style="color:#6d9eeb"> (optional)</span></div>
                  <TimeSeries :TimeInfoProcessor="this.TimeInfoProcessor" ref="time"/>
                 </div>
                 </el-tab-pane>
               </el-tabs>
+                <div class="input-setting-wrapper">
+                  <el-input v-model="stationInd" placeholder="请输入内容" size="mini"></el-input>
+                  <el-button type="primary" icon="el-icon-setting" @click="LocateStation">setting</el-button>
+                </div>
               <RefreshButton style="margin-top: 3.7rem;" @click-refresh="refresh" diff_type="refresh"/>
               <ConfirmButton  style="margin-bottom: 3.7rem;" @click-confirm="confirm" diff_type="confirm"/>
           </div>
@@ -283,22 +316,8 @@ export default {
       value: [],
       value_bc: [],
       value1: [],
+      stationInd: '0',
       statistics_option: [
-        /*{
-          value: "metric",
-          label: "metric",
-          disabled: false,
-          children: [
-            {
-              value: "RMSE Distribution",
-              label: "RMSE Distribution",
-            },
-            {
-              value: "MAE Distribution",
-              label: "MAE Distribution",
-            },
-          ],
-        },*/
         {
           value: "station attributes",
           label: "station attributes",
@@ -310,29 +329,6 @@ export default {
             },
           ],
         },
-/*        {
-          value: "time characteristics",
-          label: "time characteristics",
-          disabled: true,
-          children: [
-            {
-              value: "Weekday or Weekends?",
-              label: "Weekday or Weekends?",
-            },
-            {
-              value: "Morning/Evening Peak?",
-              label: "Morning/Evening Peak?",
-            },
-            {
-              value: "On what day of the week?",
-              label: "On what day of the week?",
-            },
-            {
-              value: "On which hour of the 24?",
-              label: "On which hour of the 24?",
-            },
-          ],
-        },*/
       ],
       statistics_bc_option: [
         /*{
@@ -482,8 +478,6 @@ export default {
           xm_hm["time_fitness"],'min'
         );
 
-        console.log('TimeInfoUpdated')
-
         this.flag = true;
         this.isShow = true;
         this.TimeInfoProcessor.emitTimeSeries()
@@ -514,7 +508,7 @@ export default {
         this.statistics_param = this.model.badcase_spatial_distribution_rules_param;
           this.badcase_distribution_param = this.model.badcase_weekday_statistic_param;
 
-        this.$data.currentstation = "station0";
+        this.$data.f = "station0";
         },600)
        
       } else if (e === "violation_XM_HM") {
@@ -523,8 +517,6 @@ export default {
           xm_arima["end_time"],
           xm_arima["time_fitness"],'min'
         );
-
-        console.log('TimeInfoUpdated')
 
         this.flag = true;
         this.isShow = true;
@@ -575,6 +567,7 @@ export default {
       this.$refs.gt.clear();
       this.$refs.pred.clear();
       this.$refs.stationinfo.clear();
+      this.$refs.graph.clear();
       this.$refs.time.clear();
       console.log(this.model);
       console.log(this.TimeInfoProcessor);
@@ -603,8 +596,6 @@ export default {
       }
 
       this.model.testupdate();
-      // this.badcase_distribution_param = this.model.badcase_week_distribution_rules_param;
-      console.log("station number", this.model.station_info.length);
 
       /*
         绘图
@@ -612,11 +603,11 @@ export default {
 
       /* bad case定位 */
 
-      // 空间bad case定位
+      //// 最小系统判断
       if (this.flag)
-        //// 最小系统判断
         this.show();
       else this.model.getMetricRankListParam();
+
       this.model.getTemporalBadCaseParam(0); // 时间bad case定位
 
       /* 时空数据分布 */
@@ -643,8 +634,8 @@ export default {
 
     show() {
       console.log("======show=======")
-      let maxNum = Math.max(...this.model.rmse_for_each_station);
-      let minNum = Math.min(...this.model.rmse_for_each_station);
+      let maxNum = Math.max(...this.model.mre_for_each_station);
+      let minNum = Math.min(...this.model.mre_for_each_station);
       // console.log("max",maxNum)
       this.$data.center = new Array()
       this.$data.center.push(this.model.station_lngs[0]);
@@ -656,14 +647,14 @@ export default {
           value: [],
         });
 
-      var bdlnglat = wgs842gcj022bd09(this.model.station_lngs[i],this.model.station_lats[i])
+        var bdlnglat = wgs842gcj022bd09(this.model.station_lngs[i],this.model.station_lats[i])
 
         this.$data.maps[i].value.push(bdlnglat[0]);
         this.$data.maps[i].value.push(bdlnglat[1]);
         // this.$data.maps[i].value.push(this.model.mre_for_each_station[i])
         if (!this.model.invalid_station_index.includes(i)) {
           this.$data.maps[i].value.push(
-              (this.model.rmse_for_each_station[i]) / (maxNum - minNum)
+              (this.model.mre_for_each_station[i]) / (maxNum - minNum)
               // this.model.mre_for_filter_station[i]
           );
         } else {
@@ -713,11 +704,32 @@ export default {
       }
     },
 
+    LocateStation() {
+      console.log('=======checkout station=======')
+      let current_param = this.$data.maps[Number(this.stationInd)];
+      let center = new Array()
+      center.push(current_param.value[0]);
+      center.push(current_param.value[1]);
+      console.log("center",center)
+      const myChart = this.$echarts.init(this.$refs.bmap);
+      if (center) {
+        // 更新地图中心至该站点的经纬度
+        myChart.setOption({
+          bmap: {
+            key: "uAEIuqTqw9WoIIjwKIGCeaprkb0ZQvyK&s=1",
+            center: center,
+            roam: true,
+            zoom: 15
+          }
+        });
+      }
+    },
+
     //地图初始化
     initCharts() {
       console.log('go into initCharts')
+      console.log(this.$data.maps)
       let _this = this;
-      console.log(this.$refs.bmap)
       const myChart = this.$echarts.init(this.$refs.bmap);
       myChart.setOption({
         bmap: {
@@ -739,6 +751,17 @@ export default {
             },
           },
         ],
+        tooltip: {
+          trigger: 'item', // 触发类型，设置为'item'表示触发在数据项上
+          formatter: function (params) {
+              if (params.dataType === 'edge') {
+                  return 'edge: ' + params.data.source + ' - ' + params.data.target;
+              } else {
+                  // 您可以在这里处理其他情况，例如悬浮在节点上时的信息
+                  return 'station: ' + params.name;
+              }
+          }
+        },
         //标点
         series: [
           {
@@ -772,22 +795,56 @@ export default {
               },
             },
           },
+          // {
+          //   type: 'graph',
+          //   layout: 'none', // 使用绝对位置而非自动布局
+          //   coordinateSystem: 'bmap', // 使用百度地图坐标系
+          //   symbolSize: 10, // 节点大小
+          //   data: this.$data.maps,
+          //   links: this.model.edges,
+          //   // edgeLabel: {
+          //   //   fontSize: 20
+          //   // },
+          //   // itemStyle: {
+          //   //   borderColor: '#fff',
+          //   //   borderWidth: 1,
+          //   //   shadowBlur: 10,
+          //   //   shadowColor: 'rgba(0, 0, 0, 0.3)'
+          //   // },
+          //   lineStyle: {
+          //     color: 'red',
+          //     curveness: 0.3,
+          //     opacity: 0,  // 默认边不可见
+          //   },
+          //   // emphasis: {
+          //   //   // 当鼠标悬浮在节点上时，相关联的边显示
+          //   //   focus: 'adjacency',
+          //   //   lineStyle: {
+          //   //     opacity: 1  // 鼠标悬浮时边可见
+          //   //   }
+          //   // }
+          // }
         ],
       });
       myChart.on("click", function (params) {
-        console.log(params);
-        let id = "";
-        let length = params.data.name.length;
-        id = params.data.name.slice(7, length);
-        console.log(id);
-        _this.model.getTemporalBadCaseParam(id);  // 时间bad case
-        if (_this.TimeInfoProcessor.flag) {
-          _this.model.getBadcaseDistributionRulesParam(id);  //时间bad case分布
+        console.log(params)
+        if (params.dataType == 'edge') {
+          console.log('Edge clicked:', params);
+        } else {
+          let id = "";
+          let length = params.data.name.length;
+          id = params.data.name.slice(7, length);
+          console.log(id);
+          _this.model.getTemporalBadCaseParam(id);  // 时间bad case
+          if (_this.TimeInfoProcessor.flag) {
+            _this.model.getBadcaseDistributionRulesParam(id);  //时间bad case分布
+          }
+          _this.currentstation = params.data.name;
+          document.getElementById('point_rmse').innerText = _this.model.PointRMSE[id];
+          document.getElementById('point_mae').innerText = _this.model.PointMAE[id];
+          document.getElementById('point_mape').innerText = _this.model.PointMAPE[id] + '%';
         }
-        _this.currentstation = params.data.name;
-        document.getElementById('point_rmse').innerText = _this.model.PointRMSE[id];
-        document.getElementById('point_mae').innerText = _this.model.PointMAE[id];
-        document.getElementById('point_mape').innerText = _this.model.PointMAPE[id] + '%';
+        
       });
     },
 
@@ -1227,3 +1284,21 @@ a:hover {
 
 .option{ border: 1px solid rgba(25,186,139,.17); padding:0.4rem;  background: rgba(255,255,255,.04) url("./images/line.png"); background-size: 100% auto; position: relative; margin-bottom: .8rem; z-index: 10;}
 </style>
+
+.input-setting-wrapper {
+  display: flex; /* 开启flex布局 */
+  align-items: center; /* 居中对齐子元素 */
+  justify-content: space-between; /* 子元素之间平均分配空间 */
+  padding: 0.4rem; /* 根据你的布局需要调整内边距 */
+}
+
+.input-setting-wrapper .el-input,
+.input-setting-wrapper .el-button {
+  flex: 1; /* 使输入框和按钮弹性相等 */
+  margin: 0 0.2rem; /* 增加一点间隔 */
+}
+
+.input-setting-wrapper .el-button {
+  flex: 0 0 auto; /* 按钮不需要弹性伸缩，保持原始大小 */
+}
+

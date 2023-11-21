@@ -3,11 +3,13 @@ export default class InputProcessor {
         this.pred_st_raster = new Array();
         this.gt_st_raster = new Array();
         this.station_info = new Array();
+        this.graph = new Array();
     }
     clear() {
         this.pred_st_raster = new Array();
         this.gt_st_raster = new Array();
         this.station_info = new Array();
+        this.graph = new Array();
     }
     setSTRaster(file, type) {
         if (type == 'gt') {
@@ -18,6 +20,9 @@ export default class InputProcessor {
         }
         else if (type == 'stationinfo') {
             parseTSV(file, this.station_info)
+        }
+        else if (type == 'graph') {
+            parseTSV(file, this.graph)
         }
     }
 }
