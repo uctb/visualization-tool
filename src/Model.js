@@ -1,4 +1,4 @@
-import { log } from '@tensorflow/tfjs';
+// import { log } from '@tensorflow/tfjs';
 import InputProcessor from './InputProcessor.js'
 import ComputeTool from './function.js'
 export default class Model {
