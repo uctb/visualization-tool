@@ -77,7 +77,7 @@ export default class Model {
             for (var j = 0; j < this.time_length; j++) {
                 error_matrix[i][j] = this.st_raster_pred[i][j] - this.st_raster_gt[i][j];
                 tmp_mae += Math.abs(error_matrix[i][j]);
-                st_raster_diff[i].push(this.st_raster_pred[i][j] - this.st_raster_gt[i][j]);
+                st_raster_diff[i].push(Math.abs(this.st_raster_pred[i][j] - this.st_raster_gt[i][j]));
                 st_raster_re[i].push(Math.abs(this.st_raster_pred[i][j] - this.st_raster_gt[i][j]) / this.st_raster_gt[i][j]);
             }
             mae_for_each_station[i] = tmp_mae / this.station_num;
@@ -155,10 +155,10 @@ export default class Model {
 
         console.log("time length is:" ,this.time_length)
 
-        // 求无效点的索引序列
+        // 求无效点的索引序列: gt全为0/gt=NaN,Inf
         for (let i=0; i<this.station_num; i++) {
             let flag = false;
-            if (this.ct.calculateMean(this.st_raster_gt[i]) === 0) {
+            if (this.ct.isArrayAllZero(this.st_raster_gt[i])) {
                 flag = true;
             }
             for (let j=0; j<this.time_length; j++) {
@@ -288,7 +288,7 @@ export default class Model {
         this.station_lats = [];
         this.station_lngs = [];
         this.graph = [];
-        this.edges = [];
+        this.edges = []
         this.mae_for_each_station = [];
         this.temp_bad_case_param = null;
         this.error_matrix = null;
@@ -371,8 +371,9 @@ export default class Model {
     }
 
     // 获得local bad case
-    /*emitBadCase() {
-        console.log("calculate bad case!");
+    emitBadCase() {
+        console.log("==========calculate bad case!============");
+
         let bad_case_len = 3;  // 可修改参数，表示至少连续多长的异常可以被定义为bad_case
         let markArea = new Array(this.station_num);
         let start_time = '';
@@ -383,18 +384,28 @@ export default class Model {
         for (let i=0; i<this.station_num; i++) {
             markArea[i] = [];
             let diff = this.st_raster_diff[i];
-            // 计算平均值，方差
-            // const quartiles = this.ct.calculateQuartiles(diff);
-            const mean = this.ct.calculateMean(diff);
-            // const standardDeviation = this.ct.calculateStandardDeviation(diff);
-            // let upperThreshold = mean + standardDeviation;
-            // let lowerThreshold = mean - standardDeviation;
+            let gt = this.st_raster_gt[i];
+            let pred = this.st_raster_pred[i];
+
+            /* bootstrap-T */
+            let numResamples = 1000; // Number of bootstrap samples
+            let { ciLower, ciUpper, tValues } = this.ct.bootstrapT(diff, numResamples, this.ct.mean);
+            // console.log(`95% confidence interval: [${ciLower}, ${ciUpper}]`);
+
+            /* 判断是否数据异常: pd全0/保持不变 */
+
+            if (this.ct.isArrayAllZero(pred) || this.ct.isVariationWithinOne(pred)) {
+                markArea[i].push([{'xAxis': 0, 'itemStyle': {'color': 'green', 'opacity': 0.3}},
+                    {'xAxis': pred.length-1}]);
+                continue;
+            }
+
             // 初始化滑动窗口
             let window = 0;
             let window_invalid =0;
             // 滑动窗口求markArea
             for (let j=0; j<this.time_length; j++) {
-                if (diff[j] > mean) {
+                if (diff[j] > ciUpper) {
                     if (window === 0) {
                         window ++;
                         start_time = j;
@@ -402,27 +413,27 @@ export default class Model {
                         window ++;
                     }
                 }
-                else if (this.st_raster_gt[i][j] == 0 && this.st_raster_pred[i][j] !== 0) {
-                    if (window >= bad_case_len) {
-                        end_time = j;
-                        window = 0;
-                        markArea[i].push([{'xAxis': start_time, 'itemStyle': {'color': 'red', 'opacity': 0.3}},
-                            {'xAxis': end_time}])
-                    } else {
-                        window = 0;
-                        if (window_invalid === 0) {
-                            window_invalid++;
-                            start_time_invalid = j;
-                        } else {
-                            window_invalid++;
-                        }
-                    }
-                }
+                // else if (this.st_raster_gt[i][j] === 0 && this.st_raster_pred[i][j] !== 0) {
+                //     if (window >= bad_case_len) {
+                //         end_time = j;
+                //         window = 0;
+                //         markArea[i].push([{'xAxis': start_time, 'itemStyle': {'color': 'orange', 'opacity': 0.3}},
+                //             {'xAxis': end_time}])
+                //     } else {
+                //         window = 0;
+                //         if (window_invalid === 0) {
+                //             window_invalid++;
+                //             start_time_invalid = j;
+                //         } else {
+                //             window_invalid++;
+                //         }
+                //     }
+                // }
                 else {
                     if (window >= bad_case_len) {
                         end_time = j;
                         window = 0;
-                        markArea[i].push([{'xAxis': start_time, 'itemStyle': {'color': 'red', 'opacity': 0.3}},
+                        markArea[i].push([{'xAxis': start_time, 'itemStyle': {'color': 'yellow', 'opacity': 0.3}},
                             {'xAxis': end_time}])
                     } else {
                         window = 0;
@@ -430,7 +441,7 @@ export default class Model {
                     if (window_invalid >= bad_case_len) {
                         end_time_invalid = j;
                         window_invalid = 0;
-                        markArea[i].push([{'xAxis': start_time_invalid, 'itemStyle': {'color': 'red', 'opacity': 0.3}},
+                        markArea[i].push([{'xAxis': start_time_invalid, 'itemStyle': {'color': 'orange', 'opacity': 0.3}},
                             {'xAxis': end_time_invalid}])
                     } else if (window_invalid > 0 && window_invalid < bad_case_len) {
                         window_invalid = 0;
@@ -453,11 +464,12 @@ export default class Model {
         }
         this.bad_case = markArea;
         console.log("bad case is:", this.bad_case);
-    }*/
+    }
 
 
-    emitBadCase() {
+    /*emitBadCase() {
         console.log("=======emit bad case for top 10%!=======");
+
         let bad_case_len = 1; // 可修改参数，表示至少连续多长的异常可以被定义为bad_case
         let markArea = new Array(this.station_num);
     
@@ -530,7 +542,7 @@ export default class Model {
     
         this.bad_case = markArea;
         console.log("bad case is:", this.bad_case);
-    }
+    }*/
     
 
     // 获得站点误差以及降序排列数组
@@ -666,8 +678,7 @@ export default class Model {
         const PeakSumRatio = [];
 
         for (let station_id=0; station_id<this.station_num; station_id++) {
-            // let diff = this.st_raster_diff[station_id];
-            // const mean = this.ct.calculateMean(diff);
+
             let bad_case = this.bad_case[station_id];
             let isInBadcase = false;
 

@@ -147,35 +147,6 @@
                   </el-popover>
                 </div>
                 <div class="option" style="margin-bottom: 2rem;">
-                  <div class="alltitle">Spatial Relationship Graph<span class="optional" style="color:#6d9eeb"> (optional)</span></div>
-                 <el-popover
-                    placement="top-start"
-                    width="535"
-                    trigger="hover"
-                    close-delay=50>
-                    <div><span>Example of spatial relationship graph of 3 stations<br>(latitude
-                        first, longitude second):</span></div>
-                    <div>
-                      <span
-                        >30.1<span style="color: #823935; font-weight: bold"
-                          >\t</span
-                        >120.3<br />30.15<span
-                          style="color: #823935; font-weight: bold"
-                          >\t</span
-                        >120.28<br />30.2<span
-                          style="color: #823935; font-weight: bold"
-                          >\t</span
-                        >120.2</span
-                      >
-                    </div>
-                    <UploadButton
-                      @process-upload="inputprocess"
-                      type="graph"
-                      ref="graph"
-                      slot="reference"/>
-                  </el-popover>
-                </div>
-                <div class="option" style="margin-bottom: 2rem;">
                 <div class="alltitle">TimeRange & TimeFitness<span class="optional" style="color:#6d9eeb"> (optional)</span></div>
                  <TimeSeries :TimeInfoProcessor="this.TimeInfoProcessor" ref="time"/>
                 </div>
@@ -567,7 +538,6 @@ export default {
       this.$refs.gt.clear();
       this.$refs.pred.clear();
       this.$refs.stationinfo.clear();
-      this.$refs.graph.clear();
       this.$refs.time.clear();
       console.log(this.model);
       console.log(this.TimeInfoProcessor);
@@ -795,35 +765,6 @@ export default {
               },
             },
           },
-          // {
-          //   type: 'graph',
-          //   layout: 'none', // 使用绝对位置而非自动布局
-          //   coordinateSystem: 'bmap', // 使用百度地图坐标系
-          //   symbolSize: 10, // 节点大小
-          //   data: this.$data.maps,
-          //   links: this.model.edges,
-          //   // edgeLabel: {
-          //   //   fontSize: 20
-          //   // },
-          //   // itemStyle: {
-          //   //   borderColor: '#fff',
-          //   //   borderWidth: 1,
-          //   //   shadowBlur: 10,
-          //   //   shadowColor: 'rgba(0, 0, 0, 0.3)'
-          //   // },
-          //   lineStyle: {
-          //     color: 'red',
-          //     curveness: 0.3,
-          //     opacity: 0,  // 默认边不可见
-          //   },
-          //   // emphasis: {
-          //   //   // 当鼠标悬浮在节点上时，相关联的边显示
-          //   //   focus: 'adjacency',
-          //   //   lineStyle: {
-          //   //     opacity: 1  // 鼠标悬浮时边可见
-          //   //   }
-          //   // }
-          // }
         ],
       });
       myChart.on("click", function (params) {

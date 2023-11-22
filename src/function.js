@@ -71,18 +71,17 @@ export default class ComputeTool  {
         }
     }
 
-    calculateQuartiles(sequence) {
-        const SortedSequence = sequence;
-        const sortedSequence = SortedSequence.sort((a, b) => a - b);
-        const n = sortedSequence.length;
-        const upperQuartileIndex = Math.floor(n * 0.75);
-        // const constlowerQuartileIndex = Math.floor(n * 0.25);
+    calculate_quantile(arr, q) {
+        const sorted = arr.slice().sort((a, b) => a - b);
+        const pos = (sorted.length - 1) * q;
+        const base = Math.floor(pos);
+        const rest = pos - base;
 
-        const upperQuartile = sortedSequence[upperQuartileIndex];
-        // const lowerQuartile = sortedSequence[lowerQuartileIndex];
-
-        // return { upperQuartile, lowerQuartile };
-        return upperQuartile;
+        if (sorted[base + 1] !== undefined) {
+            return sorted[base] + rest * (sorted[base + 1] - sorted[base]);
+        } else {
+            return sorted[base];
+        }
     }
 
     calculateMean(sequence) {
@@ -90,6 +89,15 @@ export default class ComputeTool  {
         const sum = filteredSequence.reduce((acc, value) => acc + value, 0);
         const mean = sum / filteredSequence.length;
         return mean;
+    }
+
+    // 计算相对误差&绝对误差
+    calculateAEpoint(pred, gt) {
+        return Math.abs(gt - pred);
+    }
+
+    calculateAE(pred,gt) {
+        return gt.map((gt, index) => this.calculateAEpoint(gt, pred[index]));
     }
 
     calculateStandardDeviation(sequence) {
@@ -140,4 +148,69 @@ export default class ComputeTool  {
         return hour_series;
     }
 
+    /* 判断bad case */
+    isArrayAllZero(array) {
+        return array.every(element => element === 0);
+    }
+
+    isVariationWithinOne(array) {
+        for (let i = 0; i < array.length - 1; i++) {
+            if (Math.abs(array[i] - array[i + 1]) > 1) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bootstrap(data, predictions, numResamples, statistic) {
+        let resamples = [];
+        for (let i = 0; i < numResamples; i++) {
+            let resampleErrors = [];
+            for (let j = 0; j < data.length; j++) {
+                const errorIndex = Math.floor(Math.random() * data.length);
+                const error = data[errorIndex] - predictions[errorIndex];
+                resampleErrors.push(error);
+            }
+            resamples.push(statistic(resampleErrors));
+        }
+        return resamples;
+    }
+
+    mean(data) {
+        return data.reduce((a, b) => a + b, 0) / data.length;
+    }
+
+    bootstrapT(data, numResamples, statistic) {
+        const originalStat = statistic(data);
+        let tValues = [];
+
+        for (let i = 0; i < numResamples; i++) {
+            let resample = data.map(() => data[Math.floor(Math.random() * data.length)]);
+            let resampleStat = statistic(resample);
+
+            // Calculate standard error of the resample
+            let se = Math.sqrt(resample.map(x => Math.pow(x - resampleStat, 2)).reduce((a, b) => a + b, 0) / resample.length);
+
+            // Avoid division by zero in case of a resample with no variation
+            if (se === 0) continue;
+
+            // Calculate the t-value for the resample
+            let tValue = (resampleStat - originalStat) / se;
+            tValues.push(tValue);
+        }
+
+        // Calculate the percentiles for t-distribution to get the confidence interval
+        tValues.sort((a, b) => a - b);
+        let lowerPercentile = tValues[Math.floor(2.5 / 100 * tValues.length)];
+        let upperPercentile = tValues[Math.floor(97.5 / 100 * tValues.length)];
+
+        // Calculate the standard error of the original data
+        let seOriginal = Math.sqrt(data.map(x => Math.pow(x - originalStat, 2)).reduce((a, b) => a + b, 0) / data.length);
+
+        // Calculate the confidence interval for the original statistic
+        let ciLower = originalStat + lowerPercentile * seOriginal;
+        let ciUpper = originalStat + upperPercentile * seOriginal;
+
+        return { ciLower, ciUpper, tValues };
+    }
 }
