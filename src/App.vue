@@ -571,9 +571,11 @@ export default {
           );
         } else {
           this.$data.maps[i].value.push(Infinity);
+          this.$data.maps[i] = { ...this.$data.maps[i], itemStyle: { color: 'black' } };
+
         }
       }
-      console.log(this.model.invalid_station_index);
+      console.log('index',this.model.invalid_station_index);
       this.initCharts();
     },
 
