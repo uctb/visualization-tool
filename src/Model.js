@@ -378,7 +378,6 @@ export default class Model {
 
         let bad_case_len = 3;  // 可修改参数，表示至少连续多长的异常可以被定义为bad_case
         let markArea = new Array(this.station_num);
-        let BadCaseDiff = new Array(this.station_num);
         let InvalidPredictionStations = [];
         let start_time = '';
         let end_time = '';
@@ -388,7 +387,6 @@ export default class Model {
             let diff = this.st_raster_diff[i];
             let gt = this.st_raster_gt[i];
             let pred = this.st_raster_pred[i];
-            BadCaseDiff[i] = new Array(this.time_length).fill(NaN);
 
             /* 判断是否数据异常: pd全0/保持不变 */
 
@@ -418,9 +416,6 @@ export default class Model {
                         if (window >= bad_case_len) {
                             end_time = j;
                             window = 0;
-                            for (let k=start_time; k<end_time; k++) {
-                                BadCaseDiff[i][k] = diff[k];
-                            }
                             markArea[i].push([{'xAxis': start_time, 'itemStyle': {'color': 'yellow', 'opacity': 0.5}},
                                 {'xAxis': end_time}])
                         } else {window = 0;}
@@ -431,16 +426,15 @@ export default class Model {
         }
         this.bad_case = markArea;
         this.invalid_prediciton_stations = InvalidPredictionStations;
-        this.BadCaseDiff = BadCaseDiff;
         console.log("bad case is:", this.bad_case);
         console.log("invalid station is:", this.invalid_station_index);
         console.log("invalid prediction station is:", this.invalid_prediciton_stations);
-        console.log("the AE array in bad case:", this.BadCaseDiff);
     }
 
     emitStationTypeStatistics() {
         let countFullTimeBad = 0;
         let countContinuousLongTimeBad = 0;
+        let InfluenceTimeRatio = new Array(this.station_num);
         let fullTimeBadStations = []; // 存储全时间段预测不好的站点索引
         let continuousLongTimeBadStations = []; // 存储连续长时间段预测不好的站点索引
 
@@ -465,6 +459,7 @@ export default class Model {
                     countFullTimeBad++;
                     fullTimeBadStations.push(i);
                 }
+                InfluenceTimeRatio[i] = (totalBadLength / this.time_length * 100).toFixed(1);
 
                 // 判断连续长时间预测不好
                 for (let hour = 0; hour <= this.time_length - 48; hour++) {
@@ -496,9 +491,12 @@ export default class Model {
                     continuousLongTimeBadStations.push(i);
                 }
             }
-
+            else InfluenceTimeRatio[i] = 100.0;
         }
         this.FullTimeBadStation = countFullTimeBad;
+        this.InfluenceTimeRatio = InfluenceTimeRatio;
+
+        console.log("bad case影响时长占比：", this.InfluenceTimeRatio);
         console.log("全时间段预测不好的站点数:", this.FullTimeBadStation);
         console.log("连续长时间段预测不好的站点数:", countContinuousLongTimeBad);
         console.log("全时间段预测不好的站点索引:", fullTimeBadStations);
