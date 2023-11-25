@@ -784,6 +784,7 @@ export default {
           document.getElementById('point_rmse').innerText = _this.model.PointRMSE[id];
           document.getElementById('point_mae').innerText = _this.model.PointMAE[id];
           document.getElementById('point_mape').innerText = _this.model.PointMAPE[id] + '%';
+          console.log("bad case:", _this.model.bad_case[id])
         }
         
       });

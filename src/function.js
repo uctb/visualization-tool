@@ -155,7 +155,7 @@ export default class ComputeTool  {
 
     isVariationWithinOne(array) {
         for (let i = 0; i < array.length - 1; i++) {
-            if (Math.abs(array[i] - array[i + 1]) > 1) {
+            if (Math.abs(array[i] - array[i + 1]) > 2) {
                 return false;
             }
         }
@@ -213,4 +213,90 @@ export default class ComputeTool  {
 
         return { ciLower, ciUpper, tValues };
     }
+
+    /* 找所有站点所有时间片的误差中位数 */
+    quickselect(arr, k, left = 0, right = arr.length - 1) {
+        if (left === right) return arr[left];
+        let pivotIndex = this.partition(arr, left, right);
+        if (k === pivotIndex) {
+            return arr[k];
+        } else if (k < pivotIndex) {
+            return this.quickselect(arr, k, left, pivotIndex - 1);
+        } else {
+            return this.quickselect(arr, k, pivotIndex + 1, right);
+        }
+    }
+
+    partition(arr, left, right) {
+        let pivot = arr[right];
+        let i = left;
+        for (let j = left; j < right; j++) {
+            if (arr[j] < pivot) {
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+                i++;
+            }
+        }
+        [arr[i], arr[right]] = [arr[right], arr[i]];
+        return i;
+    }
+
+    findMedian(arr) {
+        let n = arr.length;
+        let mid = Math.floor(n / 2);
+        if (n % 2 === 0) {
+            return (this.quickselect(arr, mid, 0, n - 1) + this.quickselect(arr, mid - 1, 0, n - 1)) / 2;
+        } else {
+            return this.quickselect(arr, mid, 0, n - 1);
+        }
+    }
+
+    replaceBottomPercentileWithNaN(array, percentile) {
+        // 过滤 NaN 值并扁平化数组
+        let flattened = array.flat().filter(val => !isNaN(val));
+        // 对数组进行排序
+        flattened.sort((a, b) => a - b);
+
+        // 计算界限索引
+        let limitIndex = Math.floor(flattened.length * (1 - percentile / 100));
+        // 获取界限值
+        let limitValue = flattened[limitIndex];
+
+        // 替换数组中的值
+        for (let i = 0; i < array.length; i++) {
+            for (let j = 0; j < array[i].length; j++) {
+                if (!isNaN(array[i][j]) && array[i][j] <= limitValue) {
+                    array[i][j] = NaN;
+                }
+            }
+        }
+
+        return array;
+    }
+
+    calculateAverage(array) {
+        // 先过滤掉 NaN 值，然后扁平化数组
+        let flattened = array.flat().filter(val => !isNaN(val));
+
+        // 计算总和
+        let sum = flattened.reduce((acc, val) => acc + val, 0);
+
+        // 计算平均值
+        return sum / flattened.length;
+    }
+
+    replaceWithInfinityIfBelowAverage(array) {
+        let average = this.calculateAverage(array);
+
+        for (let i = 0; i < array.length; i++) {
+            for (let j = 0; j < array[i].length; j++) {
+                // 只处理非 NaN 值
+                if (!isNaN(array[i][j]) && array[i][j] <= average) {
+                    array[i][j] = NaN;
+                }
+            }
+        }
+
+        return array;
+    }
+
 }

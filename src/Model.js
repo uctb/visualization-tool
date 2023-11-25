@@ -112,6 +112,7 @@ export default class Model {
         // 求各种需要的统计量
         this.emitModelError();
         this.emitBadCase();  // 定位bad case
+        this.emitStationTypeStatistics(); //站点类型分布
         this.emitMetricsRankList();   // metric降序排列
         this.emitMetricDistribution();  // metric分布
         this.emitMeanGTDistribution(15);  // 站点属性分布+spatial bad case的分布
@@ -250,6 +251,7 @@ export default class Model {
         // 求各种需要的统计量
         this.emitModelError();
         this.emitBadCase();  // 定位bad case
+        this.emitStationTypeStatistics(); //站点类型分布
         this.emitMetricsRankList();   // metric降序排列
         this.emitMetricDistribution();  // metric分布
         this.emitMeanGTDistribution(15);  // 站点属性分布+spatial bad case的分布
@@ -376,173 +378,207 @@ export default class Model {
 
         let bad_case_len = 3;  // 可修改参数，表示至少连续多长的异常可以被定义为bad_case
         let markArea = new Array(this.station_num);
+        let BadCaseDiff = new Array(this.station_num);
+        let InvalidPredictionStations = [];
         let start_time = '';
         let end_time = '';
-        let start_time_invalid = '';
-        let end_time_invalid = '';
 
         for (let i=0; i<this.station_num; i++) {
             markArea[i] = [];
             let diff = this.st_raster_diff[i];
             let gt = this.st_raster_gt[i];
             let pred = this.st_raster_pred[i];
-
-            /* bootstrap-T */
-            let numResamples = 1000; // Number of bootstrap samples
-            let { ciLower, ciUpper, tValues } = this.ct.bootstrapT(diff, numResamples, this.ct.mean);
-            // console.log(`95% confidence interval: [${ciLower}, ${ciUpper}]`);
+            BadCaseDiff[i] = new Array(this.time_length).fill(NaN);
 
             /* 判断是否数据异常: pd全0/保持不变 */
 
             if (this.ct.isArrayAllZero(pred) || this.ct.isVariationWithinOne(pred)) {
-                markArea[i].push([{'xAxis': 0, 'itemStyle': {'color': 'green', 'opacity': 0.3}},
+                markArea[i].push([{'xAxis': 0, 'itemStyle': {'color': 'green', 'opacity': 0.5}},
                     {'xAxis': pred.length-1}]);
+                InvalidPredictionStations.push(i);
                 continue;
             }
 
-            // 初始化滑动窗口
-            let window = 0;
-            let window_invalid =0;
-            // 滑动窗口求markArea
-            for (let j=0; j<this.time_length; j++) {
-                if (diff[j] > ciUpper) {
-                    if (window === 0) {
-                        window ++;
-                        start_time = j;
+            if (!InvalidPredictionStations.includes(i)) {
+                /* bootstrap-T */
+                let numResamples = 1000; // Number of bootstrap samples
+                let { ciLower, ciUpper, tValues } = this.ct.bootstrapT(diff, numResamples, this.ct.mean);
+                // console.log(`95% confidence interval: [${ciLower}, ${ciUpper}]`);
+
+                // 初始化滑动窗口
+                let window = 0;
+                // 滑动窗口求markArea
+                for (let j=0; j<this.time_length; j++) {
+                    if (diff[j] > ciUpper) {
+                        if (window === 0) {
+                            window ++;
+                            start_time = j;
+                        } else window ++;
                     } else {
-                        window ++;
-                    }
-                }
-                // else if (this.st_raster_gt[i][j] === 0 && this.st_raster_pred[i][j] !== 0) {
-                //     if (window >= bad_case_len) {
-                //         end_time = j;
-                //         window = 0;
-                //         markArea[i].push([{'xAxis': start_time, 'itemStyle': {'color': 'orange', 'opacity': 0.3}},
-                //             {'xAxis': end_time}])
-                //     } else {
-                //         window = 0;
-                //         if (window_invalid === 0) {
-                //             window_invalid++;
-                //             start_time_invalid = j;
-                //         } else {
-                //             window_invalid++;
-                //         }
-                //     }
-                // }
-                else {
-                    if (window >= bad_case_len) {
-                        end_time = j;
-                        window = 0;
-                        markArea[i].push([{'xAxis': start_time, 'itemStyle': {'color': 'yellow', 'opacity': 0.3}},
-                            {'xAxis': end_time}])
-                    } else {
-                        window = 0;
-                    }
-                    if (window_invalid >= bad_case_len) {
-                        end_time_invalid = j;
-                        window_invalid = 0;
-                        markArea[i].push([{'xAxis': start_time_invalid, 'itemStyle': {'color': 'orange', 'opacity': 0.3}},
-                            {'xAxis': end_time_invalid}])
-                    } else if (window_invalid > 0 && window_invalid < bad_case_len) {
-                        window_invalid = 0;
+                        if (window >= bad_case_len) {
+                            end_time = j;
+                            window = 0;
+                            for (let k=start_time; k<end_time; k++) {
+                                BadCaseDiff[i][k] = diff[k];
+                            }
+                            markArea[i].push([{'xAxis': start_time, 'itemStyle': {'color': 'yellow', 'opacity': 0.5}},
+                                {'xAxis': end_time}])
+                        } else {window = 0;}
                     }
                 }
             }
-            // 最后一个时间片若满足mark_area也应该加入
-            // if (window > bad_case_len) {
-            //     end_time = this.time_length -1;
-            //     markArea[i].push([{'xAxis': start_time, 'itemStyle': {'color': 'red', 'opacity': 0.3}},
-            //         {'xAxis': end_time}]);
-            //     window = 0;
-            // }
-            // if (window_invalid > bad_case_len) {
-            //     end_time_invalid = this.time_length -1;
-            //     markArea[i].push([{'xAxis': start_time_invalid, 'itemStyle': {'color': 'red', 'opacity': 0.3}},
-            //         {'xAxis': end_time_invalid}]);
-            //     window_invalid = 0;
-            // }
+
         }
         this.bad_case = markArea;
+        this.invalid_prediciton_stations = InvalidPredictionStations;
+        this.BadCaseDiff = BadCaseDiff;
         console.log("bad case is:", this.bad_case);
+        console.log("invalid station is:", this.invalid_station_index);
+        console.log("invalid prediction station is:", this.invalid_prediciton_stations);
+        console.log("the AE array in bad case:", this.BadCaseDiff);
     }
 
+    emitStationTypeStatistics() {
+        let countFullTimeBad = 0;
+        let countContinuousLongTimeBad = 0;
+        let fullTimeBadStations = []; // 存储全时间段预测不好的站点索引
+        let continuousLongTimeBadStations = []; // 存储连续长时间段预测不好的站点索引
 
-    /*emitBadCase() {
-        console.log("=======emit bad case for top 10%!=======");
-
-        let bad_case_len = 1; // 可修改参数，表示至少连续多长的异常可以被定义为bad_case
-        let markArea = new Array(this.station_num);
-    
         for (let i = 0; i < this.station_num; i++) {
-            markArea[i] = [];
-            let diff = this.st_raster_diff[i]; // 绝对误差
-            let relative_diff = this.st_raster_re[i]; // 相对误差数组，假设这是已经计算好的
-    
-            // 绝对误差
-            let sortedDiff = [...diff].sort((a, b) => b - a);
-            let thresholdIndex = Math.floor(sortedDiff.length * 0.05) - 1;
-            let thresholdValue = sortedDiff[thresholdIndex]; // 前10%的阈值
-    
-            // 相对误差
-            let sortedRelativeDiff = [...relative_diff].sort((a, b) => b - a);
-            let relativeThresholdIndex = Math.floor(sortedRelativeDiff.length * 0.05) - 1;
-            let relativeThresholdValue = sortedRelativeDiff[relativeThresholdIndex]; // 相对误差的前10%的阈值
-    
-            // 初始化滑动窗口
-            let window = 0;
-            let relative_window = 0; // 相对误差的滑动窗口
-            let start_time = '';
-            let relative_start_time = ''; // 相对误差的开始时间
-    
-            // 滑动窗口求markArea
-            for (let j = 0; j < this.time_length; j++) {
-                // 绝对误差的标记逻辑
-                if (diff[j] > thresholdValue) {
-                    if (window === 0) {
-                        start_time = j;
+            let hourlyBad = new Array(this.time_length).fill(false);
+            if (!this.invalid_prediciton_stations.includes(i) && !this.invalid_station_index.includes(i)) {
+                let totalBadLength = 0;
+                let isContinuousLongTimeBad = false; // 标记当前站点是否为连续长时间段预测不好
+                let ContinuousLongTimeBadEndInd = -1;
+
+                for (let area of this.bad_case[i]) {
+                    for (let j = area[0].xAxis; j <= area[1].xAxis; j++) {
+                        hourlyBad[j] = true;
                     }
-                    window++;
-                } else {
-                    if (window >= bad_case_len) {
-                        let end_time = j;
-                        markArea[i].push([{'xAxis': start_time, 'itemStyle': {'color': 'yellow', 'opacity': 0.5}},
-                            {'xAxis': end_time}]);
-                    }
-                    window = 0;
+                    let start = area[0].xAxis;
+                    let end = area[1].xAxis;
+                    let length = end - start + 1;
+                    totalBadLength += length;
                 }
-    
-                // 相对误差的标记逻辑
-                if (relative_diff[j] > relativeThresholdValue) {
-                    if (relative_window === 0) {
-                        relative_start_time = j;
+                // 判断是否为全时间段预测不好
+                if (totalBadLength > this.time_length / 2) {
+                    countFullTimeBad++;
+                    fullTimeBadStations.push(i);
+                }
+
+                // 判断连续长时间预测不好
+                for (let hour = 0; hour <= this.time_length - 48; hour++) {
+                    let badHoursCount = 0;
+                    let newBadCaseStartInd = -1;
+                    let newBadCaseEndInd = -1;
+                    for (let j = hour; j < hour + 48; j++) {
+                        if (hourlyBad[j]) {
+                            if(newBadCaseStartInd === -1) newBadCaseStartInd = j
+                            badHoursCount++;
+                            newBadCaseEndInd = j
+                        }
                     }
-                    relative_window++;
-                } else {
-                    if (relative_window >= bad_case_len) {
-                        let relative_end_time = j;
-                        markArea[i].push([{'xAxis': relative_start_time, 'itemStyle': {'color': 'red', 'opacity': 0.5}},
-                            {'xAxis': relative_end_time}]);
+                    if (ContinuousLongTimeBadEndInd > newBadCaseStartInd) newBadCaseStartInd = ContinuousLongTimeBadEndInd;
+
+                    if (badHoursCount >= 48/2) { // 如果24小时内不良时间超过12小时
+                        isContinuousLongTimeBad = true;
+                        ContinuousLongTimeBadEndInd = newBadCaseEndInd;
+                        let newBadCase = [{'xAxis': newBadCaseStartInd,
+                            'itemStyle': {'color': 'red', 'opacity': 0.3}},
+                            {'xAxis': newBadCaseEndInd}
+                        ];
+                        this.bad_case[i].push(newBadCase);
                     }
-                    relative_window = 0;
+                }
+                // 判断并记录连续长时间段预测不好的站点
+                if (isContinuousLongTimeBad) {
+                    countContinuousLongTimeBad++;
+                    continuousLongTimeBadStations.push(i);
                 }
             }
-    
-            // 最后一个时间片的处理逻辑
-            if (window >= bad_case_len) {
-                let end_time = this.time_length - 1;
-                markArea[i].push([{'xAxis': start_time, 'itemStyle': {'color': 'yellow', 'opacity': 0.5}},
-                    {'xAxis': end_time}]);
-            }
-            if (relative_window >= bad_case_len) {
-                let relative_end_time = this.time_length - 1;
-                markArea[i].push([{'xAxis': relative_start_time, 'itemStyle': {'color': 'red', 'opacity': 0.5}},
-                    {'xAxis': relative_end_time}]);
-            }
+
         }
-    
-        this.bad_case = markArea;
-        console.log("bad case is:", this.bad_case);
-    }*/
+        this.FullTimeBadStation = countFullTimeBad;
+        console.log("全时间段预测不好的站点数:", this.FullTimeBadStation);
+        console.log("连续长时间段预测不好的站点数:", countContinuousLongTimeBad);
+        console.log("全时间段预测不好的站点索引:", fullTimeBadStations);
+        console.log("连续长时间段预测不好的站点索引:", continuousLongTimeBadStations);
+
+    }
+
+    // emitStationTypeStatistics() {
+    //     let countFullTimeBad = 0;
+    //     let countContinuousLongTimeBad = 0;
+    //     let fullTimeBadStations = []; // 存储全时间段预测不好的站点索引
+    //     let continuousLongTimeBadStations = []; // 存储连续长时间段预测不好的站点索引
+    //
+    //     for (let i = 0; i < this.station_num; i++) {
+    //         let totalBadLength = 0;
+    //         let badLengthEachDay = new Array(Math.floor(this.time_length/24)+1).fill(0); // 假设 time_length 为总天数
+    //         let continuousBadDays = 0;
+    //         let continuousBadStart = -1; // 记录连续坏天数开始的索引
+    //         let isContinuousLongTimeBad = false; // 标记当前站点是否为连续长时间段预测不好
+    //         for (let area of this.bad_case[i]) {
+    //             let start = area[0].xAxis;
+    //             let end = area[1].xAxis;
+    //             let length = end - start + 1;
+    //             totalBadLength += length;
+    //
+    //             for (let j = start; j <= end; j++) {
+    //                 badLengthEachDay[Math.floor(j / 24)] += 1; // 假设每天24小时
+    //             }
+    //         }
+    //
+    //         for (let day = 0; day < badLengthEachDay.length; day++) {
+    //             let badLength = badLengthEachDay[day];
+    //             if (badLength >= 12) { // 一天中 bad case 总时长超过12小时
+    //                 continuousBadDays++;
+    //                 if (continuousBadDays == 1) { // 记录连续坏天数开始的索引
+    //                     continuousBadStart = day;
+    //                 }
+    //             } else {
+    //                 if (continuousBadDays >= 2) { // 连续两天满足条件
+    //                     let continuousBadStartInd = continuousBadStart * 24
+    //                     let continuousBadEndInd = (day + 1) * 24 - 1
+    //                     let newBadCaseStartInd = 0
+    //                     let newBadCaseEndInd = 0
+    //                     for (let area of this.bad_case[i]) {
+    //                         let start = area[0].xAxis;
+    //                         let end = area[1].xAxis;
+    //                         if (start > continuousBadStartInd && end < continuousBadEndInd) {
+    //                             if (newBadCaseStartInd === 0) { newBadCaseStartInd = start; }
+    //                             newBadCaseEndInd = end
+    //                         }
+    //                     }
+    //                     let newBadCase = [
+    //                         {'xAxis': newBadCaseStartInd,
+    //                             'itemStyle': {'color': 'red', 'opacity': 0.3}},
+    //                         {'xAxis': newBadCaseEndInd}
+    //                     ];
+    //                     this.bad_case[i].push(newBadCase);
+    //                     isContinuousLongTimeBad = true;
+    //                 }
+    //                 continuousBadDays = 0;  // 重置连续天数
+    //             }
+    //         }
+    //         // 判断是否为全时间段预测不好
+    //         if (totalBadLength > this.time_length / 2) {
+    //             countFullTimeBad++;
+    //             fullTimeBadStations.push(i);
+    //         }
+    //         // 判断并记录连续长时间段预测不好的站点
+    //         if (isContinuousLongTimeBad) {
+    //             countContinuousLongTimeBad++;
+    //             continuousLongTimeBadStations.push(i);
+    //         }
+    //     }
+    //
+    //     console.log("全时间段预测不好的站点数:", countFullTimeBad);
+    //     console.log("连续长时间段预测不好的站点数:", countContinuousLongTimeBad);
+    //     console.log("全时间段预测不好的站点索引:", fullTimeBadStations);
+    //     console.log("连续长时间段预测不好的站点索引:", continuousLongTimeBadStations);
+    //
+    // }
     
 
     // 获得站点误差以及降序排列数组
