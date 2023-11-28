@@ -299,4 +299,21 @@ export default class ComputeTool  {
         return array;
     }
 
+    convertDate(dateStr) {
+        // 拆分日期
+        let parts = dateStr.split("/");
+
+        // 转换年份
+        let year = parseInt(parts[0], 10);
+        year = (year < 50) ? year + 2000 : year + 1900; // 假设00-49属于2000年代，50-99属于1900年代
+
+        // 月份和日，确保它们是两位数
+        let month = parts[1].padStart(2, '0');
+        let day = parts[2].padStart(2, '0');
+
+        // 重新组合成 yyyy-mm-dd 格式
+        return `${year}-${month}-${day}`;
+    }
+
+
 }

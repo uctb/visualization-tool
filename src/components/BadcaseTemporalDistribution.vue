@@ -15,6 +15,7 @@ export default {
   },
   mounted() {
     this.mychart = this.$echarts.init(this.$refs.pp_distribution)
+    this.initChart()
   },
   watch: {
     badcase_temp_distribution_param: {

@@ -159,18 +159,23 @@
             <div class="alltitle"></div>
             <el-cascader v-model="value" placeholder="station attributes" size="mini" :disabled="false"
               :options="statistics_option" :props="{ expandTrigger: 'hover' }" @change="Statistics"></el-cascader>
-            <BasicStatistics v-if="this.isShow" :statistics_param="this.statistics_param" />
+            <BasicStatistics v-if="this.isShow && this.badcase_global_show!=='heatmap'"
+                             :statistics_param="this.statistics_param" />
+            <BasicBadcaseCalenderDistribution v-if="this.isShow && this.badcase_global_show==='heatmap'"
+                             :basic_badcase_calender_distribution_param="this.basic_badcase_calender_param" />
             <div class="boxfoot"></div>
           </div>
-          <!--bad case的分布规律-->
-          <!--            <div class="boxall" style="height:15rem;width:27rem;margin-left:-0.5%">-->
+
+          <!--站点级别bad case时间分布规律-->
           <div class="boxall" style="height: 20rem">
             <div class="alltitle"></div>
             <el-cascader v-model="value_bc" placeholder="time characteristics" size="mini" :disabled="false"
               :options="statistics_bc_option" :props="{ expandTrigger: 'hover' }"
               @change="BadcaseDistribution"></el-cascader>
-            <BadcaseTemporalDistributionRules v-if="this.isShow"
+            <BadcaseTemporalDistributionRules v-if="this.isShow && this.badcase_show!=='heatmap'"
               :badcase_temp_distribution_param="this.badcase_distribution_param" />
+            <BadCaseCalenderDistribution v-if="this.isShow && this.badcase_show==='heatmap'"
+              :badcase_calender_distribution_param="this.badcase_calender_param"/>
             <div class="boxfoot"></div>
           </div>
         </li>
@@ -190,11 +195,13 @@ import UploadButton from "./components/UploadButton.vue";
 import TimeSeries from "./components/TimeSeries.vue";
 import ConfirmButton from "./components/ConfirmButton.vue";
 import RefreshButton from "./components/RefreshButton.vue";
-import TemporalBadCase from "./components/TemporalView.vue";
+import TemporalBadCase from "./components/TemporalView.vue";   // 时间序列图
 import SortMetric from "./components/SortMetric";
-// import BadcaseDistributionRules from './components/BadCaseDistributionRules'
 import BadcaseTemporalDistributionRules from "./components/BadcaseTemporalDistribution";
 import BasicStatistics from "./components/Statistics";
+import BadCaseCalenderDistribution from "@/components/BadCaseCalenderDistribution";
+import BasicBadcaseCalenderDistribution from "@/components/BasicBadcaseCalenderDistribution";
+// import BadcaseDistributionRules from './components/BadCaseDistributionRules'
 
 export default {
   name: "App",
@@ -208,6 +215,8 @@ export default {
     // BadcaseDistributionRules,
     BadcaseTemporalDistributionRules,
     BasicStatistics,
+    BadCaseCalenderDistribution,
+    BasicBadcaseCalenderDistribution,
   },
   data() {
     return {
@@ -222,11 +231,15 @@ export default {
       center: [],
       currentstation: "",
       badcase_distribution_param: null,
+      badcase_calender_param: null,
       statistics_param: null,
+      basic_badcase_calender_param: null,
       value: [],
       value_bc: [],
       value1: [],
       stationInd: '0',
+      badcase_show: 'bar',
+      badcase_global_show: 'bar',
       statistics_option: [
         {
           value: "station attributes",
@@ -239,6 +252,16 @@ export default {
             },
           ],
         },
+        {
+          value: 'time characteristics',
+          label: 'time characteristics',
+          children: [
+            {
+              value: 'calender heatmap',
+              label: 'calender heatmap',
+            }
+          ]
+        }
       ],
       statistics_bc_option: [
         /*{
@@ -275,6 +298,16 @@ export default {
             },
           ],
         },
+        {
+          value: 'calender heatmap',
+          label: 'calender heatmap',
+          children: [
+            {
+              value: 'date and hour',
+              label: 'date and hour',
+            }
+          ]
+        }
       ],
       dataset: [
         {
@@ -353,7 +386,7 @@ export default {
           this.TimeInfoProcessor.HourSeries,
           this.TimeInfoProcessor.WeekdayNum,
           this.TimeInfoProcessor.WeeksumNum,
-          this.TimeInfoProcessor.PeakNum
+          this.TimeInfoProcessor.PeakNum,
         );
         if (!Success) {
           alert("Time Range or Time fitness is false! Please select again.");
@@ -473,6 +506,8 @@ export default {
       this.center = [];
       this.flag = false;
       this.isShow = false;
+      this.badcase_show = 'bar';
+      this.badcase_global_show = 'bar';
       this.model.refresh();
       this.value = "On what day of the week?";
       this.badcase_distribution_param = null;
@@ -609,6 +644,7 @@ export default {
     //   this.initCharts();
     // },
 
+    // 级联选择器禁用选项
     updateOptionDisabled(timeflag) {
       const targetBcOption = this.statistics_bc_option.find(
         (option) => option.value === "time characteristics"
@@ -641,6 +677,8 @@ export default {
       this.model.getTemporalBadCaseParam(this.stationInd);  // 时间bad case
       if (_this.TimeInfoProcessor.flag) {
         this.model.getBadcaseDistributionRulesParam(this.stationInd);  //时间bad case分布
+        this.model.getBadcaseCalenderDistributionRulesParam(this.stationInd);
+        this.model.getBasicBadcaseCalenderDistributionParam();
       }
       document.getElementById('point_rmse').innerText = _this.model.PointRMSE[id];
       document.getElementById('point_mae').innerText = _this.model.PointMAE[id];
@@ -731,12 +769,13 @@ export default {
           _this.model.getTemporalBadCaseParam(id);  // 时间bad case
           if (_this.TimeInfoProcessor.flag) {
             _this.model.getBadcaseDistributionRulesParam(id);  //时间bad case分布
+            _this.model.getBadcaseCalenderDistributionRulesParam(id);
+            _this.model.getBasicBadcaseCalenderDistributionParam();
           }
           _this.currentstation = params.data.name;
           document.getElementById('point_rmse').innerText = _this.model.PointRMSE[id];
           document.getElementById('point_mae').innerText = _this.model.PointMAE[id];
           document.getElementById('point_mape').innerText = _this.model.PointMAPE[id] + '%';
-          console.log("bad case:", _this.model.bad_case[id])
         }
 
       });
@@ -752,30 +791,42 @@ export default {
         case "Weekday or Weekends?":
           this.badcase_distribution_param =
             this.model.badcase_weekday_statistic_param;
+          this.badcase_show = 'bar';
           break;
         case "Morning/Evening Peak?":
           this.badcase_distribution_param =
             this.model.badcase_peak_statistic_param;
+          this.badcase_show = 'bar';
           break;
         case "On what day of the week?":
           this.badcase_distribution_param =
             this.model.badcase_week_distribution_rules_param;
+          this.badcase_show = 'bar';
           break;
         case "On which hour of the 24?":
           this.badcase_distribution_param =
             this.model.badcase_hour_distribution_rules_param;
+          this.badcase_show = 'bar';
+          break;
+        case "date and hour":
+          this.badcase_calender_param = this.model.badcase_hour_calender_param;
+          this.badcase_show = 'heatmap';
           break;
       }
     },
 
     Statistics() {
-      console.log(this.value[1]);
       switch (this.value[1]) {
         // 站点属性（参数正确）
         case "flow":
           this.statistics_param = this.model.badcase_spatial_distribution_rules_param
+          this.badcase_global_show = 'bar';
           break;
         // 时间特性（参数错误）
+        case "calender heatmap":
+          this.basic_badcase_calender_param = this.model.badcase_month_calender_param;
+          this.badcase_global_show = 'heatmap';
+          break;
         /* case "Weekday or Weekends?":
            this.statistics_param = this.model.weekday_distribuion_param;
            break;

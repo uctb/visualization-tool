@@ -134,6 +134,8 @@ export default class Model {
                 // 时间特性绘图
                 this.getTimeStatisticsDistributionParam();
                 this.getBadcaseDistributionRulesParam(0);  // 时间bad case分布绘图
+                this.getBadcaseCalenderDistributionRulesParam(0);
+                this.getBasicBadcaseCalenderDistributionParam();
 
             }
         }
@@ -274,6 +276,8 @@ export default class Model {
                 // 时间特性绘图
                 this.getTimeStatisticsDistributionParam();
                 this.getBadcaseDistributionRulesParam(0);  // 时间bad case分布绘图
+                this.getBadcaseCalenderDistributionRulesParam(0);
+                this.getBasicBadcaseCalenderDistributionParam();
 
             }
         }
@@ -311,6 +315,8 @@ export default class Model {
         this.mae_distribution_param = {};
         this.sort_rmse_param = {};
         this.sort_mae_param = {};
+        this.badcase_calender_param = {};
+        this.badcase_distribution_param = {};
         this.ts_flag = false;
     }
 
@@ -462,20 +468,21 @@ export default class Model {
                 InfluenceTimeRatio[i] = (totalBadLength / this.time_length * 100).toFixed(1);
 
                 // 判断连续长时间预测不好
-                for (let hour = 0; hour <= this.time_length - 48; hour++) {
+                for (let hour = 0; hour <= this.time_length - 24; hour++) {
                     let badHoursCount = 0;
                     let newBadCaseStartInd = -1;
                     let newBadCaseEndInd = -1;
-                    for (let j = hour; j < hour + 48; j++) {
+                    for (let j = hour; j < hour + 24; j++) {
                         if (hourlyBad[j]) {
                             if(newBadCaseStartInd === -1) newBadCaseStartInd = j
                             badHoursCount++;
                             newBadCaseEndInd = j
                         }
                     }
+
                     if (ContinuousLongTimeBadEndInd > newBadCaseStartInd) newBadCaseStartInd = ContinuousLongTimeBadEndInd;
 
-                    if (badHoursCount >= 48/2) { // 如果24小时内不良时间超过12小时
+                    if (ContinuousLongTimeBadEndInd < newBadCaseEndInd && badHoursCount >= 24/3*2) { // 如果24小时内不良时间超过12小时
                         isContinuousLongTimeBad = true;
                         ContinuousLongTimeBadEndInd = newBadCaseEndInd;
                         let newBadCase = [{'xAxis': newBadCaseStartInd,
@@ -503,81 +510,6 @@ export default class Model {
         console.log("连续长时间段预测不好的站点索引:", continuousLongTimeBadStations);
 
     }
-
-    // emitStationTypeStatistics() {
-    //     let countFullTimeBad = 0;
-    //     let countContinuousLongTimeBad = 0;
-    //     let fullTimeBadStations = []; // 存储全时间段预测不好的站点索引
-    //     let continuousLongTimeBadStations = []; // 存储连续长时间段预测不好的站点索引
-    //
-    //     for (let i = 0; i < this.station_num; i++) {
-    //         let totalBadLength = 0;
-    //         let badLengthEachDay = new Array(Math.floor(this.time_length/24)+1).fill(0); // 假设 time_length 为总天数
-    //         let continuousBadDays = 0;
-    //         let continuousBadStart = -1; // 记录连续坏天数开始的索引
-    //         let isContinuousLongTimeBad = false; // 标记当前站点是否为连续长时间段预测不好
-    //         for (let area of this.bad_case[i]) {
-    //             let start = area[0].xAxis;
-    //             let end = area[1].xAxis;
-    //             let length = end - start + 1;
-    //             totalBadLength += length;
-    //
-    //             for (let j = start; j <= end; j++) {
-    //                 badLengthEachDay[Math.floor(j / 24)] += 1; // 假设每天24小时
-    //             }
-    //         }
-    //
-    //         for (let day = 0; day < badLengthEachDay.length; day++) {
-    //             let badLength = badLengthEachDay[day];
-    //             if (badLength >= 12) { // 一天中 bad case 总时长超过12小时
-    //                 continuousBadDays++;
-    //                 if (continuousBadDays == 1) { // 记录连续坏天数开始的索引
-    //                     continuousBadStart = day;
-    //                 }
-    //             } else {
-    //                 if (continuousBadDays >= 2) { // 连续两天满足条件
-    //                     let continuousBadStartInd = continuousBadStart * 24
-    //                     let continuousBadEndInd = (day + 1) * 24 - 1
-    //                     let newBadCaseStartInd = 0
-    //                     let newBadCaseEndInd = 0
-    //                     for (let area of this.bad_case[i]) {
-    //                         let start = area[0].xAxis;
-    //                         let end = area[1].xAxis;
-    //                         if (start > continuousBadStartInd && end < continuousBadEndInd) {
-    //                             if (newBadCaseStartInd === 0) { newBadCaseStartInd = start; }
-    //                             newBadCaseEndInd = end
-    //                         }
-    //                     }
-    //                     let newBadCase = [
-    //                         {'xAxis': newBadCaseStartInd,
-    //                             'itemStyle': {'color': 'red', 'opacity': 0.3}},
-    //                         {'xAxis': newBadCaseEndInd}
-    //                     ];
-    //                     this.bad_case[i].push(newBadCase);
-    //                     isContinuousLongTimeBad = true;
-    //                 }
-    //                 continuousBadDays = 0;  // 重置连续天数
-    //             }
-    //         }
-    //         // 判断是否为全时间段预测不好
-    //         if (totalBadLength > this.time_length / 2) {
-    //             countFullTimeBad++;
-    //             fullTimeBadStations.push(i);
-    //         }
-    //         // 判断并记录连续长时间段预测不好的站点
-    //         if (isContinuousLongTimeBad) {
-    //             countContinuousLongTimeBad++;
-    //             continuousLongTimeBadStations.push(i);
-    //         }
-    //     }
-    //
-    //     console.log("全时间段预测不好的站点数:", countFullTimeBad);
-    //     console.log("连续长时间段预测不好的站点数:", countContinuousLongTimeBad);
-    //     console.log("全时间段预测不好的站点索引:", fullTimeBadStations);
-    //     console.log("连续长时间段预测不好的站点索引:", continuousLongTimeBadStations);
-    //
-    // }
-    
 
     // 获得站点误差以及降序排列数组
     emitMetricsRankList() {
@@ -646,7 +578,7 @@ export default class Model {
 
     // 获得时间特性分布统计: 工作日vs周末，早晚高峰vs平峰，一周7天，24h
     emitTimeCharacteristicsDistribution() {
-        console.log("==========emit statistics==========")
+        console.log("==========emit time characteristics statistics==========")
 
         // 时间特性
         const weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
@@ -681,24 +613,22 @@ export default class Model {
         this.weekdays_distribution = weekdays_num;
         this.weeksum_distribution = weeksum_num;
         this.peaksum_distribution = peaksum_num;
-        this.hour_distribution = hour_num;
+        this.hoursum_distribution = hour_num;
 
         console.log("weekdays_distribution:", this.weekdays_distribution);
         console.log("weeksum_distribution", this.weeksum_distribution);
         console.log("peaksum_distribution:", this.peaksum_distribution);
-        console.log("hour_distribution:", this.hour_distribution);
+        console.log("hour_distribution:", this.hoursum_distribution);
     }
 
     // 获得时间bad case关于时间特性的分布规律
     emitBadcaseDistributionRules() {
-        console.log("============get week & peak status=========")
         let length = this.station_num;
         const weekdays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
         const WeekSum = Array.from({length}, () => ( {'weekends': 0, 'workday': 0} ));
         const PeakSum = Array.from({length}, () => ( {'mp': 0, 'ep': 0, 'others': 0} ));
         const HourDistribution = Array.from({length}, () => Array(24).fill(0));
-        // const tmp = {};
-        // for (let i=0; i<weekdays.length; i++) { tmp[i] = 0;}
+
         let WeekDistribution = [];
         for (let i=0; i<length; i++) {
             WeekDistribution[i] = {};
@@ -720,11 +650,11 @@ export default class Model {
                 for (let idx=0; idx<bad_case.length; idx++) {
                     let start_time = bad_case[idx][0]['xAxis'];
                     let end_time = bad_case[idx][1]['xAxis'];
-                    if (i > start_time && i < end_time) {
+                    let color = bad_case[idx][0]['itemStyle']['color'];
+                    if (i > start_time && i < end_time && color !== 'red') {
                         isInBadcase = true;
                     }
                 }
-                // if (diff[i] >mean)
                 if (isInBadcase === true) {
                     isInBadcase = false;
                     // 统计bad case在每个星期几的个数
@@ -778,6 +708,7 @@ export default class Model {
             mean_gt_for_each_station[i] = this.ct.calculateMean(this.st_raster_gt[i]);
         }
         console.log("mean gt for each station:", mean_gt_for_each_station);
+        this.mean_gt_for_each_station = mean_gt_for_each_station;
         this.gtRange = this.ct.getSequenceRange(mean_gt_for_each_station, interval_num);  // bad case 关于站点流量的分布
         this.gtDistribution = this.ct.getSequenceRange(mean_gt_for_each_station, interval_num); // 站点流量的分布
 
@@ -901,7 +832,7 @@ export default class Model {
         // hour
         this.hour_distribuion_param = {
             'axisvalue': this.ct.get24HourSeries(),
-            'distribution': this.hour_distribution,
+            'distribution': this.hoursum_distribution,
             'name': '# time slices',
             'xAxisname': ''
         }
@@ -949,12 +880,11 @@ export default class Model {
     // bad case temporal distribution rules
     getBadcaseDistributionRulesParam(spatial_ind) {
         console.log("=========plot bad case distribution rules=========")
-        spatial_ind = parseInt(spatial_ind)
-        console.log(this.WeekSumRatio)
+        spatial_ind = parseInt(spatial_ind);
         let week_distribution = Object.values(this.WeekDistributionRatio[spatial_ind]);
         let peak_statistic = Object.values(this.PeakSumRatio[spatial_ind]);
         let weekday_statistic = Object.values(this.WeekSumRatio[spatial_ind]);
-        let hour_distribution = this.HourDistribution[spatial_ind];
+        let hour_distribution = Object.values(this.HourDistribution[spatial_ind]);
 
         this.badcase_weekday_statistic_param = {
             'axisvalue': ['weekends', 'workday'],
@@ -985,7 +915,93 @@ export default class Model {
         console.log("badcase_week_distribution_rules_param:", this.badcase_week_distribution_rules_param);
         console.log("badcase_hour_distribution_rules_param:", this.badcase_hour_distribution_rules_param);
     }
-    
+
+    getBasicBadcaseCalenderDistributionParam() {
+        console.log("=========plot basic bad case calender distribution=========")
+        let start = this.ts[0];
+        let end = this.ts[this.ts.length-1];
+        let basic_calender_statistics = new Array(this.time_length).fill(0);
+        let basic_calender_data = [];
+        for (let j=0; j<this.station_num; j++) {
+            let bad_case_list = this.bad_case[j];
+            for (let i=0; i<bad_case_list.length; i++) {
+                let start_time = bad_case_list[i][0]['xAxis'];
+                let end_time = bad_case_list[i][1]['xAxis'];
+                for (let k=start_time; k<end_time; k++) {
+                    basic_calender_statistics[k] ++;
+                }
+            }
+        }
+        let current_day = '';
+        let sum = 0;
+        let min = Infinity;
+        let max = 0;
+        for (let i=0; i<this.time_length; i++) {
+            console.log(this.ts[i])
+            let day = this.ct.convertDate(this.ts[i]).split(' ')[0];
+            if (day === current_day) {
+                sum += basic_calender_statistics[i];
+            } else {
+                if (current_day !== '') {
+                    if (sum > max) max = sum;
+                    if (sum < min) min = sum;
+                    basic_calender_data.push([current_day, sum]);
+                }
+                current_day = day;
+                sum = basic_calender_statistics[i];
+            }
+        }
+
+        this.badcase_month_calender_param = {
+            'range': [this.ct.convertDate(start.split(' ')[0]), this.ct.convertDate(end.split(' ')[0])],
+            'distribution': basic_calender_data,
+            'min': min,
+            'max': max,
+        }
+        console.log("badcase_month_calender_param:", this.badcase_month_calender_param);
+    }
+
+    getBadcaseCalenderDistributionRulesParam(spatial_ind) {
+        console.log("=========plot bad case calender distribution=========")
+        spatial_ind = parseInt(spatial_ind);
+        let bad_case_list = this.bad_case[spatial_ind];
+        const hours = [
+            '12a', '1a', '2a', '3a', '4a', '5a', '6a',
+            '7a', '8a', '9a', '10a', '11a',
+            '12p', '1p', '2p', '3p', '4p', '5p',
+            '6p', '7p', '8p', '9p', '10p', '11p'
+        ];
+        const days = ['SAT', 'FRI', 'THU', 'WED', 'TUE', 'MON', 'SUN'];
+        const data = [];
+
+        const dataMatrix = days.map(() => new Array(hours.length).fill(0));
+        for (let i=0; i<bad_case_list.length; i++) {
+            let start_time = bad_case_list[i][0]['xAxis'];
+            let end_time = bad_case_list[i][1]['xAxis'];
+            for (let j=start_time; j<end_time; j++) {
+                dataMatrix[days.indexOf(this.ws[j])][this.hs[j]] ++;
+            }
+        }
+        for (let i=0; i<days.length; i++) {
+            for (let j=0; j<hours.length; j++) {
+                data.push([j, i, dataMatrix[i][j]]);
+            }
+        }
+
+        const min = Math.min(...dataMatrix.flat());
+        const max = Math.max(...dataMatrix.flat());
+
+        this.badcase_hour_calender_param = {
+            'xAxis': hours,
+            'yAxis': days,
+            'distribution': data,
+            'min': min,
+            'max': max,
+        }
+
+        console.log("badcase_hour_calender_param:", this.badcase_hour_calender_param);
+    }
+
     // distribution rules of spatial bad case
     getBadcaseSpatialDistributionRulseParam() {
         let interval_num = 15;  // 可修改参数
