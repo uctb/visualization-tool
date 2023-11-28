@@ -156,7 +156,7 @@
           </div>
           <!--时空数据/评价指标的分布-->
           <div class="boxall" style="height:20rem; margin-bottom: .6rem">
-            <div class="alltitle"></div>
+            <div class="alltitle">Global Analysis</div>
             <el-cascader v-model="value" placeholder="Overall Analysis" size="mini" :disabled="false"
               :options="statistics_option" :props="{ expandTrigger: 'hover' }" @change="Statistics"></el-cascader>
 
@@ -171,13 +171,13 @@
 
           <!--站点级别bad case时间分布规律-->
           <div class="boxall" style="height: 20rem">
-            <div class="alltitle"></div>
+            <div class="alltitle">Local Analysis</div>
             <el-cascader v-model="value_bc" placeholder="Detailed Analysis" size="mini" :disabled="false"
               :options="statistics_bc_option" :props="{ expandTrigger: 'hover' }"
               @change="BadcaseDistribution"></el-cascader>
             <BadcaseTemporalDistributionRules v-if="this.isShow && this.isSwitch2 && this.isPeriod===1"
               :badcase_temp_distribution_param="this.badcase_distribution_param" />
-            <BadCaseCalenderDistribution v-if="this.isShow && this.isSwitch2 && this.isCalendar===1"
+            <BadCaseCalenderDistribution v-if="this.isShow && this.isSwitch2 && this.isCalendar===1 && this.isPeriod===0"
               :badcase_calender_distribution_param="this.badcase_calender_param"/>
             <div class="boxfoot"></div>
           </div>
@@ -547,6 +547,7 @@ export default {
       this.model.refresh();
       this.value = "On what day of the week?";
       this.badcase_distribution_param = null;
+      this.badcase_calender_param = null;
       this.TimeInfoProcessor.refresh();
       this.$refs.gt.clear();
       this.$refs.pred.clear();

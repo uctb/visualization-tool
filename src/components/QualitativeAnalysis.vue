@@ -96,8 +96,6 @@ export default {
                 grid: {
                     left: '10%',
                     right: 150,
-                    top: '18%',
-                    bottom: '10%'
                 },
                 visualMap: [
                     {
@@ -208,7 +206,7 @@ export default {
 
 <style scoped>
 .echarts {
-    height: 14.5rem;
+    height: 90%;
     background-size: contain;
     background-repeat: no-repeat;
     background-position: 50% 50%;
