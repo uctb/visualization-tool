@@ -711,23 +711,46 @@ export default class Model {
         this.mean_gt_for_each_station = mean_gt_for_each_station;
         this.gtRange = this.ct.getSequenceRange(mean_gt_for_each_station, interval_num);  // bad case 关于站点流量的分布
         this.gtDistribution = this.ct.getSequenceRange(mean_gt_for_each_station, interval_num); // 站点流量的分布
+        this.InvalidStationGtRange = new Array(interval_num).fill(0);
+        this.InvalidPredStationGtRange = new Array(interval_num).fill(0);
+        this.FullTimeBadStationGtRange = new Array(interval_num).fill(0);
+        this.NormalStationGtRange = new Array(interval_num).fill(0);
 
         // 统计预测得糟糕的站点落在什么范围内：mre前10%的站点视为预测得糟糕的站点
-        let sorted_spatial_error = [...this.mre_for_each_station].sort((a, b) => b - a);
-        let thresholdIndex = Math.floor(sorted_spatial_error.length * 0.1) - 1;
-        let threshold = sorted_spatial_error[thresholdIndex]; // 前10%的阈值
+        // let sorted_spatial_error = [...this.mre_for_each_station].sort((a, b) => b - a);
+        // let thresholdIndex = Math.floor(sorted_spatial_error.length * 0.1) - 1;
+        // let threshold = sorted_spatial_error[thresholdIndex]; // 前10%的阈值
         // let threshold = this.ct.calculateMean(this.mre_for_each_station);  // 大于平均误差的站点为spatial bad case
 
         for (let i=0; i<this.station_num; i++) {
             let interval_id = this.ct.getIntervalID(this.gtDistribution['interval_point'], interval_num, mean_gt_for_each_station[i]);
             this.gtDistribution[interval_id]++;
-            if (this.mre_for_each_station[i] > threshold) {
-                let interval_badcase_id = this.ct.getIntervalID(this.gtRange['interval_point'], interval_num, mean_gt_for_each_station[i]);
-                this.gtRange[interval_badcase_id]++;
+            // if (this.mre_for_each_station[i] > threshold) {
+            //     let interval_badcase_id = this.ct.getIntervalID(this.gtRange['interval_point'], interval_num, mean_gt_for_each_station[i]);
+            //     this.gtRange[interval_badcase_id]++;
+            // }
+            if (this.invalid_station_index.includes(i)) {
+                let id = this.ct.getIntervalID(this.gtDistribution['interval_point'], interval_num, mean_gt_for_each_station[i]);
+                this.InvalidStationGtRange[id]++;
+            } else if (this.invalid_prediciton_stations.includes(i)) {
+                let id = this.ct.getIntervalID(this.gtDistribution['interval_point'], interval_num, mean_gt_for_each_station[i]);
+                this.InvalidPredStationGtRange[id]++;
+            } else if (this.FullTimeBadStation.includes(i)) {
+                let id = this.ct.getIntervalID(this.gtDistribution['interval_point'], interval_num, mean_gt_for_each_station[i]);
+                this.FullTimeBadStationGtRange[id]++;
+            } else {
+
+                let id = this.ct.getIntervalID(this.gtDistribution['interval_point'], interval_num, mean_gt_for_each_station[i]);
+                if (id === undefined) console.log(i, mean_gt_for_each_station[i], this.gtDistribution['interval_point'])
+                this.NormalStationGtRange[id]++;
             }
         }
         console.log("gt distribution:", this.gtDistribution);
-        console.log("gt distribution for spatial bad case:", this.gtRange);
+        // console.log("gt distribution for spatial bad case:", this.gtRange);
+        console.log("gt distribution for invalid station:", this.InvalidStationGtRange);
+        console.log("gt distribution for invalid pred station:", this.InvalidPredStationGtRange);
+        console.log("gt distribution for full time bad station:", this.FullTimeBadStationGtRange);
+        console.log("gt distribution for normal station:", this.NormalStationGtRange);
     }
 
 
@@ -937,7 +960,6 @@ export default class Model {
         let min = Infinity;
         let max = 0;
         for (let i=0; i<this.time_length; i++) {
-            console.log(this.ts[i])
             let day = this.ct.convertDate(this.ts[i]).split(' ')[0];
             if (day === current_day) {
                 sum += basic_calender_statistics[i];

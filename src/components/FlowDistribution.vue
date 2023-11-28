@@ -5,11 +5,7 @@
 export default {
     name: "FlowDistribution",
     props: {
-        category: Object,
-        invalid_station: Object,
-        invalid_prediction_station: Object,
-        full_time_bad_station: Object,
-        normal_station: Object
+      model: Object,
     },
     data() {
         return {
@@ -20,8 +16,9 @@ export default {
         this.mychart = this.$echarts.init(this.$refs.distribution)
     },
     watch: {
-        normal_station: {
+        model: {
             handler(newVal) {
+              console.log(this.model)
                 this.initChart()
             },
             immediate: true,
@@ -29,7 +26,7 @@ export default {
         }
     },
     computed: {
-        options() {
+      options() {
             return {
                 tooltip: {
                     trigger: 'axis',
@@ -67,7 +64,7 @@ export default {
                 },
                 yAxis: {
                     type: 'category',
-                    data: this.category,
+                    data: this.model.gtDistribution.interval_name,
                     name: 'Flow Range',
                     nameLocation: 'end',
                     nameGap: 15,
@@ -93,7 +90,7 @@ export default {
                         emphasis: {
                             focus: 'series'
                         },
-                        data: [320, 302, 301, 334, 390, 330, 320]
+                        data: this.model.NormalStationGtRange
                     },
                     {
                         name: 'Full Time Bad',
@@ -105,7 +102,7 @@ export default {
                         emphasis: {
                             focus: 'series'
                         },
-                        data: [120, 132, 101, 134, 90, 230, 210]
+                        data: this.model.FullTimeBadStationGtRange
                     },
                     {
                         name: 'Invalid Prediction',
@@ -117,7 +114,7 @@ export default {
                         emphasis: {
                             focus: 'series'
                         },
-                        data: [220, 182, 191, 234, 290, 330, 310]
+                        data: this.model.InvalidPredStationGtRange
                     },
                     {
                         name: 'Invalid',
@@ -129,7 +126,7 @@ export default {
                         emphasis: {
                             focus: 'series'
                         },
-                        data: [150, 212, 201, 154, 190, 330, 410]
+                        data: this.model.InvalidStationGtRange
                     },
                 ]
             }
@@ -137,6 +134,7 @@ export default {
     },
     methods: {
         initChart() {
+          console.log(this.model.gtDistribution)
             this.$nextTick(() => {
                 this.mychart.setOption(this.options)
             })

@@ -44,7 +44,7 @@ export default {
             return {
                 xAxis: {
                     type: 'value',
-                    name: 'Flow Range',
+                    name: 'Flow',
                     nameGap: 16,
                     splitLine: {
                         show: false
@@ -78,14 +78,14 @@ export default {
                     formatter: function (param) {
                         var value = param.value;
                         // prettier-ignore
-                        return '<div style="border-bottom: 1px solid rgba(255,255,255,.3); font-size: 18px;padding-bottom: 7px;margin-bottom: 7px">'
+                        return '<div style="border-bottom: 1px solid rgba(255,255,255,.3); font-size: 12px;padding-bottom: 7px;margin-bottom: 7px">'
                             + 'station' + '：' + value[3] + '<br>'
                             + 'flow' + '：' + value[0].toFixed(2) + '<br>'
                             + "Influence Time" + '：' + value[1] + '<br>'
                             + "RMSE" + '：' + value[2].toFixed(2) + '<br>';
-                    }
+                    },
                 },
-                color: ['#dd4444', '#fec42c', '#800080','#80F1BE'],
+                color: ['black', 'grey', '#E91E63','#80F1BE'],
                 legend: {
                     top: 10,
                     data: ['Invalid', 'Invalid Prediction', 'Full Time Bad', 'Normal'],
@@ -104,10 +104,10 @@ export default {
                         left: 'right',
                         top: '15%',
                         dimension: 2,
-                        // min: 0,
-                        // max: 150,
+                        min: Math.min(...this.model.rmse_for_each_station),
+                        max: Math.max(...this.model.rmse_for_each_station),
                         itemWidth: 20,
-                        itemHeight: 120,
+                        itemHeight: 100,
                         calculable: true,
                         precision: 0.1,
                         text: ['Area：RMSE'],
@@ -121,7 +121,7 @@ export default {
                         },
                         controller: {
                             inRange: {
-                                color: ['#c23531']
+                                color: ['#FFC0CB']
                             },
                             outOfRange: {
                                 color: ['#999']

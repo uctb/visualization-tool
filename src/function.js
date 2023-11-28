@@ -61,7 +61,7 @@ export default class ComputeTool  {
     }
     
     getIntervalID(interval_list, interval_num, metric) {
-        if(metric === interval_list[interval_num]) {
+        if(metric >= interval_list[interval_num]) {
             return interval_num-1;
         }
         for (let i = 1; i < interval_num+1; i++) {

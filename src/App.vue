@@ -157,28 +157,27 @@
           <!--时空数据/评价指标的分布-->
           <div class="boxall" style="height:20rem; margin-bottom: .6rem">
             <div class="alltitle"></div>
-            <el-cascader v-model="value" placeholder="station attributes" size="mini" :disabled="false"
+            <el-cascader v-model="value" placeholder="Overall Analysis" size="mini" :disabled="false"
               :options="statistics_option" :props="{ expandTrigger: 'hover' }" @change="Statistics"></el-cascader>
 
-            <BasicStatistics v-if="this.isShow && this.isSwitch && this.isflow" :statistics_param="this.statistics_param" />
-            <BadCaseFlowScatter v-if="this.isShow && this.isSwitch && !this.isflow" :flow_data = "this.flow_data" :name="this.value[1]"/>
-            <QualitativeAnalysis v-if="this.isShow && !this.isSwitch && this.isAnalysis" :model="this.model"></QualitativeAnalysis>
-            <FlowDistribution v-if="this.isShow && !this.isSwitch && !this.isAnalysis" :category="this.model.gtRange.interval_name"/>
-            // 修改
-            <BasicBadcaseCalenderDistribution v-if="this.isShow && this.badcase_global_show==='heatmap'"
+            <QualitativeAnalysis v-if="this.isShow && this.isSwitch && this.isAnalysis===1" :model="this.model"></QualitativeAnalysis>
+            <FlowDistribution v-if="this.isShow && !this.isSwitch && this.isAnalysis===1" :model="this.model"/>
+            <BasicBadcaseCalenderDistribution v-if="this.isShow && this.isSwitch && this.isOverallCalendar===1"
                                               :basic_badcase_calender_distribution_param="this.basic_badcase_calender_param" />
+            <!--            <BasicStatistics v-if="this.isShow && this.isSwitch && this.isflow" :statistics_param="this.statistics_param" />-->
+            <!--            <BadCaseFlowScatter v-if="this.isShow && this.isSwitch && !this.isflow" :flow_data = "this.flow_data" :name="this.value[1]"/>-->
             <div class="boxfoot"></div>
           </div>
 
           <!--站点级别bad case时间分布规律-->
           <div class="boxall" style="height: 20rem">
             <div class="alltitle"></div>
-            <el-cascader v-model="value_bc" placeholder="time characteristics" size="mini" :disabled="false"
+            <el-cascader v-model="value_bc" placeholder="Detailed Analysis" size="mini" :disabled="false"
               :options="statistics_bc_option" :props="{ expandTrigger: 'hover' }"
               @change="BadcaseDistribution"></el-cascader>
-            <BadcaseTemporalDistributionRules v-if="this.isShow && this.badcase_show!=='heatmap'"
+            <BadcaseTemporalDistributionRules v-if="this.isShow && this.isSwitch2 && this.isPeriod===1"
               :badcase_temp_distribution_param="this.badcase_distribution_param" />
-            <BadCaseCalenderDistribution v-if="this.isShow && this.badcase_show==='heatmap'"
+            <BadCaseCalenderDistribution v-if="this.isShow && this.isSwitch2 && this.isCalendar===1"
               :badcase_calender_distribution_param="this.badcase_calender_param"/>
             <div class="boxfoot"></div>
           </div>
@@ -202,12 +201,12 @@ import RefreshButton from "./components/RefreshButton.vue";
 import TemporalBadCase from "./components/TemporalView.vue";   // 时间序列图
 import SortMetric from "./components/SortMetric";
 import BadcaseTemporalDistributionRules from "./components/BadcaseTemporalDistribution";
-import BasicStatistics from "./components/Statistics";
+// import BasicStatistics from "./components/Statistics";
+// import BadCaseFlowScatter from "./components/BadCaseFlowScatter.vue";
+// import BadcaseDistributionRules from './components/BadCaseDistributionRules'
 import BadCaseCalenderDistribution from "@/components/BadCaseCalenderDistribution";
 import BasicBadcaseCalenderDistribution from "@/components/BasicBadcaseCalenderDistribution";
-// import BadcaseDistributionRules from './components/BadCaseDistributionRules'
 import QualitativeAnalysis from "./components/QualitativeAnalysis.vue";
-import BadCaseFlowScatter from "./components/BadCaseFlowScatter.vue";
 import FlowDistribution from "./components/FlowDistribution.vue";
 
 
@@ -221,13 +220,12 @@ export default {
     TemporalBadCase,
     SortMetric,
     // BadcaseDistributionRules,
+    // BasicStatistics,
+    // BadCaseFlowScatter,
     BadcaseTemporalDistributionRules,
-    BasicStatistics,
-
     BadCaseCalenderDistribution,
     BasicBadcaseCalenderDistribution,
     QualitativeAnalysis,
-    BadCaseFlowScatter,
     FlowDistribution
   },
 
@@ -239,9 +237,16 @@ export default {
       flag: false,
       timeflag: false,
       isShow: true,
+
+      // 右上角选择器
       isSwitch: true,
-      isflow: true,
-      isAnalysis: true,
+      isSwitch2: true,
+      isPeriod: 1,
+      isCalendar: 1,
+      // isflow: true,
+      isAnalysis: 1,
+      isOverallCalendar: 1,
+
       maps: [],
       options: {},
       center: [],
@@ -255,68 +260,48 @@ export default {
       value_bc: [],
       value1: [],
       stationInd: '0',
-      badcase_show: 'bar',
-      badcase_global_show: 'bar',
       statistics_option: [
         {
-          value: "station attributes",
-          label: "station attributes",
+          value: "Qualitative Analysis",
+          label: "Qualitative Analysis",
           disabled: false,
           children: [
             {
-              value: "flow",
-              label: "flow",
+              value: "Overall Trend",
+              label: "Overall Trend",
             },
             {
-              value: "influence time",
-              label: "influence time",
-            },
-            {
-              value: "prediction error",
-              label: "prediction error",
+              value: "Time Distribution",
+              label: "Time Distribution",
             }
           ],
         },
         {
-          value: 'time characteristics',
-          label: 'time characteristics',
-          children: [
-            {
-              value: 'calender heatmap',
-              label: 'calender heatmap',
-            }
-          ]
-        },
-        {
-          value: "station types",
-          label: "station types",
+          value: "Quantitative Analysis",
+          label: "Quantitative Analysis",
           disabled: false,
           children: [
             {
-              value: "Qualitative Analysis",
-              label: "Qualitative Analysis",
-            },
-            {
-              value: "Flow Distribution",
-              label: "Flow Distribution",
+              value: "Station Type Distribution",
+              label: "Station Type Distribution",
             },
           ],
         }
       ],
       statistics_bc_option: [
         {
-          value: "time characteristics",
-          label: "time characteristics",
+          value: "Time Characteristics",
+          label: "Time Characteristics",
           disabled: true,
           children: [
-            {
-              value: "Weekday or Weekends?",
-              label: "Weekday or Weekends?",
-            },
-            {
-              value: "Morning/Evening Peak?",
-              label: "Morning/Evening Peak?",
-            },
+            // {
+            //   value: "Weekday or Weekends?",
+            //   label: "Weekday or Weekends?",
+            // },
+            // {
+            //   value: "Morning/Evening Peak?",
+            //   label: "Morning/Evening Peak?",
+            // },
             {
               value: "On what day of the week?",
               label: "On what day of the week?",
@@ -325,18 +310,12 @@ export default {
               value: "On which hour of the 24?",
               label: "On which hour of the 24?",
             },
+            {
+              value: 'Calendar Heatmap',
+              label: 'Calendar Heatmap',
+            }
           ],
         },
-        {
-          value: 'calender heatmap',
-          label: 'calender heatmap',
-          children: [
-            {
-              value: 'date and hour',
-              label: 'date and hour',
-            }
-          ]
-        }
       ],
       dataset: [
         {
@@ -375,8 +354,12 @@ export default {
     this.flag = true;
     this.isShow = true;
     this.isSwitch = true;
-    this.isAnalysis = true;
-    this.isflow = true;
+    this.isSwitch2 = true;
+    this.isAnalysis = 1;
+    this.isOverallCalendar = 1;
+    this.isPeriod = 1;
+    this.isCalendar = 1;
+    // this.isflow = true;
     this.TimeInfoProcessor.emitTimeSeries()
     setTimeout(() => {
       this.model.update(
@@ -435,8 +418,12 @@ export default {
       if (type == "stationinfo") this.flag = true;
       this.isShow = true;
       this.isSwitch = true;
-      this.isAnalysis = true;
-      this.isflow = true;
+      this.isSwitch2 = true;
+      this.isAnalysis = 1;
+      this.isOverallCalendar = 1;
+      this.isPeriod = 1;
+      this.isCalendar = 1;
+      // this.isflow = true;
     },
     // predefined
     TransferData(e) {
@@ -448,6 +435,8 @@ export default {
       this.model.refresh();
       this.value = "On what day of the week?";
       this.badcase_distribution_param = null;
+      this.basic_badcase_calender_param = null;
+      this.badcase_calender_param = null;
       this.TimeInfoProcessor.refresh();
       if (e == "violation_XM_ARIMA") {
 
@@ -460,8 +449,12 @@ export default {
         this.flag = true;
         this.isShow = true;
         this.isSwitch = true;
-        this.isAnalysis = true;
-        this.isflow = true;
+        this.isSwitch2 = true;
+        this.isAnalysis = 1;
+        this.isOverallCalendar = 1;
+        this.isPeriod = 1;
+        this.isCalendar = 1;
+        // this.isflow = true;
         this.TimeInfoProcessor.emitTimeSeries()
         setTimeout(() => {
           this.model.update(
@@ -504,8 +497,12 @@ export default {
         this.flag = true;
         this.isShow = true;
         this.isSwitch = true;
-        this.isAnalysis = true;
-        this.isflow = true;
+        this.isSwitch2 = true;
+        this.isAnalysis = 1;
+        this.isOverallCalendar = 1;
+        this.isPeriod = 1;
+        this.isCalendar = 1;
+        // this.isflow = true;
         this.TimeInfoProcessor.emitTimeSeries()
         setTimeout(() => {
           this.model.update(
@@ -547,8 +544,6 @@ export default {
       this.center = [];
       this.flag = false;
       this.isShow = false;
-      this.badcase_show = 'bar';
-      this.badcase_global_show = 'bar';
       this.model.refresh();
       this.value = "On what day of the week?";
       this.badcase_distribution_param = null;
@@ -557,8 +552,6 @@ export default {
       this.$refs.pred.clear();
       this.$refs.stationinfo.clear();
       this.$refs.time.clear();
-      console.log(this.model);
-      console.log(this.TimeInfoProcessor);
       document.getElementById('rmse').innerText = '';
       document.getElementById('mape').innerText = '';
       document.getElementById('mae').innerText = '';
@@ -646,7 +639,7 @@ export default {
             // this.model.mre_for_filter_station[i]
           );
           if(this.model.FullTimeBadStation.includes(i)){
-            this.$data.maps[i] = { ...this.$data.maps[i], itemStyle: { color: "#8B0000" } };
+            this.$data.maps[i] = { ...this.$data.maps[i], itemStyle: { color: "#E91E63" } };
           }else if(this.model.invalid_prediciton_stations.includes(i)){
             this.$data.maps[i] = { ...this.$data.maps[i], itemStyle: { color: 'grey' } };
           }
@@ -659,40 +652,10 @@ export default {
       this.initCharts();
     },
 
-    // show() {
-    //   console.log("======show=======")
-    //   let maxNum = Math.max(...this.model.mre_for_filter_station);
-    //   let minNum = Math.min(...this.model.mre_for_filter_station);
-    //   // console.log("max",maxNum)
-    //   this.$data.center = new Array()
-    //   this.$data.center.push(this.model.station_lngs[0]);
-    //   this.$data.center.push(this.model.station_lats[0]);
-    //   console.log("center",this.$data.center)
-    //   for (let i = 0; i < this.model.station_num; i++) {
-    //     this.$data.maps.push({
-    //       name: "station" + i,
-    //       value: [],
-    //     });
-    //     this.$data.maps[i].value.push(this.model.station_lngs[i]);
-    //     this.$data.maps[i].value.push(this.model.station_lats[i]);
-    //     // this.$data.maps[i].value.push(this.model.mre_for_each_station[i])
-    //     if (!this.model.invalid_station_index.includes(i)) {
-    //       this.$data.maps[i].value.push(
-    //         (this.model.mre_for_filter_station[i]) / (maxNum - minNum)
-    //           // this.model.mre_for_filter_station[i]
-    //       );
-    //     } else {
-    //       this.$data.maps[i].value.push(Infinity);
-    //     }
-    //   }
-    //   console.log(this.model.invalid_station_index);
-    //   this.initCharts();
-    // },
-
     // 级联选择器禁用选项
     updateOptionDisabled(timeflag) {
       const targetBcOption = this.statistics_bc_option.find(
-        (option) => option.value === "time characteristics"
+        (option) => option.value === "Time Characteristics"
       );
       if (timeflag) {
         targetBcOption.disabled = false;
@@ -752,7 +715,7 @@ export default {
             max: 1,
             text: ["HIGH", "LOW"],
             inRange: {
-              color: ["#00FF00", "#FF0000"],
+              color: ["#00ff00", "#FF0000"],
             },
           },
         ],
@@ -828,95 +791,54 @@ export default {
 
     BadcaseDistribution(value) {
       switch (value[1]) {
-        // 站点属性（参数正确）
-        /*case "flow":
-          this.badcase_distribution_param =
-            this.model.badcase_spatial_distribution_rules_param;
-          break;*/
-        case "Weekday or Weekends?":
-          this.badcase_distribution_param =
-            this.model.badcase_weekday_statistic_param;
-          this.badcase_show = 'bar';
-          break;
-        case "Morning/Evening Peak?":
-          this.badcase_distribution_param =
-            this.model.badcase_peak_statistic_param;
-          this.badcase_show = 'bar';
-          break;
+        // case "Weekday or Weekends?":
+        //   this.badcase_distribution_param =
+        //     this.model.badcase_weekday_statistic_param;
+        //   this.badcase_show = 'bar';
+        //   break;
+        // case "Morning/Evening Peak?":
+        //   this.badcase_distribution_param =
+        //     this.model.badcase_peak_statistic_param;
+        //   this.badcase_show = 'bar';
+        //   break;
         case "On what day of the week?":
+          this.isSwitch2 = true;
           this.badcase_distribution_param =
             this.model.badcase_week_distribution_rules_param;
-          this.badcase_show = 'bar';
+          this.isPeriod = 1;
           break;
         case "On which hour of the 24?":
           this.badcase_distribution_param =
             this.model.badcase_hour_distribution_rules_param;
-          this.badcase_show = 'bar';
+          this.isPeriod = 1;
+          this.isCalendar = 0;
           break;
-        case "date and hour":
+        case "Calendar Heatmap":
           this.badcase_calender_param = this.model.badcase_hour_calender_param;
-          this.badcase_show = 'heatmap';
+          this.isCalendar = 1;
+          this.isPeriod = 0;
           break;
       }
     },
 
     Statistics() {
       switch (this.value[1]) {
-        // 站点属性（参数正确）
-        case "flow":
+        // 定性分析
+        case "Overall Trend":
           this.isSwitch = true;
-          this.isflow = true;
-          this.statistics_param = this.model.badcase_spatial_distribution_rules_param
-          this.badcase_global_show = 'bar';
+          this.isAnalysis = 1;
+          this.isOverallCalendar = 0;
           break;
-        case "Qualitative Analysis":
-          this.isSwitch = false;
-          this.isAnalysis = true;
-          break;
-        case "Flow Distribution":
-          this.isSwitch = false;
-          this.isAnalysis = false;
-          break;
-        case "influence time":
+        case "Time Distribution":
           this.isSwitch = true;
-          this.isflow = false;
-          this.flow_data = [];
-          for(let i = 0; i < this.model.station_num; i++){
-            this.flow_data.push([this.model.mean_gt_for_each_station[i],this.model.InfluenceTimeRatio[i]])
-          } 
-          break;
-        case "prediction error":
-          this.isSwitch = true;
-          this.isflow = false;
-          this.flow_data = [];
-          for(let i = 0; i < this.model.station_num; i++){
-            this.flow_data.push([this.model.mean_gt_for_each_station[i],this.model.rmse_for_each_station[i]])
-          } 
-          break;
-        // 时间特性（参数错误）
-        case "calender heatmap":
+          this.isOverallCalendar = 1;
+          this.isAnalysis = 0;
           this.basic_badcase_calender_param = this.model.badcase_month_calender_param;
-          this.badcase_global_show = 'heatmap';
           break;
-        /* case "Weekday or Weekends?":
-           this.statistics_param = this.model.weekday_distribuion_param;
-           break;
-         case "Morning/Evening Peak?":
-           this.statistics_param = this.model.peak_distribuion_param;
-           break;
-         case "On what day of the week?":
-           this.statistics_param = this.model.week_distribuion_param;
-           break;
-         case "On which hour of the 24?":
-           this.statistics_param = this.model.hour_distribuion_param;
-           break;
-         // 评价指标（修改参数）
-         case "RMSE Distribution":
-           this.statistics_param = this.model.rmse_distribution_param;
-           break;
-         case "MAE Distribution":
-           this.statistics_param = this.model.mae_distribution_param;
-           break;*/
+        case "Station Type Distribution":
+          this.isSwitch = false;
+          this.isAnalysis = 1;
+          break;
       }
       console.log(this.isSwitch)
     },
@@ -1509,7 +1431,6 @@ a:hover {
   position: relative;
   margin-bottom: .8rem;
   z-index: 10;
-}</style>
 
 .input-setting-wrapper {
   display: flex; /* 开启flex布局 */
@@ -1527,4 +1448,7 @@ a:hover {
 .input-setting-wrapper .el-button {
   flex: 0 0 auto; /* 按钮不需要弹性伸缩，保持原始大小 */
 }
+
+}</style>
+
 
