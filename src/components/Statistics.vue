@@ -93,7 +93,10 @@ export default {
   },
   methods: {
     initChart() {
-      this.mychart.setOption(this.options)
+      // this.mychart = this.$echarts.init(this.$refs.bc_statistics)
+      this.$nextTick(()=>{
+        this.mychart.setOption(this.options)
+      })
     }
   }
 }

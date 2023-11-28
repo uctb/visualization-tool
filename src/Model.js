@@ -501,7 +501,7 @@ export default class Model {
         console.log("连续长时间段预测不好的站点数:", countContinuousLongTimeBad);
         console.log("全时间段预测不好的站点索引:", fullTimeBadStations);
         console.log("连续长时间段预测不好的站点索引:", continuousLongTimeBadStations);
-
+        this.FullTimeBadStation = fullTimeBadStations
     }
 
     // emitStationTypeStatistics() {
@@ -778,6 +778,7 @@ export default class Model {
             mean_gt_for_each_station[i] = this.ct.calculateMean(this.st_raster_gt[i]);
         }
         console.log("mean gt for each station:", mean_gt_for_each_station);
+        this.mean_gt_for_each_station = mean_gt_for_each_station;
         this.gtRange = this.ct.getSequenceRange(mean_gt_for_each_station, interval_num);  // bad case 关于站点流量的分布
         this.gtDistribution = this.ct.getSequenceRange(mean_gt_for_each_station, interval_num); // 站点流量的分布
 
@@ -955,7 +956,7 @@ export default class Model {
         let peak_statistic = Object.values(this.PeakSumRatio[spatial_ind]);
         let weekday_statistic = Object.values(this.WeekSumRatio[spatial_ind]);
         let hour_distribution = this.HourDistribution[spatial_ind];
-
+        
         this.badcase_weekday_statistic_param = {
             'axisvalue': ['weekends', 'workday'],
             'distribution': weekday_statistic,
@@ -1009,4 +1010,3 @@ export default class Model {
 
 
 }
-
