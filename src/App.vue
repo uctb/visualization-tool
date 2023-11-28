@@ -159,10 +159,14 @@
             <div class="alltitle"></div>
             <el-cascader v-model="value" placeholder="station attributes" size="mini" :disabled="false"
               :options="statistics_option" :props="{ expandTrigger: 'hover' }" @change="Statistics"></el-cascader>
-            <BasicStatistics v-if="this.isShow && this.badcase_global_show!=='heatmap'"
-                             :statistics_param="this.statistics_param" />
+
+            <BasicStatistics v-if="this.isShow && this.isSwitch && this.isflow" :statistics_param="this.statistics_param" />
+            <BadCaseFlowScatter v-if="this.isShow && this.isSwitch && !this.isflow" :flow_data = "this.flow_data" :name="this.value[1]"/>
+            <QualitativeAnalysis v-if="this.isShow && !this.isSwitch && this.isAnalysis" :model="this.model"></QualitativeAnalysis>
+            <FlowDistribution v-if="this.isShow && !this.isSwitch && !this.isAnalysis" :category="this.model.gtRange.interval_name"/>
+            // 修改
             <BasicBadcaseCalenderDistribution v-if="this.isShow && this.badcase_global_show==='heatmap'"
-                             :basic_badcase_calender_distribution_param="this.basic_badcase_calender_param" />
+                                              :basic_badcase_calender_distribution_param="this.basic_badcase_calender_param" />
             <div class="boxfoot"></div>
           </div>
 
@@ -202,6 +206,10 @@ import BasicStatistics from "./components/Statistics";
 import BadCaseCalenderDistribution from "@/components/BadCaseCalenderDistribution";
 import BasicBadcaseCalenderDistribution from "@/components/BasicBadcaseCalenderDistribution";
 // import BadcaseDistributionRules from './components/BadCaseDistributionRules'
+import QualitativeAnalysis from "./components/QualitativeAnalysis.vue";
+import BadCaseFlowScatter from "./components/BadCaseFlowScatter.vue";
+import FlowDistribution from "./components/FlowDistribution.vue";
+
 
 export default {
   name: "App",
@@ -215,9 +223,14 @@ export default {
     // BadcaseDistributionRules,
     BadcaseTemporalDistributionRules,
     BasicStatistics,
+
     BadCaseCalenderDistribution,
     BasicBadcaseCalenderDistribution,
+    QualitativeAnalysis,
+    BadCaseFlowScatter,
+    FlowDistribution
   },
+
   data() {
     return {
       model: new Model(),
@@ -226,6 +239,9 @@ export default {
       flag: false,
       timeflag: false,
       isShow: true,
+      isSwitch: true,
+      isflow: true,
+      isAnalysis: true,
       maps: [],
       options: {},
       center: [],
@@ -234,6 +250,7 @@ export default {
       badcase_calender_param: null,
       statistics_param: null,
       basic_badcase_calender_param: null,
+      flow_data: [],
       value: [],
       value_bc: [],
       value1: [],
@@ -250,6 +267,14 @@ export default {
               value: "flow",
               label: "flow",
             },
+            {
+              value: "influence time",
+              label: "influence time",
+            },
+            {
+              value: "prediction error",
+              label: "prediction error",
+            }
           ],
         },
         {
@@ -261,20 +286,24 @@ export default {
               label: 'calender heatmap',
             }
           ]
-        }
-      ],
-      statistics_bc_option: [
-        /*{
-          value: "station attributes",
-          label: "station attributes",
+        },
+        {
+          value: "station types",
+          label: "station types",
           disabled: false,
           children: [
             {
-              value: "flow",
-              label: "flow",
+              value: "Qualitative Analysis",
+              label: "Qualitative Analysis",
+            },
+            {
+              value: "Flow Distribution",
+              label: "Flow Distribution",
             },
           ],
-        },*/
+        }
+      ],
+      statistics_bc_option: [
         {
           value: "time characteristics",
           label: "time characteristics",
@@ -345,6 +374,9 @@ export default {
     );
     this.flag = true;
     this.isShow = true;
+    this.isSwitch = true;
+    this.isAnalysis = true;
+    this.isflow = true;
     this.TimeInfoProcessor.emitTimeSeries()
     setTimeout(() => {
       this.model.update(
@@ -402,6 +434,9 @@ export default {
       this.model.setSTRaster(file, type);
       if (type == "stationinfo") this.flag = true;
       this.isShow = true;
+      this.isSwitch = true;
+      this.isAnalysis = true;
+      this.isflow = true;
     },
     // predefined
     TransferData(e) {
@@ -424,6 +459,9 @@ export default {
 
         this.flag = true;
         this.isShow = true;
+        this.isSwitch = true;
+        this.isAnalysis = true;
+        this.isflow = true;
         this.TimeInfoProcessor.emitTimeSeries()
         setTimeout(() => {
           this.model.update(
@@ -465,6 +503,9 @@ export default {
 
         this.flag = true;
         this.isShow = true;
+        this.isSwitch = true;
+        this.isAnalysis = true;
+        this.isflow = true;
         this.TimeInfoProcessor.emitTimeSeries()
         setTimeout(() => {
           this.model.update(
@@ -595,19 +636,23 @@ export default {
         });
 
         var bdlnglat = wgs842gcj022bd09(this.model.station_lngs[i], this.model.station_lats[i])
-
+        
         this.$data.maps[i].value.push(bdlnglat[0]);
         this.$data.maps[i].value.push(bdlnglat[1]);
-        // this.$data.maps[i].value.push(this.model.mre_for_each_station[i])
+        this.$data.maps[i].value.push(this.model.mre_for_each_station[i])
         if (!this.model.invalid_station_index.includes(i)) {
           this.$data.maps[i].value.push(
             (this.model.mre_for_each_station[i]) / (maxNum - minNum)
             // this.model.mre_for_filter_station[i]
           );
+          if(this.model.FullTimeBadStation.includes(i)){
+            this.$data.maps[i] = { ...this.$data.maps[i], itemStyle: { color: "#8B0000" } };
+          }else if(this.model.invalid_prediciton_stations.includes(i)){
+            this.$data.maps[i] = { ...this.$data.maps[i], itemStyle: { color: 'grey' } };
+          }
         } else {
           this.$data.maps[i].value.push(Infinity);
           this.$data.maps[i] = { ...this.$data.maps[i], itemStyle: { color: 'black' } };
-
         }
       }
       console.log('index',this.model.invalid_station_index);
@@ -819,8 +864,34 @@ export default {
       switch (this.value[1]) {
         // 站点属性（参数正确）
         case "flow":
+          this.isSwitch = true;
+          this.isflow = true;
           this.statistics_param = this.model.badcase_spatial_distribution_rules_param
           this.badcase_global_show = 'bar';
+          break;
+        case "Qualitative Analysis":
+          this.isSwitch = false;
+          this.isAnalysis = true;
+          break;
+        case "Flow Distribution":
+          this.isSwitch = false;
+          this.isAnalysis = false;
+          break;
+        case "influence time":
+          this.isSwitch = true;
+          this.isflow = false;
+          this.flow_data = [];
+          for(let i = 0; i < this.model.station_num; i++){
+            this.flow_data.push([this.model.mean_gt_for_each_station[i],this.model.InfluenceTimeRatio[i]])
+          } 
+          break;
+        case "prediction error":
+          this.isSwitch = true;
+          this.isflow = false;
+          this.flow_data = [];
+          for(let i = 0; i < this.model.station_num; i++){
+            this.flow_data.push([this.model.mean_gt_for_each_station[i],this.model.rmse_for_each_station[i]])
+          } 
           break;
         // 时间特性（参数错误）
         case "calender heatmap":
@@ -847,6 +918,7 @@ export default {
            this.statistics_param = this.model.mae_distribution_param;
            break;*/
       }
+      console.log(this.isSwitch)
     },
 
   },

@@ -508,7 +508,7 @@ export default class Model {
         console.log("连续长时间段预测不好的站点数:", countContinuousLongTimeBad);
         console.log("全时间段预测不好的站点索引:", fullTimeBadStations);
         console.log("连续长时间段预测不好的站点索引:", continuousLongTimeBadStations);
-
+        this.FullTimeBadStation = fullTimeBadStations
     }
 
     // 获得站点误差以及降序排列数组
@@ -1025,4 +1025,3 @@ export default class Model {
 
 
 }
-
