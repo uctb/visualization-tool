@@ -81,52 +81,64 @@ export default {
                 },
                 series: [
                     {
-                        name: 'Normal',
-                        type: 'bar',
-                        stack: 'total',
-                        label: {
-                            show: true
-                        },
-                        emphasis: {
-                            focus: 'series'
-                        },
-                        data: this.model.NormalStationGtRange
+                      name: 'Normal',
+                      type: 'bar',
+                      stack: 'total',
+                      label: {
+                          show: true
+                      },
+                      // emphasis: {
+                      //     focus: 'series'
+                      // },
+                      itemStyle: {
+                          color: '#80F1BE'
+                      },
+                      data: this.model.NormalStationGtRange
                     },
                     {
-                        name: 'Full Time Bad',
-                        type: 'bar',
-                        stack: 'total',
-                        label: {
-                            show: true
-                        },
-                        emphasis: {
-                            focus: 'series'
-                        },
-                        data: this.model.FullTimeBadStationGtRange
+                      name: 'Full Time Bad',
+                      type: 'bar',
+                      stack: 'total',
+                      label: {
+                          show: true
+                      },
+                      // emphasis: {
+                      //     focus: 'series'
+                      // },
+                      itemStyle: {
+                        color: '#E91E63'
+                      },
+                      data: this.model.FullTimeBadStationGtRange
                     },
                     {
-                        name: 'Invalid Prediction',
-                        type: 'bar',
-                        stack: 'total',
-                        label: {
-                            show: true
-                        },
-                        emphasis: {
-                            focus: 'series'
-                        },
-                        data: this.model.InvalidPredStationGtRange
+                      name: 'Invalid Prediction',
+                      type: 'bar',
+                      stack: 'total',
+                      label: {
+                          show: true
+                      },
+                      // emphasis: {
+                      //     focus: 'series'
+                      // },
+                      itemStyle: {
+                        color: 'grey'
+                      },
+                      data: this.model.InvalidPredStationGtRange
                     },
                     {
-                        name: 'Invalid',
-                        type: 'bar',
-                        stack: 'total',
-                        label: {
-                            show: true
-                        },
-                        emphasis: {
-                            focus: 'series'
-                        },
-                        data: this.model.InvalidStationGtRange
+                      name: 'Invalid Groundtruth',
+                      type: 'bar',
+                      stack: 'total',
+                      label: {
+                          show: true
+                      },
+                      // emphasis: {
+                      //     focus: 'series'
+                      // },
+                      itemStyle: {
+                        color: 'black'
+                      },
+                      data: this.model.InvalidStationGtRange
                     },
                 ]
             }
@@ -144,11 +156,12 @@ export default {
 </script>
 <style scoped>
 .echarts {
-    height: 14.5rem;
+    height: 70%;
     background-size: contain;
     background-repeat: no-repeat;
     background-position: 50% 50%;
     /* position: relative; */
     margin-top: 5%;
+    margin-right: 5%;
 }
 </style>

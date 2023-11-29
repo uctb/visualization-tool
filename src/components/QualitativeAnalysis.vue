@@ -18,13 +18,25 @@ export default {
     },
     mounted() {
         this.mychart = this.$echarts.init(this.$refs.analysis)
+        this.mychart.on('click', (params) => {
+          let id = params.data[3];
+          this.model.getTemporalBadCaseParam(id);  // 时间bad case
+
+          this.model.getBadcaseDistributionRulesParam(id);  //时间bad case分布
+          this.model.getBadcaseCalenderDistributionRulesParam(id);
+          this.model.getBasicBadcaseCalenderDistributionParam();
+
+          document.getElementById('point_rmse').innerText = this.model.PointRMSE[id];
+          document.getElementById('point_mae').innerText = this.model.PointMAE[id];
+          document.getElementById('point_mape').innerText = this.model.PointMAPE[id] + '%';
+      });
     },
     watch: {
         model: {
             handler(newVal) {
-                this.invalid_station = [],
-                this.invalid_prediction_station = [],
-                this.full_time_bad_station = [],
+                this.invalid_station = []
+                this.invalid_prediction_station = []
+                this.full_time_bad_station = []
                 this.normal_station = []
                 this.initChart()
             },
@@ -85,7 +97,7 @@ export default {
                             + "RMSE" + '：' + value[2].toFixed(2) + '<br>';
                     },
                 },
-                color: ['black', 'grey', '#E91E63','#80F1BE'],
+                color: ['#E91E63','#80F1BE'],
                 legend: {
                     top: 10,
                     data: ['Invalid', 'Invalid Prediction', 'Full Time Bad', 'Normal'],
@@ -131,18 +143,18 @@ export default {
                     },
                 ],
                 series: [
-                    {
-                        name: 'Invalid',
-                        type: 'scatter',
-                        itemStyle: itemStyle,
-                        data: this.invalid_station
-                    },
-                    {
-                        name: 'Invalid Prediction',
-                        type: 'scatter',
-                        itemStyle: itemStyle,
-                        data: this.invalid_prediction_station
-                    },
+                    // {
+                    //     name: 'Invalid',
+                    //     type: 'scatter',
+                    //     itemStyle: itemStyle,
+                    //     data: this.invalid_station
+                    // },
+                    // {
+                    //     name: 'Invalid Prediction',
+                    //     type: 'scatter',
+                    //     itemStyle: itemStyle,
+                    //     data: this.invalid_prediction_station
+                    // },
                     {
                         name: 'Full Time Bad',
                         type: 'scatter',
@@ -178,7 +190,6 @@ export default {
                             i
                         ])
                     } else if (this.model.FullTimeBadStation.includes(i)) {
-                        console.log(this.model.InfluenceTimeRatio[i])
                         this.full_time_bad_station.push([
                             this.model.mean_gt_for_each_station[i],
                             this.model.InfluenceTimeRatio[i],

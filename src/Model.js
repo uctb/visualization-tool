@@ -387,6 +387,8 @@ export default class Model {
         let InvalidPredictionStations = [];
         let start_time = '';
         let end_time = '';
+        let invalid_pred_start = '';
+        let invalid_pred_end = '';
 
         for (let i=0; i<this.station_num; i++) {
             markArea[i] = [];
@@ -411,8 +413,22 @@ export default class Model {
 
                 // 初始化滑动窗口
                 let window = 0;
+                let invalid_pred_window = 0;
                 // 滑动窗口求markArea
                 for (let j=0; j<this.time_length; j++) {
+                    if (pred[j] < 0) {
+                        if (invalid_pred_window === 0) {
+                            invalid_pred_window ++;
+                            invalid_pred_start = j;
+                        } else invalid_pred_window ++;
+                    } else {
+                        if (invalid_pred_window > 0) {
+                            invalid_pred_end = j;
+                            invalid_pred_window = 0;
+                            markArea[i].push([{'xAxis': invalid_pred_start, 'itemStyle': {'color': '#FF69B4', 'opacity': 0.8}},
+                                {'xAxis': invalid_pred_end}])
+                        }
+                    }
                     if (diff[j] > ciUpper) {
                         if (window === 0) {
                             window ++;
@@ -426,6 +442,7 @@ export default class Model {
                                 {'xAxis': end_time}])
                         } else {window = 0;}
                     }
+
                 }
             }
 
