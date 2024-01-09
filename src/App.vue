@@ -645,11 +645,75 @@ export default {
       this.$data.center.push(this.model.station_lngs[0]);
       this.$data.center.push(this.model.station_lats[0]);
       console.log("center", this.$data.center)
+
+      // 得到RMSE最大的20%标红
+      // 创建一个副本数组以便排序
+      const rmseCopy = [...this.model.rmse_for_each_station];
+
+      // 对副本数组进行降序排序
+      rmseCopy.sort((a, b) => b - a);
+
+      // 计算需要保留的前 20% 元素数量
+      const top20PercentCount = Math.ceil(rmseCopy.length * 0.2);
+
+      // 获取前 20% 元素的下标
+      const top20PercentIndicesSet1 = new Set();
+      for (let i = 0; i < top20PercentCount; i++) {
+        const rmseValue = rmseCopy[i];
+        let index = this.model.rmse_for_each_station.indexOf(rmseValue);
+
+        // 处理重复的值
+        while (top20PercentIndicesSet1.has(index)) {
+          index = this.model.rmse_for_each_station.indexOf(rmseValue, index + 1);
+        }
+
+        // 添加索引到集合
+        top20PercentIndicesSet1.add(index);
+      }
+
+      const top20PercentIndices1 = [...top20PercentIndicesSet1];
+
+      const timeCopy = [...this.model.InfluenceTimeRatio];
+
+      // 对副本数组进行降序排序
+      timeCopy.sort((a, b) => b - a);
+
+      // 获取前 20% 元素的下标
+      const top20PercentIndicesSet2 = new Set();
+      const addedIndices = new Set(); // 用于跟踪已添加的索引
+
+      for (let i = 0; i < top20PercentCount; i++) {
+        const timeValue = timeCopy[i];
+        let index = this.model.InfluenceTimeRatio.indexOf(timeValue);
+
+        // 处理重复的时间值
+        while (addedIndices.has(index)) {
+          index = this.model.InfluenceTimeRatio.indexOf(timeValue, index + 1);
+        }
+
+        // 添加索引到集合
+        top20PercentIndicesSet2.add(index);
+        addedIndices.add(index);
+      }
+
+      const top20PercentIndices2 = [...top20PercentIndicesSet2];
+      console.log(top20PercentIndices2)
+
       for (let i = 0; i < this.model.station_num; i++) {
         this.$data.maps.push({
           name: "station" + i,
           value: [],
         });
+
+        if (top20PercentIndices2.includes(i) && top20PercentIndices1.includes(i)) {
+          this.$data.maps[i] = { ...this.$data.maps[i], itemStyle: { color: "red" } };
+        } else if (top20PercentIndices2.includes(i)) {
+          console.log('1:' + i);
+          this.$data.maps[i] = { ...this.$data.maps[i], itemStyle: { color: 'blue' } };
+        } else if (top20PercentIndices1.includes(i)) {
+          console.log('2:' + i);
+          this.$data.maps[i] = { ...this.$data.maps[i], itemStyle: { color: 'purple' } };
+        }
 
         var bdlnglat = wgs842gcj022bd09(this.model.station_lngs[i], this.model.station_lats[i])
 
@@ -662,48 +726,10 @@ export default {
             (this.model.mre_for_each_station[i]) / (maxNum - minNum)
             // this.model.mre_for_filter_station[i]
           );
-          // if (this.model.FullTimeBadStation.includes(i)) {
-          //   this.$data.maps[i] = { ...this.$data.maps[i], itemStyle: { color: "#E91E63" } };
-          // } else if (this.model.invalid_prediciton_stations.includes(i)) {
-          //   this.$data.maps[i] = { ...this.$data.maps[i], itemStyle: { color: 'grey' } };
-          // }
         } else {
           this.$data.maps[i].value.push(Infinity);
           this.$data.maps[i] = { ...this.$data.maps[i], itemStyle: { color: 'black' } };
         }
-      }
-      
-      // 得到RMSE最大的20%标红
-      // 创建一个副本数组以便排序
-      const rmseCopy = [...this.model.rmse_for_each_station];
-
-      // 对副本数组进行降序排序
-      rmseCopy.sort((a, b) => b - a);
-
-      // 计算需要保留的前 20% 元素数量
-      const top20PercentCount1 = Math.ceil(rmseCopy.length * 0.2);
-
-      // 获取前 20% 元素的下标
-      for (let i = 0; i < top20PercentCount1; i++) {
-        const rmseValue = rmseCopy[i];
-        const index = this.model.rmse_for_each_station.indexOf(rmseValue);
-        this.$data.maps[index] = { ...this.$data.maps[index], itemStyle: { color: 'red' } };
-      }
-      
-      // 计算 FullTimeBadStation 数组的前 20% 的元素数量
-      const timeCopy = [...this.model.InfluenceTimeRatio];
-
-      // 对副本数组进行降序排序
-      timeCopy.sort((a, b) => b - a);
-
-      // 计算需要保留的前 20% 元素数量
-      const top20PercentCount2 = Math.ceil(timeCopy.length * 0.2);
-
-      // 获取前 20% 元素的下标
-      for (let i = 0; i < top20PercentCount2; i++) {
-        const timeValue = timeCopy[i];
-        const index = this.model.InfluenceTimeRatio.indexOf(timeValue);
-        this.$data.maps[index] = { ...this.$data.maps[index], itemStyle: { color: '#E91E63' } };
       }
 
       console.log('index', this.model.invalid_station_index);
@@ -821,7 +847,7 @@ export default {
               },
             },
             itemStyle: {
-              color: "green", // 设置点的颜色为绿色
+              color: "#00ff00", // 设置点的颜色为绿色
             },
           },
         ],
