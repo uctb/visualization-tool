@@ -1,5 +1,5 @@
 <template>
-  <div id="app" >
+  <div id="app">
     <!-- <div class="canvas" style="opacity: 0.2"></div> -->
     <div class="head">
       <div class="header_center">
@@ -160,10 +160,12 @@
             <el-cascader v-model="value" placeholder="Overall Analysis" size="mini" :disabled="false"
               :options="statistics_option" :props="{ expandTrigger: 'hover' }" @change="Statistics"></el-cascader>
 
-            <QualitativeAnalysis v-if="this.isShow && this.isSwitch && this.isAnalysis===1" :model="this.model"></QualitativeAnalysis>
-            <FlowDistribution v-if="this.isShow && !this.isSwitch && this.isAnalysis===1" :model="this.model"/>
-            <BasicBadcaseCalenderDistribution v-if="this.isShow && this.isSwitch && this.isOverallCalendar===1 && this.isAnalysis===0"
-                                              :basic_badcase_calender_distribution_param="this.basic_badcase_calender_param" />
+            <QualitativeAnalysis v-if="this.isShow && this.isSwitch && this.isAnalysis === 1" :model="this.model">
+            </QualitativeAnalysis>
+            <FlowDistribution v-if="this.isShow && !this.isSwitch && this.isAnalysis === 1" :model="this.model" />
+            <BasicBadcaseCalenderDistribution
+              v-if="this.isShow && this.isSwitch && this.isOverallCalendar === 1 && this.isAnalysis === 0"
+              :basic_badcase_calender_distribution_param="this.basic_badcase_calender_param" />
             <!--            <BasicStatistics v-if="this.isShow && this.isSwitch && this.isflow" :statistics_param="this.statistics_param" />-->
             <!--            <BadCaseFlowScatter v-if="this.isShow && this.isSwitch && !this.isflow" :flow_data = "this.flow_data" :name="this.value[1]"/>-->
             <div class="boxfoot"></div>
@@ -175,11 +177,13 @@
             <el-cascader v-model="value_bc" placeholder="Detailed Analysis" size="mini" :disabled="false"
               :options="statistics_bc_option" :props="{ expandTrigger: 'hover' }"
               @change="BadcaseDistribution"></el-cascader>
-            <BadcaseTemporalDistributionRules v-if="this.isShow && this.isSwitch2 && this.isRes && this.isPeriod===1"
+            <BadcaseTemporalDistributionRules v-if="this.isShow && this.isSwitch2 && this.isRes && this.isPeriod === 1"
               :badcase_temp_distribution_param="this.badcase_distribution_param" />
-            <BadCaseCalenderDistribution v-if="this.isShow && this.isSwitch2 && this.isRes && this.isCalendar===1 && this.isPeriod===0"
-              :badcase_calender_distribution_param="this.badcase_calender_param"/>
-            <ResidualAnalysis :temp_bad_case_param="this.model.temp_bad_case_param" v-if="this.isShow && this.isSwitch2 && !this.isRes"/>
+            <BadCaseCalenderDistribution
+              v-if="this.isShow && this.isSwitch2 && this.isRes && this.isCalendar === 1 && this.isPeriod === 0"
+              :badcase_calender_distribution_param="this.badcase_calender_param" />
+            <ResidualAnalysis :temp_bad_case_param="this.model.temp_bad_case_param"
+              v-if="this.isShow && this.isSwitch2 && !this.isRes" />
             <div class="boxfoot"></div>
           </div>
         </li>
@@ -319,7 +323,7 @@ export default {
               label: 'Calendar Heatmap',
             }
           ],
-        },{
+        }, {
           value: "Residual Analysis",
           label: "Residual Analysis",
           disabled: false,
@@ -648,26 +652,56 @@ export default {
         });
 
         var bdlnglat = wgs842gcj022bd09(this.model.station_lngs[i], this.model.station_lats[i])
-        
+
         this.$data.maps[i].value.push(bdlnglat[0]);
         this.$data.maps[i].value.push(bdlnglat[1]);
         this.$data.maps[i].value.push(this.model.mre_for_each_station[i])
+
         if (!this.model.invalid_station_index.includes(i)) {
           this.$data.maps[i].value.push(
             (this.model.mre_for_each_station[i]) / (maxNum - minNum)
             // this.model.mre_for_filter_station[i]
           );
-          if(this.model.FullTimeBadStation.includes(i)){
-            this.$data.maps[i] = { ...this.$data.maps[i], itemStyle: { color: "#E91E63" } };
-          }else if(this.model.invalid_prediciton_stations.includes(i)){
-            this.$data.maps[i] = { ...this.$data.maps[i], itemStyle: { color: 'grey' } };
-          }
+          // if (this.model.FullTimeBadStation.includes(i)) {
+          //   this.$data.maps[i] = { ...this.$data.maps[i], itemStyle: { color: "#E91E63" } };
+          // } else if (this.model.invalid_prediciton_stations.includes(i)) {
+          //   this.$data.maps[i] = { ...this.$data.maps[i], itemStyle: { color: 'grey' } };
+          // }
         } else {
           this.$data.maps[i].value.push(Infinity);
           this.$data.maps[i] = { ...this.$data.maps[i], itemStyle: { color: 'black' } };
         }
       }
-      console.log('index',this.model.invalid_station_index);
+      
+      // 得到RMSE最大的20%标红
+      // 创建一个副本数组以便排序
+      const rmseCopy = [...this.model.rmse_for_each_station];
+
+      // 对副本数组进行降序排序
+      rmseCopy.sort((a, b) => b - a);
+
+      // 计算需要保留的前 20% 元素数量
+      const top20PercentCount1 = Math.ceil(rmseCopy.length * 0.2);
+
+      // 获取前 20% 元素的下标
+      for (let i = 0; i < top20PercentCount1; i++) {
+        const rmseValue = rmseCopy[i];
+        const index = this.model.rmse_for_each_station.indexOf(rmseValue);
+        this.$data.maps[index] = { ...this.$data.maps[index], itemStyle: { color: 'red' } };
+      }
+      
+      // 计算 FullTimeBadStation 数组的前 20% 的元素数量
+      const top20PercentCount = Math.ceil(this.model.FullTimeBadStation.length * 0.2);
+      console.log(this.model.FullTimeBadStation.length)
+
+      // 遍历数组并将前 20% 的元素设置为指定颜色
+      for (let i = 0; i < this.model.FullTimeBadStation.length; i++) {
+        if (i < top20PercentCount) {
+          this.$data.maps[this.model.FullTimeBadStation[i]] = { ...this.$data.maps[this.model.FullTimeBadStation[i]], itemStyle: { color: "#E91E63" } };
+        }
+      }
+
+      console.log('index', this.model.invalid_station_index);
       this.initCharts();
     },
 
@@ -725,19 +759,19 @@ export default {
           roam: true,
           zoom: 12,
         },
-        visualMap: [
-          {
-            type: "continuous",
-            orient: "vertical",
-            right: 0,
-            min: 0,
-            max: 1,
-            text: ["HIGH", "LOW"],
-            inRange: {
-              color: ["#00ff00", "#FF0000"],
-            },
-          },
-        ],
+        // visualMap: [
+        //   {
+        //     type: "continuous",
+        //     orient: "vertical",
+        //     right: 0,
+        //     min: 0,
+        //     max: 1,
+        //     text: ["HIGH", "LOW"],
+        //     inRange: {
+        //       color: ["#00ff00", "#FF0000"],
+        //     },
+        //   },
+        // ],
         tooltip: {
           trigger: 'item', // 触发类型，设置为'item'表示触发在数据项上
           formatter: function (params) {
@@ -780,6 +814,9 @@ export default {
                 shadowBlur: 20,
                 shadowColor: "rgba(0, 0, 0, 0.5)",
               },
+            },
+            itemStyle: {
+              color: "green", // 设置点的颜色为绿色
             },
           },
         ],
