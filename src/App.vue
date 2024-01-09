@@ -691,14 +691,19 @@ export default {
       }
       
       // 计算 FullTimeBadStation 数组的前 20% 的元素数量
-      const top20PercentCount = Math.ceil(this.model.FullTimeBadStation.length * 0.2);
-      console.log(this.model.FullTimeBadStation.length)
+      const timeCopy = [...this.model.InfluenceTimeRatio];
 
-      // 遍历数组并将前 20% 的元素设置为指定颜色
-      for (let i = 0; i < this.model.FullTimeBadStation.length; i++) {
-        if (i < top20PercentCount) {
-          this.$data.maps[this.model.FullTimeBadStation[i]] = { ...this.$data.maps[this.model.FullTimeBadStation[i]], itemStyle: { color: "#E91E63" } };
-        }
+      // 对副本数组进行降序排序
+      timeCopy.sort((a, b) => b - a);
+
+      // 计算需要保留的前 20% 元素数量
+      const top20PercentCount2 = Math.ceil(timeCopy.length * 0.2);
+
+      // 获取前 20% 元素的下标
+      for (let i = 0; i < top20PercentCount2; i++) {
+        const timeValue = timeCopy[i];
+        const index = this.model.InfluenceTimeRatio.indexOf(timeValue);
+        this.$data.maps[index] = { ...this.$data.maps[index], itemStyle: { color: '#E91E63' } };
       }
 
       console.log('index', this.model.invalid_station_index);
