@@ -55,7 +55,7 @@ export default {
       const formData = new FormData();
       formData.append('query', this.query);
       formData.append('is_rag', is_rag);
-      axios.post('http://127.0.0.1:8888/chat', formData)
+      axios.post('http://10.30.35.186:8888/chat', formData)
         .then(response => {
           console.log('Response:', response.data);
           this.messages.push({ sender: 'bot', text: response.data.resp });

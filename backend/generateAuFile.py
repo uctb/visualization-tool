@@ -15,6 +15,7 @@ from statsmodels.tsa.stattools import cal_granger_gausalitytests
 parser = argparse.ArgumentParser(description='arguments')
 parser.add_argument('--data_dir', default='METR_LA.pkl', type=str)
 parser.add_argument('--pred_dir', default='METR_LA_pred.pkl', type=str)
+parser.add_argument('--adj_file',default='adj.pkl', type=str)
 parser.add_argument('--output_dir', default='result.json', type=str)
 parser.add_argument('--K_cluster', default=4, type=int)
 parser.add_argument('--N_cluster', default=2, type=int)
@@ -139,27 +140,16 @@ def granger_causality_test(df, best_lag):
 def find_best_lag(aic_values):
     return aic_values.index(min(aic_values)) + 1
 
-def reconstruction_loss(A_o, A_o_hat, is_binary=True):
-    """
-    Calculate the reconstruction loss between the original adjacency matrix and the reconstructed one.
-
-    Args:
-    A_o (numpy.ndarray): The original adjacency matrix.
-    A_o_hat (numpy.ndarray): The reconstructed adjacency matrix.
-    is_binary (bool): Whether the adjacency matrix is binary.
-
-    Returns:
-    float: The reconstruction loss.
-    """
-    if is_binary:
-        # Binary cross-entropy loss
-        N_o = A_o.shape[0]
-        A_o_hat = np.clip(A_o_hat, 1e-10, 1 - 1e-10)
-        loss = -(A_o * np.log(A_o_hat) + (1 - A_o) * np.log(1 - A_o_hat))
-        return np.sum(loss) / (N_o * N_o)
+def reconstruction_loss(A_o, A_o_hat):
+    N_o = A_o.shape[0]
+    A_o_hat = np.clip(A_o_hat, 1e-10, 1 - 1e-10)
+    
+    if np.array_equal(A_o, A_o.astype(bool)):
+        W = np.ones_like(A_o)
     else:
-        # Mean Squared Error (MSE) loss
-        return np.mean((A_o - A_o_hat) ** 2)
+        W = A_o  
+    loss = -(W * (A_o * np.log(A_o_hat) + (1 - A_o) * np.log(1 - A_o_hat)))
+    return np.sum(loss) / (N_o * N_o)
 
 def generate_temporal_cluster(data):
     # Merge every 24 hours or every 12*24 hours based on MergeIndex
@@ -210,7 +200,6 @@ def generate_temporal_cluster(data):
     }
     with open(args.output_dir, 'w') as f:
         json.dump(result, f)
- 
         
 def generate_spatial_cluster(adj, data):
     if args.MergeIndex == 12:
@@ -307,7 +296,7 @@ if __name__ == '__main__':
     with open(args.pred_dir, 'rb') as f:
         pred = pickle.load(f)
         
-    with open('adj.pkl', 'rb') as f:
+    with open(args.adj_file, 'rb') as f:
         adj = pickle.load(f)
         
     generate_temporal_cluster(data)

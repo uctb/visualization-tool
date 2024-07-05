@@ -48,7 +48,7 @@ export default {
             id: 'station' + station,
             mae: this.model.PointMAE[station],
             cluster: this.model.spatial_cluster[station],
-            weight: edgeArray[i][2]
+            weight: edgeArray[i][2].toFixed(5)
           });
         }   
       }

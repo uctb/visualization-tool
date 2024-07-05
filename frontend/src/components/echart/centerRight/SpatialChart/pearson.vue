@@ -22,7 +22,7 @@ export default {
     this.initChart();
   },
   watch: {
-    'model.ws': function () {
+    'model.station_info': function () {
       this.pearson = this.model.ip.pearson.map(row => {
         const rowSum = row.reduce((sum, val) => sum + val, 0);
         return row.map(val => val / rowSum);

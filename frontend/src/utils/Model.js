@@ -31,7 +31,6 @@ export default class Model {
     update(gt, pred, station_info, graph, cluster) {
         this.st_raster_gt = gt;
         this.st_raster_pred = pred;
-        console.log(this.st_raster_pred)
         this.station_info = station_info;
         this.graph = graph;
         this.temporal_cluster = cluster[0];
@@ -93,28 +92,18 @@ export default class Model {
             this.st_raster_diff[i] = [];
             this.st_raster_re[i] = [];
             this.st_raster_re_filter[i] = [];
+            const errors = this.calculateErrors(this.st_raster_pred[i], this.st_raster_gt[i])
 
-            for (let j = 0; j < this.time_length; j++) {
-                this.error_matrix[i][j] = this.st_raster_pred[i][j] - this.st_raster_gt[i][j];
-                tmp_mae += Math.abs(this.error_matrix[i][j]);
-                this.st_raster_diff[i].push(Math.abs(this.error_matrix[i][j]));
-                this.st_raster_re[i].push(Math.abs(this.error_matrix[i][j]) / this.st_raster_gt[i][j]);
-
-                if (!this.invalid_station_index.includes(i)) {
-                    this.st_raster_re_filter[i].push(Math.abs(this.error_matrix[i][j]) / this.st_raster_gt[i][j]);
-                }
-            }
-
-            this.mae_for_each_station[i] = tmp_mae / this.time_length;
-            this.rmse_for_each_station[i] = this.ct.calculate_local_rmse(this.st_raster_pred[i], this.st_raster_gt[i]);
-            this.mre_for_each_station[i] = this.ct.calculateMean(this.st_raster_re[i]);
-            this.mre_for_filter_station[i] = this.ct.calculateMean(this.st_raster_re_filter[i]);
+            this.mae_for_each_station[i] = errors['mae'];
+            this.rmse_for_each_station[i] = errors['rmse'];
+            this.mre_for_each_station[i] = errors['mape'];
+           
         }
 
         console.log("mae for each station", this.mae_for_each_station);
         console.log("rmse for each station:", this.rmse_for_each_station);
         console.log("mre for each station:", this.mre_for_each_station);
-        console.log("mre for filter station:", this.mre_for_filter_station);
+        
 
         // Statistics
         this.emitModelError();
@@ -169,34 +158,10 @@ export default class Model {
     // 获得模型整体误差
     emitModelError() {
         console.log("==========计算模型误差============")
-        let sumSquaredError = 0;
-        let absoluteErrors = 0;
-        let absolutePercentageError = 0;
-        let ape_num = 0;
-        // 计算平方误差的总和
-        for (let i = 0; i < this.station_num; i++) {
-            for (let j = 0; j < this.time_length; j++) {
-                const error = this.st_raster_pred[i][j] - this.st_raster_gt[i][j];
-                const squaredError = Math.pow(error, 2);
-                const ae = Math.abs(this.st_raster_pred[i][j] - this.st_raster_gt[i][j]);
-                if (this.st_raster_gt[i][j] !== 0) {
-                    const ape = Math.abs((this.st_raster_pred[i][j] - this.st_raster_gt[i][j]) / this.st_raster_gt[i][j]);
-                    ape_num++;
-                    absolutePercentageError += ape;
-                }
-                sumSquaredError += squaredError;
-                absoluteErrors += ae;
-            }
-        }
-        // 计算rmse
-        const meanSquaredError = sumSquaredError / (this.station_num * this.time_length)
-        // mae
-        const meanAbsoluteError = (absoluteErrors / (this.station_num * this.time_length)).toFixed(2);
-        // mape
-        const meanAbsolutePercentageError = (absolutePercentageError / ape_num * 100).toFixed(2) + '%';
-        this.rmse = Math.sqrt(meanSquaredError).toFixed(2);
-        this.mae = meanAbsoluteError;
-        this.mape = meanAbsolutePercentageError
+        const errors = this.calculateErrors(this.st_raster_pred,this.st_raster_gt)
+        this.rmse = errors['rmse'];
+        this.mae = errors['mae'];
+        this.mape = errors['mape'];
         console.log("model error:", this.rmse, this.mae, this.mape);
     }
 
@@ -880,5 +845,53 @@ export default class Model {
             'xAxisname': 'Flow Range'
         }
         console.log("badcase_spatial_distribution_rules_param:", this.badcase_spatial_distribution_rules_param);
+    }
+
+    calculateErrors(st_raster_pred, st_raster_gt, threshold = 0) {
+        // Flatten the arrays to 1D
+        const pred_flat = st_raster_pred.flat();
+        const target_flat = st_raster_gt.flat();
+    
+        // Initialize variables to accumulate the sum of errors
+        let sumSquaredError = 0;
+        let absoluteErrors = 0;
+        let absolutePercentageError = 0;
+        let validCount = 0;
+        let apeCount = 0;
+    
+        // Loop over each element and compute the errors
+        for (let i = 0; i < target_flat.length; i++) {
+            if (target_flat[i] > threshold) {
+                const error = pred_flat[i] - target_flat[i];
+                const squaredError = Math.pow(error, 2);
+                const absError = Math.abs(error);
+    
+                sumSquaredError += squaredError;
+                absoluteErrors += absError;
+                validCount++;
+    
+                if (target_flat[i] !== 0) {
+                    const ape = Math.abs(error / target_flat[i]);
+                    absolutePercentageError += ape;
+                    apeCount++;
+                }
+            }
+        }
+    
+        // Calculate RMSE
+        const meanSquaredError = sumSquaredError / validCount;
+        const rmse = Math.sqrt(meanSquaredError).toFixed(2);
+    
+        // Calculate MAE
+        const mae = (absoluteErrors / validCount).toFixed(2);
+    
+        // Calculate MAPE
+        const mape = (absolutePercentageError / apeCount * 100).toFixed(2) + '%';
+    
+        return {
+            rmse: rmse,
+            mae: mae,
+            mape: mape
+        };
     }
 }

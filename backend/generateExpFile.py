@@ -11,6 +11,28 @@ parser.add_argument('--adj', default='adj.pkl', type=str)
 
 args = parser.parse_args()
 
+def process_adj_matrix(adj):
+
+    is_binary = np.array_equal(adj, adj.astype(bool))
+
+    if is_binary:
+
+        graph = np.reshape(adj, (adj.shape[-1], adj.shape[-1])).tolist()
+    else:
+
+        def get_top_k_indices(row, k=10):
+            return np.argsort(row)[-k:]
+
+        new_adj = np.zeros_like(adj)
+        for i in range(adj.shape[0]):
+            top_indices = get_top_k_indices(adj[i])
+            new_adj[i, top_indices] = adj[i, top_indices]
+
+ 
+        graph = np.reshape(new_adj, (new_adj.shape[-1], new_adj.shape[-1])).tolist()
+
+    return graph
+
 def generate_exp_file():
     """
     Load data and adjacency matrix from specified pickle files and generate a JSON file.
@@ -42,11 +64,11 @@ def generate_exp_file():
         "groudTruth": gt_df.tolist(),
         "prediction": pd_df.tolist(),
         "stationInfo": station_info_df.values.tolist(),
-        "graph": np.reshape(adj,(adj.shape[-1],adj.shape[-1])).tolist()
+        "graph": process_adj_matrix(adj)
     }
 
     try:
-        json_path = '../tsv/' + file_name_without_extension + '.json'
+        json_path = './' + file_name_without_extension + '.json'
         
         with open(json_path, 'w') as json_file:
             json.dump(combined_data, json_file, indent=4)

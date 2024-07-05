@@ -19,6 +19,34 @@ export default {
         }
     },
     watch: {
+        'model.station_info': function () {
+            this.$data.maps = [];
+                this.$data.center = [this.model.station_lngs[0], this.model.station_lats[0]];
+                for (let i = 0; i < this.$data.model.station_num; i++) {
+                    this.$data.maps.push({
+                        name: 'station' + i,
+                        value: []
+                    });
+
+                    this.$data.maps[i].value.push(this.$data.model.station_lngs[i]);
+                    this.$data.maps[i].value.push(this.$data.model.station_lats[i]);
+                    this.$data.maps[i].value.push(this.$data.model.mae_for_each_station[i]);
+                }
+                this.$data.center = [this.$data.model.station_lngs[0], this.$data.model.station_lats[0]];
+                this.maps_filered = this.maps;
+                var sorted = this.maps.slice().sort((a, b) => b.value[2] - a.value[2]);
+                var topPercentCount = Math.ceil(sorted.length * ((100 - this.$store.getters.getData.mae) / 100));
+                this.maps_filered = sorted.slice(0, topPercentCount);
+                if (this.$store.getters.getData.temporalCluster != -1) {
+                    this.maps_filered = this.maps_filered.filter(item =>
+                        this.model.temporal_cluster[item.name.slice(7, item.name.length)] == this.$store.getters.getData.temporalCluster);
+                }
+                if (this.$store.getters.getData.spatialCluster != -1) {
+                    this.maps_filered = this.maps_filered.filter(item =>
+                        this.model.spatial_cluster[item.name.slice(7, item.name.length)] == this.$store.getters.getData.spatialCluster);
+                }
+                this.initCharts();
+        },
         "model.ws": {
             handler() {
                 this.$data.maps = [];
@@ -95,7 +123,7 @@ export default {
             }
             this.initCharts();
         },
-    
+
     },
     methods: {
         initCharts() {
