@@ -10,16 +10,18 @@ import statsmodels.api as sm
 from tslearn.clustering import KShape
 from tslearn.metrics import cdist_dtw
 from sklearn.cluster import SpectralClustering
-from statsmodels.tsa.stattools import cal_granger_gausalitytests
+from statsmodels.tsa.stattools import grangercausalitytests
+import networkx as nx
+import community as community_louvain
+from math import radians, cos, sin, asin, sqrt
 
 parser = argparse.ArgumentParser(description='arguments')
 parser.add_argument('--data_dir', default='METR_LA.pkl', type=str)
 parser.add_argument('--pred_dir', default='METR_LA_pred.pkl', type=str)
-parser.add_argument('--adj_file',default='adj.pkl', type=str)
 parser.add_argument('--output_dir', default='result.json', type=str)
 parser.add_argument('--K_cluster', default=4, type=int)
 parser.add_argument('--N_cluster', default=2, type=int)
-parser.add_argument('--spatial_cluster', default=20, type=int)
+parser.add_argument('--sub_cluster', default=2, type=int)
 parser.add_argument("--test_ratio", default=0.2, type=float)
 parser.add_argument("--MergeIndex", default=12, type=int)
 parser.add_argument("--MergeWay", default="average", type=str)
@@ -83,6 +85,51 @@ def merge_data(data, MergeIndex, MergeWay):
         new[new_ind, :] = func(data[ind:ind + MergeIndex, :], axis=0)
     return new
 
+def haversine(lat1, lon1, lat2, lon2):
+    """
+    Calculate the great circle distance between two points
+    on the earth (specified in decimal degrees)
+    """
+    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+
+    # haversine
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
+    c = 2 * asin(sqrt(a))
+    r = 6371
+
+    return c * r * 1000
+
+def distance_adjacent(lat_lng_list, threshold):
+    '''
+    Calculate distance graph based on geographic distance.
+
+    Args:
+        lat_lng_list(list): A list of geographic locations. The format of each element
+                in the list is [latitude, longitude].
+        threshold(float): (meters) nodes with geographic distacne smaller than this 
+            threshold will be linked together.
+    '''
+    adjacent_matrix = np.zeros([len(lat_lng_list), len(lat_lng_list)])
+    for i in range(len(lat_lng_list)):
+        for j in range(len(lat_lng_list)):
+            adjacent_matrix[i][j] = haversine(lat_lng_list[i][0], lat_lng_list[i][1],
+                                                            lat_lng_list[j][0], lat_lng_list[j][1])
+    adjacent_matrix = (adjacent_matrix <= threshold).astype(np.float32)
+    adjacent_matrix -= np.diag(np.diag(adjacent_matrix))
+    return adjacent_matrix
+
+def generate_adj_matrix(data):
+    """
+    Generates the adjacency matrix of a given time series data.
+    """
+    lat_lng_list = np.array([[float(e1) for e1 in e[2:4]]
+                            for e in data['Node']["StationInfo"]])
+    AM = distance_adjacent(lat_lng_list[np.arange(len(lat_lng_list))],
+                                    threshold=float(1000))
+    return AM
+    
 def normalized_laplacian_matrix(adj):
     """
     Computes the normalized Laplacian matrix of a given adjacency matrix.
@@ -132,7 +179,7 @@ def granger_causality_test(df, best_lag):
     float: The F-value if the p-value is less than or equal to 0.005, otherwise returns 0.
     """
     with contextlib.redirect_stdout(open(os.devnull, 'w')):
-        test_result = cal_granger_gausalitytests(df, best_lag, verbose=False)
+        test_result = grangercausalitytests(df, best_lag, verbose=False)
     p_value = test_result[best_lag][0]['ssr_ftest'][1]
     f_value = test_result[best_lag][0]['ssr_ftest'][0]
     return f_value if p_value <= 0.005 else 0
@@ -140,26 +187,15 @@ def granger_causality_test(df, best_lag):
 def find_best_lag(aic_values):
     return aic_values.index(min(aic_values)) + 1
 
-def reconstruction_loss(A_o, A_o_hat):
-    N_o = A_o.shape[0]
-    A_o_hat = np.clip(A_o_hat, 1e-10, 1 - 1e-10)
-    
-    if np.array_equal(A_o, A_o.astype(bool)):
-        W = np.ones_like(A_o)
-    else:
-        W = A_o  
-    loss = -(W * (A_o * np.log(A_o_hat) + (1 - A_o) * np.log(1 - A_o_hat)))
-    return np.sum(loss) / (N_o * N_o)
-
 def generate_temporal_cluster(data):
     # Merge every 24 hours or every 12*24 hours based on MergeIndex
     if args.MergeIndex == 12:
-        merge_data = merge_data(data, 24, args.MergeWay)  
+        merged_data = merge_data(data, 24, args.MergeWay)  
     else:
-        merge_data = merge_data(data, 24 * 12, args.MergeWay)       
+        merged_data = merge_data(data, 24 * 12, args.MergeWay)       
     
     # Transpose data to fit the traffic pattern analysis for stations
-    data_tslearn = merge_data.T.reshape((merge_data.shape[1], merge_data.shape[0], 1))
+    data_tslearn = merged_data.T.reshape((merged_data.shape[1], merged_data.shape[0], 1))
     ks = KShape(n_clusters=args.K_cluster, random_state=0)
     y_pred_kshape = ks.fit_predict(data_tslearn)
 
@@ -201,49 +237,50 @@ def generate_temporal_cluster(data):
     with open(args.output_dir, 'w') as f:
         json.dump(result, f)
         
-def generate_spatial_cluster(adj, data):
-    if args.MergeIndex == 12:
-        merge_data = merge_data(data, 24, args.MergeWay)  
-    else:
-        merge_data = merge_data(data, 24 * 12, args.MergeWay)
-        
-    # shape = (num_nodes, num_time_steps, num_features)
-    data_tslearn = merge_data.T.reshape((merge_data.shape[1], merge_data.shape[0], 1))
-    
-    adj = np.reshape(adj,(adj.shape[-1],adj.shape[-1]))
-    
-    is_binary = np.array_equal(adj, adj.astype(bool))  
-    
-    if not is_binary:
-        adj = adj / np.max(adj)
-        
-    laplacian_matrix = normalized_laplacian_matrix(adj)
-    spectral_clustering = SpectralClustering(n_clusters=args.spatial_cluster,
-                                                 random_state=0)
-    y_pred_spectral = spectral_clustering.fit_predict(laplacian_matrix)
-    
-    # Construct the mapping matrix M_or
-    N_o = data_tslearn.shape[0]
-    M_or = np.zeros((N_o, args.spatial_cluster))
-    for i in range(N_o):
-        M_or[i, y_pred_spectral[i]] = adj[i, y_pred_spectral[i]]
-    # Normalize each column to sum to 1
-    M_or = M_or / np.sum(M_or, axis=0, keepdims=True)
+def generate_spatial_cluster(adj):    
 
-    # Generate the feature and adjacency matrix for the regional graph
-    H_r = M_or.T @ data_tslearn.reshape((N_o, -1))
+    adj = np.reshape(adj,(adj.shape[-1],adj.shape[-1]))
+    G = nx.from_numpy_array(adj)
+
+    # Apply the Louvain method for community detection
+    partition = community_louvain.best_partition(G, random_state=0)
+
+    cluster_sizes = {}
+    for _, cluster in partition.items():
+        if cluster in cluster_sizes:
+            cluster_sizes[cluster] += 1
+        else:
+            cluster_sizes[cluster] = 1
     
-    H_r_reconstructed = M_or @ H_r
-    A_o_hat = np.dot(H_r_reconstructed, H_r_reconstructed.T)
-    A_o_hat = 1 / (1 + np.exp(-A_o_hat))    
+    # Initialize the final cluster dictionary with the Louvain partition
+    final_cluster = partition.copy()
+    # Calculate the offset for new cluster IDs
+    cluster_id_offset = max(partition.values()) + 1  
     
-    loss = reconstruction_loss(adj, A_o_hat, is_binary)
-    print("Reconstruction Loss:", loss)
+    # Process each cluster to check if it needs further subdivision
+    for cluster, size in cluster_sizes.items():
+        if size > 50:
+            # Collect nodes belonging to the current cluster
+            cluster_nodes = [node for node in partition if partition[node] == cluster]
+            subgraph = G.subgraph(cluster_nodes)
+            sub_adj_matrix = nx.to_numpy_array(subgraph)
+            
+            laplacian_matrix = normalized_laplacian_matrix(sub_adj_matrix)
+            # Apply spectral clustering to the Laplacian matrix
+            spectral_clustering = SpectralClustering(n_clusters=args.sub_cluster,
+                                                        random_state=0)
+            sub_labels = spectral_clustering.fit_predict(laplacian_matrix)
+            # Calculate the Calinski-Harabasz score for the clustering
+            ch_score = calinski_harabasz_score(laplacian_matrix, sub_labels)
+            print("Calinski-Harabasz Score:", ch_score)
+            
+            # Update the final cluster dictionary with new cluster IDs
+            for i, node in enumerate(cluster_nodes):
+                final_cluster[node] = cluster_id_offset + sub_labels[i]
+      
+            cluster_id_offset += args.sub_cluster
     
-    ch_score = calinski_harabasz_score(laplacian_matrix, y_pred_spectral)
-    print("Calinski-Harabasz Score:", ch_score)
-    
-    add_object_to_json(args.output_dir, 'generate_spatial_cluster', y_pred_spectral.tolist())
+    add_object_to_json(args.output_dir, 'spatialCluster', [final_cluster[node] for node in sorted(final_cluster.keys())])
 
 def cal_granger_gausality(data):
     df = pd.DataFrame(data)
@@ -290,17 +327,16 @@ def cal_pearson_correlation(data):
 if __name__ == '__main__':
     with open(args.data_dir, 'rb') as f:
         data = pickle.load(f)
+    adj = generate_adj_matrix(data)
     data = merge_data(data['Node']['TrafficNode'], args.MergeIndex, args.MergeWay)
     data = data[0:int(data.shape[0] * (1 - args.test_ratio)), :]
     
     with open(args.pred_dir, 'rb') as f:
         pred = pickle.load(f)
         
-    with open(args.adj_file, 'rb') as f:
-        adj = pickle.load(f)
-        
+    
     generate_temporal_cluster(data)
-    generate_spatial_cluster(adj, data)
+    generate_spatial_cluster(adj)
     cal_granger_gausality(data)
     cal_pearson_correlation(pred)
     

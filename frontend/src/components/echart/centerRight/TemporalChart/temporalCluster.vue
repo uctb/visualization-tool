@@ -32,6 +32,9 @@ export default {
     watch: {
         'model.temporal_cluster': function () {
             this.initChart()
+        },
+        'model.station_info': function () {
+            this.initChart()
         }
     },
     computed: {

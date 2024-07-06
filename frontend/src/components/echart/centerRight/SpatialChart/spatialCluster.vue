@@ -35,6 +35,9 @@ export default {
     watch: {
         'model.spatial_cluster': function () {
             this.initChart()
+        },
+        'model.station_info': function () {
+            this.initChart()
         }
     },
     computed: {
