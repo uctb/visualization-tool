@@ -23,7 +23,6 @@ import weekendEffect from '@/components/echart/centerRight/TemporalChart/weekend
 import temporalPattern from '@/components/echart/centerRight/TemporalChart/temporalPattern.vue';
 import hourPattern from '@/components/echart/centerRight/TemporalChart/hourPattern.vue';
 import temporalRelatedStation from '@/components/echart/centerRight/TemporalChart/temporalRelatedStation.vue';
-import grangerCausality from '@/components/echart/centerRight/TemporalChart/grangerCausality.vue';
 import temporalCluster from '@/components/echart/centerRight/TemporalChart/temporalCluster.vue';
 export default {
   components: {
@@ -31,7 +30,6 @@ export default {
     temporalPattern,
     hourPattern,
     temporalRelatedStation,
-    grangerCausality,
     temporalCluster
   },
   data() {
@@ -65,10 +63,6 @@ export default {
           value: 'Related Station',
           label: 'Related Station',
           component: 'temporalRelatedStation'
-        },{
-          value: 'Granger Causality',
-          label: 'Granger Causality',
-          component: 'grangerCausality'
         }]
       }]
 

@@ -20,11 +20,13 @@
 
 <script>
 import pearson from '@/components/echart/centerRight/SpatialChart/pearson.vue';
+import grangerCausality from '@/components/echart/centerRight/SpatialChart/grangerCausality.vue';
 import relatedStation from '@/components/echart/centerRight/SpatialChart/relatedStation.vue';
 import spatialCluster from '@/components/echart/centerRight/SpatialChart/spatialCluster.vue';
 export default {
   components: {
     pearson,
+    grangerCausality,
     relatedStation,
     spatialCluster
   },
@@ -54,6 +56,10 @@ export default {
           value: 'Related Station',
           label: 'Related Station',
           component: 'relatedStation'
+        },{
+          value: 'Granger Causality',
+          label: 'Granger Causality',
+          component: 'grangerCausality'
         }]
       }]
     }

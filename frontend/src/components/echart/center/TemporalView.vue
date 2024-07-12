@@ -69,11 +69,14 @@ export default {
           }
         },
         series: function (gt, pd, markArea) {
+          function roundToTwo(num) {
+            return Math.round(num * 100) / 100;
+          }
           var Myseries = [];
           var item1 =
               {
                 name: "Groundtruth",
-                data: gt,
+                data: gt.map(roundToTwo),
                 type: 'line',
                 symbol: 'triangle',
                 symbolSize: 8,
@@ -99,7 +102,7 @@ export default {
 
           var item2 = {
             name: "Prediction",
-            data: pd,
+            data: pd.map(roundToTwo),
             type: 'line',
             color: '#FF8C00',
             showSymbol: false,

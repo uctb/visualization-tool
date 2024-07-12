@@ -31,11 +31,21 @@ export default {
     },
     watch: {
         'model.temporal_cluster': function () {
+            this.temporal_data = [];
+            this.data_pos = this.$store.getters.getData.model.station_info;
+            this.temporal_cluster = this.$store.getters.getData.model.temporal_cluster;
+            for (var i = 0; i < this.data_pos.length; i++) {
+                var pos = this.data_pos[i]
+                var te_cluster = this.temporal_cluster[i]
+                var te_data = []
+                te_data.push(pos[1])
+                te_data.push(pos[0])
+                te_data.push(te_cluster)
+                te_data.push(i)
+                this.temporal_data.push(te_data)
+            }
             this.initChart()
         },
-        'model.station_info': function () {
-            this.initChart()
-        }
     },
     computed: {
         options() {

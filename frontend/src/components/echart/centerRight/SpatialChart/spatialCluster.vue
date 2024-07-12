@@ -1,5 +1,13 @@
 <template>
-    <div ref="spatialCluster" class="echarts"></div>
+    <div>
+        <div class="selection">
+            <el-select v-model="selectedCluster" placeholder="请选择" @change="updateChart" size="mini">
+                <el-option v-for="item in clusterOptions" :key="item.value" :label="item.label" :value="item.value">
+                </el-option>
+            </el-select>
+        </div>
+        <div ref="spatialCluster" class="echarts"></div>
+    </div>
 </template>
 
 <script>
@@ -11,6 +19,9 @@ export default {
             data_pos: [],
             spatial_cluster: [],
             spatial_data: [],
+            selectedCluster: 0,
+            clusterCount: 0,
+            clusterOptions: []
         }
     },
     mounted() {
@@ -18,49 +29,65 @@ export default {
         this.spatial_cluster = this.$store.getters.getData.model.spatial_cluster;
 
         for (var i = 0; i < this.data_pos.length; i++) {
-            var pos = this.data_pos[i]
-            var sp_cluster = this.spatial_cluster[i]
-            var sp_data = []
+            var pos = this.data_pos[i];
+            var sp_cluster = this.spatial_cluster[i];
+            var sp_data = [];
 
-            sp_data.push(pos[1])
-            sp_data.push(pos[0])
-            sp_data.push(sp_cluster)
-            sp_data.push(i)
+            sp_data.push(pos[1]);
+            sp_data.push(pos[0]);
+            sp_data.push(sp_cluster);
+            sp_data.push(i);
 
-            this.spatial_data.push(sp_data)
+            this.spatial_data.push(sp_data);
         }
-        this.mychart = this.$echarts.init(this.$refs.spatialCluster)
-        this.initChart()
+        this.clusterCount = Math.max(...this.spatial_cluster) + 1;
+        this.clusterOptions = Array.from({ length: this.clusterCount }, (v, k) => ({
+            value: k,
+            label: `Cluster ${k}`
+        }));
+        this.mychart = this.$echarts.init(this.$refs.spatialCluster);
+        this.initChart();
     },
     watch: {
         'model.spatial_cluster': function () {
-            this.initChart()
+            this.spatial_data = [];
+            this.data_pos = this.$store.getters.getData.model.station_info;
+            this.spatial_cluster = this.$store.getters.getData.model.spatial_cluster;
+
+            for (var i = 0; i < this.data_pos.length; i++) {
+                var pos = this.data_pos[i];
+                var sp_cluster = this.spatial_cluster[i];
+                var sp_data = [];
+
+                sp_data.push(pos[1]);
+                sp_data.push(pos[0]);
+                sp_data.push(sp_cluster);
+                sp_data.push(i);
+
+                this.spatial_data.push(sp_data);
+            }
+            this.clusterCount = Math.max(...this.spatial_cluster) + 1;
+            this.clusterOptions = Array.from({ length: this.clusterCount }, (v, k) => ({
+                value: k,
+                label: `Cluster ${k}`
+            }));
+            this.initChart();
         },
-        'model.station_info': function () {
-            this.initChart()
-        }
     },
     computed: {
         options() {
-            const data = this.spatial_data;
-            const CLUSTER_COUNT = Math.max(...data.map(item => item[2])) + 1
-            const COLOR_ALL = [
-                '#37A2DA', '#e06343', '#37a354', '#FF5733', '#33FF57', '#3357FF', '#F1C40F', '#8E44AD', '#2980B9', '#16A085'
-            ];
-            const pieces = [];
-            for (let i = 0; i < CLUSTER_COUNT; i++) {
-                pieces.push({
-                    value: i,
-                    label: 'cluster ' + i,
-                    color: COLOR_ALL[i]
-                });
-            }
+            const data = this.spatial_data.map(item => ({
+                ...item,
+                selected: item[2] === this.selectedCluster ? 'selected' : 'unselected'
+            }));
+
             const xValues = data.map(item => item[0]);
             const yValues = data.map(item => item[1]);
             const xMin = Math.min(...xValues);
             const xMax = Math.max(...xValues);
             const yMin = Math.min(...yValues);
             const yMax = Math.max(...yValues);
+
             return {
                 dataset: {
                     source: data
@@ -70,24 +97,31 @@ export default {
                     backgroundColor: 'rgba(50, 50, 50, 0.7)', // 浅灰色背景
                     textStyle: {
                         color: '#FFFF'
+                    },
+                    formatter: function (param) {
+                        var data = param.data;
+                        return 'station ' + data[3];
                     }
                 },
-                visualMap: {
-                    type: 'piecewise',
-                    top: 'middle',
-                    left: 0,
-                    min: 0,
-                    max: CLUSTER_COUNT,
-                    splitNumber: CLUSTER_COUNT,
-                    dimension: 2,
-                    pieces: pieces,
-                    textStyle: {
-                        color: '#FFFFFF'
-                    },
-                    align: 'left'
-                },
+                visualMap: [
+                    {
+                        type: 'piecewise',
+                        orient: 'horizontal',
+                        categories: ['selected', 'unselected'],
+                        dimension: 4,
+                        pieces: [
+                            { value: 'selected', label: 'Selected', color: '#FF0000' },
+                            { value: 'unselected', label: 'Others', color: '#009688' }
+                        ],
+                        textStyle: {
+                            color: '#FFFFFF'
+                        },
+                        top: 10,
+                        right: 10,
+                    }
+                ],
                 grid: {
-                    left: 150,
+                    left: 75,
                 },
                 dataZoom: [
                     {
@@ -117,23 +151,22 @@ export default {
                     encode: { tooltip: [0, 1] },
                     symbolSize: 5,
                     itemStyle: {
-                        borderColor: '#555'
+                        borderColor: '#555',
+                        color: function (param) {
+                            return param.data[4] === 'selected' ? '#FFFF00' : '#FF0000';
+                        }
                     }
-                },
-                tooltip: {
-                    formatter: function (param) {
-                        var data = param.data;
-                        return 'station' + data[3];
-                    }
-                },
+                }
             };
         }
     },
     methods: {
         initChart() {
-            this.mychart.setOption(this.options)
+            this.mychart.setOption(this.options);
         },
-
+        updateChart() {
+            this.initChart();
+        }
     }
 }
 </script>
@@ -144,5 +177,12 @@ export default {
     background-size: contain;
     background-repeat: no-repeat;
     background-position: 50% 50%;
+}
+
+.selection {
+    position: absolute;
+    top: 25%;
+    left: 15%;
+    z-index: 1000;
 }
 </style>
